@@ -46,14 +46,14 @@
       transform: scale(0.96);
     }
     .midi-learning-active {
-      animation: pulseLearn 0.8s infinite alternate;
+      animation: pulseLearn 0.6s infinite alternate;
       border-color: #facc15 !important;
-      background-color: #713f12 !important;
-      color: #fef08a !important;
+      background-color: #a16207 !important;
+      color: #ffffff !important;
     }
     @keyframes pulseLearn {
       0% { box-shadow: 0 0 4px #facc15; }
-      100% { box-shadow: 0 0 16px #facc15; }
+      100% { box-shadow: 0 0 18px #facc15; }
     }
     .pad-grid {
       background-image: 
@@ -148,36 +148,47 @@
     </div>
   </header>
 
-  <!-- BARRA ORIZZONTALE HARDWARE MIDI (SEMPRE IN PRIMO PIANO) -->
+  <!-- BARRA HARDWARE CON SELEZIONE DEDICATA MIDI IN E MIDI OUT -->
   <section class="mb-2 p-2 rounded-2xl bg-slate-900/90 border border-purple-950/70 shadow-md">
-    <div class="flex flex-wrap items-center justify-between gap-2.5">
-      <div class="flex items-center gap-2 flex-1 min-w-[280px]">
-        <span class="font-bold text-purple-400 text-xs uppercase flex items-center gap-1 whitespace-nowrap">
-          <span>🔌 MicroFreak MIDI OUT:</span>
-        </span>
-        <select id="midiOutSelect" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200 focus:outline-none">
-          <option value="none">Nessun synth rilevato (collega MicroFreak via USB)</option>
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+      
+      <!-- MIDI IN (Ingresso per MIDI Learn) -->
+      <div class="md:col-span-4 flex items-center gap-1.5">
+        <span class="font-bold text-yellow-400 text-[11px] uppercase whitespace-nowrap">📥 IN (Learn):</span>
+        <select id="midiInSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1 text-xs text-slate-200 focus:outline-none">
+          <option value="all">Tutti gli ingressi MIDI</option>
         </select>
-        <select id="midiOutChannel" class="w-28 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200 focus:outline-none">
-          <option value="0">Canale 1</option><option value="1">Canale 2</option><option value="2">Canale 3</option>
-          <option value="3">Canale 4</option><option value="4">Canale 5</option><option value="9">Canale 10</option>
-          <option value="15">Canale 16</option>
+        <!-- Spia Test Monitor Ricezione CC -->
+        <span id="midiInMonitor" class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] font-mono text-slate-400 whitespace-nowrap" title="Ultimo CC intercettato">
+          Ricevuto: --
+        </span>
+      </div>
+
+      <!-- MIDI OUT (Uscita verso MicroFreak) -->
+      <div class="md:col-span-4 flex items-center gap-1.5">
+        <span class="font-bold text-purple-400 text-[11px] uppercase whitespace-nowrap">🔌 OUT:</span>
+        <select id="midiOutSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1 text-xs text-slate-200 focus:outline-none">
+          <option value="none">Nessun synth rilevato</option>
+        </select>
+        <select id="midiOutChannel" class="w-24 bg-slate-950 border border-slate-700 rounded-lg p-1 text-xs text-slate-200 focus:outline-none">
+          <option value="0">Ch 1</option><option value="1">Ch 2</option><option value="2">Ch 3</option>
+          <option value="3">Ch 4</option><option value="9">Ch 10</option><option value="15">Ch 16</option>
         </select>
       </div>
 
-      <div class="flex items-center gap-3 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
+      <!-- MIDI Thru Passthrough -->
+      <div class="md:col-span-4 flex items-center justify-between md:justify-end gap-2 text-xs">
         <label class="flex items-center gap-1.5 font-bold text-cyan-300 cursor-pointer text-[11px] whitespace-nowrap">
           <input type="checkbox" id="midiThruEnabled" checked class="accent-cyan-400 rounded">
-          <span>MIDI Thru (Tastiera ➔ MicroFreak)</span>
+          <span>MIDI Thru (Tastiera ➔ Synth)</span>
         </label>
-        <div class="h-4 w-px bg-slate-800"></div>
-        <div class="flex items-center gap-2.5 text-[10px] text-slate-300">
-          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltNotes" checked class="accent-cyan-400"> Note</label>
-          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltBend" checked class="accent-cyan-400"> PitchBend</label>
-          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltCC" checked class="accent-cyan-400"> CC</label>
-          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltClock" checked class="accent-cyan-400"> Clock</label>
+        <div class="flex items-center gap-2 text-[10px] text-slate-400">
+          <label class="flex items-center gap-0.5"><input type="checkbox" id="thruFiltNotes" checked class="accent-cyan-400"> Note</label>
+          <label class="flex items-center gap-0.5"><input type="checkbox" id="thruFiltBend" checked class="accent-cyan-400"> Bend</label>
+          <label class="flex items-center gap-0.5"><input type="checkbox" id="thruFiltCC" checked class="accent-cyan-400"> CC</label>
         </div>
       </div>
+
     </div>
   </section>
 
@@ -189,7 +200,7 @@
     <!-- COLONNA SINISTRA: Touch Pad a 3 Punti -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       
-      <!-- Selettore Modalità Dita (Fino a 3 Dita) -->
+      <!-- Selettore Modalità Dita -->
       <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
         <div class="flex items-center gap-1.5">
           <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Target Dita:</span>
@@ -233,7 +244,7 @@
 
           <div class="text-center pointer-events-none">
             <div class="text-2xl font-black text-cyan-500/20 tracking-widest uppercase">MICROFREAK LIVE PAD</div>
-            <div class="text-[10px] text-slate-500 font-mono mt-0.5">Usa il MIDI Learn a destra per assegnare qualsiasi manopola fisica</div>
+            <div class="text-[10px] text-slate-500 font-mono mt-0.5">Ruota una manopola sul MicroFreak per il Learn istantaneo</div>
           </div>
 
           <div class="flex justify-between items-center text-[10px] font-mono text-slate-500 font-semibold">
@@ -266,7 +277,7 @@
       <div class="p-2 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 shadow">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Live Presets MicroFreak:</span>
         <div class="grid grid-cols-4 gap-2">
-          <button class="preset-btn py-2 rounded-xl bg-cyan-950 border-2 border-cyan-500 text-cyan-300 font-black text-xs uppercase transition-all active:scale-95 shadow-[0_0_10px_rgba(6,182,212,0.3)]" data-slot="1">P1: Cutoff/Timbre</button>
+          <button class="preset-btn py-2 rounded-xl bg-cyan-950 border-2 border-cyan-500 text-cyan-300 font-black text-xs uppercase transition-all active:scale-95 shadow-[0_0_10px_rgba(6,182,212,0.3)]" data-slot="1">P1: Filter</button>
           <button class="preset-btn py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="2">P2: Wave/Shape</button>
           <button class="preset-btn py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="3">P3: Cycling Env</button>
           <button class="preset-btn py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="4">P4: Glide/Spice</button>
@@ -274,14 +285,14 @@
       </div>
     </div>
 
-    <!-- COLONNA DESTRA: Matrice a 6 Assi con MIDI LEARN DEDICATO SU OGNI ASSE -->
+    <!-- COLONNA DESTRA: Matrice a 6 Assi con MIDI LEARN -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       <div class="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 shadow-md flex-1">
         <div class="flex items-center justify-between border-b border-slate-800 pb-1">
           <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
             <span>🎚️ Matrice Controlli Touch & MIDI Learn (6 Assi)</span>
           </h2>
-          <span class="text-[10px] text-yellow-400 font-mono">Premi [LEARN] e ruota la manopola del synth</span>
+          <span class="text-[10px] text-yellow-400 font-mono">1. Clicca [LEARN] ➔ 2. Gira una manopola fisica</span>
         </div>
 
         <!-- ASSE 1: 1° DITO SX - X -->
@@ -300,7 +311,6 @@
                   <option value="9">CC#9 (Wave)</option>
                   <option value="10">CC#10 (Timbre)</option>
                   <option value="12">CC#12 (Shape)</option>
-                  <option value="1">CC#1 (Modulation)</option>
                   <option value="custom">Altro CC...</option>
                 </select>
               </div>
@@ -322,7 +332,6 @@
               </div>
             </div>
           </div>
-          <!-- Tasto MIDI Learn Rapido -->
           <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="LX">
             LEARN
           </button>
@@ -462,7 +471,7 @@
           </button>
         </div>
 
-        <!-- ASSE 5: 3° DITO FX - X (NUOVO PUNTO GIALLO) -->
+        <!-- ASSE 5: 3° DITO FX - X -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-yellow-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -506,7 +515,7 @@
           </button>
         </div>
 
-        <!-- ASSE 6: 3° DITO FX - Y (NUOVO PUNTO GIALLO) -->
+        <!-- ASSE 6: 3° DITO FX - Y -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-yellow-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -571,9 +580,8 @@
       </div>
     </div>
 
-    <!-- Banco a 8 Canali Verticali -->
+    <!-- 8 Fader Verticali -->
     <div class="grid grid-cols-4 md:grid-cols-8 gap-2.5 flex-1 p-3 rounded-2xl bg-slate-950 border border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.15)] overflow-x-auto">
-      <!-- Canali con CC tipici del MicroFreak -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="1">
         <div class="w-full text-center space-y-1">
           <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-cyan-300" value="74">
@@ -723,20 +731,22 @@
       tabBtnPad.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider text-slate-400 hover:text-cyan-300 transition-all";
     });
 
-    // --- 3. HARDWARE MIDI OUT & THRU ENGINE ---
+    // --- 3. HARDWARE MIDI OUT, IN & THRU ENGINE ---
     let midiAccess = null;
+    let midiInputs = [];
     let midiOutputs = [];
+    let selectedMidiIn = 'all';
     let selectedMidiOut = null;
     let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
     let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
     let lastSentValues = { LX: null, LY: null, RX: null, RY: null, P3X: null, P3Y: null };
 
-    // Stato di apprendimento MIDI Learn
-    let activeLearnAxis = null; // 'LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'
+    let activeLearnAxis = null;
 
     const midiInLed = document.getElementById('midiInLed');
     const midiThruLed = document.getElementById('midiThruLed');
     const midiOutLed = document.getElementById('midiOutLed');
+    const midiInMonitor = document.getElementById('midiInMonitor');
 
     function flashLed(el, color = 'bg-emerald-400') {
       el.className = `w-2.5 h-2.5 rounded-full ${color} transition-colors`;
@@ -754,35 +764,48 @@
     }
 
     function populateMidiPorts() {
-      for (let input of midiAccess.inputs.values()) {
-        input.onmidimessage = handleMIDIInput;
-      }
+      // Ingressi (MIDI IN)
+      const inSelect = document.getElementById('midiInSelect');
+      inSelect.innerHTML = '<option value="all">Tutti gli ingressi MIDI</option>';
+      midiInputs = Array.from(midiAccess.inputs.values());
 
-      const outSelect = document.getElementById('midiOutSelect');
-      if (outSelect) {
-        outSelect.innerHTML = '<option value="none">Nessun synth rilevato (collega MicroFreak)</option>';
-        midiOutputs = Array.from(midiAccess.outputs.values());
-
-        midiOutputs.forEach((out, idx) => {
-          const opt = document.createElement('option');
-          opt.value = idx;
-          opt.innerText = out.name || `Porta ${idx+1}`;
-          outSelect.appendChild(opt);
-        });
-
-        if (midiOutputs.length > 0 && (outSelect.value === 'none' || outSelect.value === '')) {
-          outSelect.value = 0;
-          selectedMidiOut = midiOutputs[0];
-        }
-      }
-    }
-
-    const outSelect = document.getElementById('midiOutSelect');
-    if (outSelect) {
-      outSelect.addEventListener('change', (e) => {
-        selectedMidiOut = e.target.value === 'none' ? null : midiOutputs[parseInt(e.target.value)];
+      midiInputs.forEach((inp, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.innerText = inp.name || `Ingresso ${idx+1}`;
+        inSelect.appendChild(opt);
+        // Ascolta sempre tutti gli ingressi collegati
+        inp.onmidimessage = handleMIDIInput;
       });
+
+      // Uscite (MIDI OUT)
+      const outSelect = document.getElementById('midiOutSelect');
+      outSelect.innerHTML = '<option value="none">Nessun synth rilevato</option>';
+      midiOutputs = Array.from(midiAccess.outputs.values());
+
+      midiOutputs.forEach((out, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.innerText = out.name || `Porta ${idx+1}`;
+        outSelect.appendChild(opt);
+      });
+
+      // Seleziona automaticamente il MicroFreak se presente
+      if (midiOutputs.length > 0) {
+        let mfIdx = midiOutputs.findIndex(o => o.name && o.name.toLowerCase().includes('microfreak'));
+        if (mfIdx === -1) mfIdx = 0;
+        outSelect.value = mfIdx;
+        selectedMidiOut = midiOutputs[mfIdx];
+      }
     }
+
+    document.getElementById('midiInSelect').addEventListener('change', (e) => {
+      selectedMidiIn = e.target.value;
+    });
+
+    document.getElementById('midiOutSelect').addEventListener('change', (e) => {
+      selectedMidiOut = e.target.value === 'none' ? null : midiOutputs[parseInt(e.target.value)];
+    });
 
     // GESTIONE INPUT MIDI CON MIDI LEARN RAPIDO
     function handleMIDIInput(event) {
@@ -790,38 +813,48 @@
       const [status, data1, data2] = event.data;
       const cmd = status >> 4;
 
-      // Se siamo in attesa di MIDI Learn su un asse e riceviamo un CC
-      if (cmd === 11 && activeLearnAxis) {
+      // Se è un Control Change (CC)
+      if (cmd === 11) {
         const ccNum = data1;
-        const select = document.getElementById(`selCC_${activeLearnAxis}`);
+        const val7bit = data2;
+        
+        // Aggiorna il monitor visivo in tempo reale
+        if (midiInMonitor) {
+          midiInMonitor.innerText = `CC#${ccNum}: ${val7bit}`;
+          midiInMonitor.classList.add('text-yellow-400');
+          setTimeout(() => midiInMonitor.classList.remove('text-yellow-400'), 150);
+        }
 
-        // Assegna il CC al selettore
-        let found = false;
-        for (let opt of select.options) {
-          if (parseInt(opt.value) === ccNum) {
-            select.value = opt.value;
-            found = true;
-            break;
+        // Se un asse è in modalità LEARN
+        if (activeLearnAxis) {
+          const select = document.getElementById(`selCC_${activeLearnAxis}`);
+
+          let found = false;
+          for (let opt of select.options) {
+            if (parseInt(opt.value) === ccNum) {
+              select.value = opt.value;
+              found = true;
+              break;
+            }
           }
-        }
-        if (!found) {
-          const newOpt = document.createElement('option');
-          newOpt.value = ccNum;
-          newOpt.innerText = `CC#${ccNum} (Learn MicroFreak)`;
-          select.appendChild(newOpt);
-          select.value = ccNum;
-        }
+          if (!found) {
+            const newOpt = document.createElement('option');
+            newOpt.value = ccNum;
+            newOpt.innerText = `CC#${ccNum} (Learn MicroFreak)`;
+            select.appendChild(newOpt);
+            select.value = ccNum;
+          }
 
-        // Salva in localStorage per le sessioni future
-        localStorage.setItem(`cyber_cc_${activeLearnAxis}`, ccNum);
+          localStorage.setItem(`cyber_cc_${activeLearnAxis}`, ccNum);
 
-        // Disattiva il pulsante Learn
-        document.querySelectorAll('.learn-axis-btn').forEach(b => b.classList.remove('midi-learning-active'));
-        activeLearnAxis = null;
-        return;
+          // Disattiva il Learn
+          document.querySelectorAll('.learn-axis-btn').forEach(b => b.classList.remove('midi-learning-active'));
+          activeLearnAxis = null;
+          return;
+        }
       }
 
-      // MIDI Thru soft
+      // Soft Thru
       const thruEl = document.getElementById('midiThruEnabled');
       const thruActive = thruEl ? thruEl.checked : true;
 
@@ -830,7 +863,6 @@
         if ((cmd === 9 || cmd === 8) && document.getElementById('thruFiltNotes')?.checked) pass = true;
         else if (cmd === 14 && document.getElementById('thruFiltBend')?.checked) pass = true;
         else if (cmd === 11 && document.getElementById('thruFiltCC')?.checked) pass = true;
-        else if (status >= 0xF8 && document.getElementById('thruFiltClock')?.checked) pass = true;
 
         if (pass) {
           selectedMidiOut.send(event.data);
@@ -854,7 +886,7 @@
       });
     });
 
-    // Ripristino mappature memorizzate
+    // Ripristino mappature
     ['LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'].forEach(axis => {
       const saved = localStorage.getItem(`cyber_cc_${axis}`);
       if (saved) {
@@ -894,7 +926,7 @@
       flashLed(midiOutLed, 'bg-red-400');
     });
 
-    // --- 4. GESTIONE DEI 3 PUNTI TOUCH MULTIPLI ---
+    // --- 4. GESTIONE PUNTI TOUCH ---
     function applyCurve(x, type) {
       x = Math.max(0, Math.min(1, x));
       switch(type) {
@@ -914,7 +946,6 @@
       return Math.round(minVal + v * (maxVal - minVal));
     }
 
-    // Tasti Hold
     ['LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'].forEach(id => {
       const btn = document.getElementById(`hold_${id}`);
       if (btn) {
@@ -953,7 +984,6 @@
       flashLed(midiOutLed);
     }
 
-    // TARGET DITA (1, 2, 3 o TRIPLE MULTI-TOUCH)
     let currentTouchTarget = 'triple';
     document.querySelectorAll('.touch-target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -973,10 +1003,9 @@
       });
     });
 
-    // PUNTI COORDINATE PAD (3 Punti)
-    let p1 = { x: 0.25, y: 0.5, targetX: 0.25, targetY: 0.5 }; // SX (Rosa)
-    let p2 = { x: 0.50, y: 0.5, targetX: 0.50, targetY: 0.5 }; // DX (Cyan)
-    let p3 = { x: 0.75, y: 0.5, targetX: 0.75, targetY: 0.5 }; // 3° FX (Giallo)
+    let p1 = { x: 0.25, y: 0.5, targetX: 0.25, targetY: 0.5 };
+    let p2 = { x: 0.50, y: 0.5, targetX: 0.50, targetY: 0.5 };
+    let p3 = { x: 0.75, y: 0.5, targetX: 0.75, targetY: 0.5 };
 
     const padContainer = document.getElementById('camPadContainer');
     const touchPadBg = document.getElementById('touchPadBg');
@@ -988,7 +1017,6 @@
 
     let isCamActive = false;
     let isDemo = false;
-    let animId = null;
 
     function resizeCanvas() {
       if (padContainer) {
@@ -999,7 +1027,6 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Mappa per associare in modo stabile ciascun dito a un punto
     let pointerSlotMap = new Map();
 
     function updatePointFromTouch(e, pt) {
@@ -1021,7 +1048,6 @@
         } else if (currentTouchTarget === 'point3') {
           updatePointFromTouch(e, p3);
         } else if (currentTouchTarget === 'triple') {
-          // Assegna il dito a uno slot libero tra 1, 2 o 3
           if (!pointerSlotMap.has(e.pointerId)) {
             if (!Array.from(pointerSlotMap.values()).includes(1)) {
               pointerSlotMap.set(e.pointerId, 1);
@@ -1072,7 +1098,7 @@
       p3.y += (p3.targetY - p3.y) * 0.8;
 
       const nP1X = Math.max(0, Math.min(1, p1.x));
-      const nP1Y = Math.max(0, Math.min(1, 1 - p1.y)); // Invertito: 1 in alto
+      const nP1Y = Math.max(0, Math.min(1, 1 - p1.y));
       const nP2X = Math.max(0, Math.min(1, p2.x));
       const nP2Y = Math.max(0, Math.min(1, 1 - p2.y));
       const nP3X = Math.max(0, Math.min(1, p3.x));
@@ -1093,12 +1119,10 @@
       if (mon3) mon3.innerText = `X: ${Math.round(nP3X*127)} | Y: ${Math.round(nP3Y*127)}`;
     }
 
-    // Disegno dei 3 cursori luminosi sul pad
     function renderFeedbackCanvas() {
       if (!ctx || viewPad.classList.contains('hidden')) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Cursore 1 (Rosa - SX)
       const x1 = p1.x * canvas.width;
       const y1 = p1.y * canvas.height;
       ctx.beginPath();
@@ -1111,7 +1135,6 @@
       ctx.font = "bold 10px monospace";
       ctx.fillText("1", x1 - 3, y1 + 3);
 
-      // Cursore 2 (Cyan - DX)
       const x2 = p2.x * canvas.width;
       const y2 = p2.y * canvas.height;
       ctx.beginPath();
@@ -1124,7 +1147,6 @@
       ctx.font = "bold 10px monospace";
       ctx.fillText("2", x2 - 3, y2 + 3);
 
-      // Cursore 3 (Giallo - FX)
       const x3 = p3.x * canvas.width;
       const y3 = p3.y * canvas.height;
       ctx.beginPath();
@@ -1145,7 +1167,7 @@
     }
     requestAnimationFrame(mainEngineLoop);
 
-    // --- 6. FADER DESK MIXER (SECONDA SCHEDA) ---
+    // --- 6. FADER DESK MIXER ---
     const faderChannels = document.querySelectorAll('.fader-channel');
     const faderHoldStates = new Map();
 
