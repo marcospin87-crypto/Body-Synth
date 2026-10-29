@@ -26,23 +26,23 @@
       object-fit: cover;
     }
     .btn-hold-square {
-      width: 52px;
-      height: 52px;
+      width: 48px;
+      height: 48px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-radius: 12px;
+      border-radius: 10px;
       font-weight: 800;
       font-family: monospace;
-      font-size: 11px;
+      font-size: 10px;
       transition: all 0.15s ease-out;
     }
     .btn-hold-active {
       background-color: #0284c7 !important;
       border-color: #38bdf8 !important;
       color: #ffffff !important;
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.7);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.7);
       transform: scale(0.96);
     }
     .pad-grid {
@@ -57,46 +57,45 @@
         linear-gradient(to bottom, rgba(236, 72, 153, 0.08) 1px, transparent 1px);
       background-size: 5% 5%;
     }
-    /* Stile Fader Verticali Mixer */
     .vertical-slider {
       -webkit-appearance: none;
       appearance: none;
       writing-mode: vertical-lr;
       direction: rtl;
-      width: 48px;
-      height: 220px;
+      width: 44px;
+      height: 200px;
       background: #090e1d;
       border: 2px solid #1e293b;
-      border-radius: 16px;
+      border-radius: 14px;
       outline: none;
       cursor: pointer;
     }
     .vertical-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 44px;
-      height: 38px;
+      width: 40px;
+      height: 34px;
       background: linear-gradient(180deg, #00f3ff, #0284c7);
-      border-radius: 10px;
+      border-radius: 8px;
       border: 2px solid #ffffff;
-      box-shadow: 0 0 14px rgba(0, 243, 255, 0.8);
+      box-shadow: 0 0 12px rgba(0, 243, 255, 0.8);
       cursor: pointer;
     }
     .vertical-slider::-moz-range-thumb {
-      width: 44px;
-      height: 38px;
+      width: 40px;
+      height: 34px;
       background: linear-gradient(180deg, #00f3ff, #0284c7);
-      border-radius: 10px;
+      border-radius: 8px;
       border: 2px solid #ffffff;
-      box-shadow: 0 0 14px rgba(0, 243, 255, 0.8);
+      box-shadow: 0 0 12px rgba(0, 243, 255, 0.8);
       cursor: pointer;
     }
     input[type=range] { accent-color: #00f3ff; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col p-2 md:p-3">
+<body class="min-h-screen flex flex-col p-2 md:p-3 overflow-y-auto">
 
-  <!-- Header Superiore con Navigazione a Schede -->
+  <!-- Header Superiore -->
   <header class="flex flex-wrap items-center justify-between gap-2 mb-2 border-b border-cyan-950 pb-2">
     <div class="flex items-center gap-2.5">
       <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 font-bold text-lg shadow-[0_0_12px_rgba(6,182,212,0.4)]">
@@ -118,7 +117,7 @@
       </button>
     </div>
 
-    <!-- Barra Azioni -->
+    <!-- Barra Azioni & Panic -->
     <div class="flex items-center gap-2">
       <button id="btnPwaInstall" class="hidden px-3 py-1.5 rounded-xl border-2 border-cyan-400 bg-cyan-950 text-cyan-300 font-black text-xs uppercase animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.5)]">
         📲 Installa App
@@ -148,14 +147,54 @@
     </div>
   </header>
 
+  <!-- ======================================================== -->
+  <!-- BARRA ORIZZONTALE HARDWARE MIDI (SEMPRE VISIBILE AL 100%) -->
+  <!-- ======================================================== -->
+  <section class="mb-2 p-2 rounded-2xl bg-slate-900/90 border border-purple-950/70 shadow-md">
+    <div class="flex flex-wrap items-center justify-between gap-2.5">
+      
+      <!-- Dispositivo e Canale -->
+      <div class="flex items-center gap-2 flex-1 min-w-[280px]">
+        <span class="font-bold text-purple-400 text-xs uppercase flex items-center gap-1 whitespace-nowrap">
+          <span>🔌 MIDI OUT:</span>
+        </span>
+        <select id="midiOutSelect" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200 focus:outline-none">
+          <option value="none">Nessun synth rilevato (collega via USB)</option>
+        </select>
+        <select id="midiOutChannel" class="w-28 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200 focus:outline-none">
+          <option value="0">Canale 1</option><option value="1">Canale 2</option><option value="2">Canale 3</option>
+          <option value="3">Canale 4</option><option value="4">Canale 5</option><option value="9">Canale 10</option>
+          <option value="15">Canale 16</option>
+        </select>
+      </div>
+
+      <!-- MIDI Thru con Filtri -->
+      <div class="flex items-center gap-3 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
+        <label class="flex items-center gap-1.5 font-bold text-cyan-300 cursor-pointer text-[11px] whitespace-nowrap">
+          <input type="checkbox" id="midiThruEnabled" checked class="accent-cyan-400 rounded">
+          <span>MIDI Thru (Master ➔ Synth)</span>
+        </label>
+        <div class="h-4 w-px bg-slate-800"></div>
+        <div class="flex items-center gap-2.5 text-[10px] text-slate-300">
+          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltNotes" checked class="accent-cyan-400"> Note</label>
+          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltBend" checked class="accent-cyan-400"> PitchBend</label>
+          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltCC" checked class="accent-cyan-400"> CC</label>
+          <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltClock" checked class="accent-cyan-400"> Clock</label>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <!-- ========================================== -->
   <!-- VISTA 1: XY TOUCH PAD & WEBCAM GESTURE     -->
   <!-- ========================================== -->
-  <main id="viewPad" class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1">
+  <main id="viewPad" class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 pb-4">
     
-    <!-- COLONNA SINISTRA: Video & Touch Pad -->
+    <!-- COLONNA SINISTRA: Touch Pad & Preset (6 Colonne) -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       
+      <!-- Barra Controlli Pad / Dita -->
       <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
         <div class="flex items-center gap-1.5">
           <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Modalità Dita:</span>
@@ -185,6 +224,7 @@
         </div>
       </div>
 
+      <!-- Area Pad Touch / Video -->
       <div id="camPadContainer" class="relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border-2 border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex items-center justify-center cursor-crosshair touch-none select-none">
         
         <div id="touchPadBg" class="absolute inset-0 pad-grid pad-subgrid flex flex-col justify-between p-3.5 pointer-events-none transition-opacity duration-300">
@@ -195,7 +235,7 @@
 
           <div class="text-center pointer-events-none">
             <div class="text-3xl font-black text-cyan-500/20 tracking-widest uppercase">TOUCH PAD</div>
-            <div class="text-[11px] text-slate-500 font-mono mt-1">Traccia qualsiasi dito ovunque sul pad con precisione assoluta</div>
+            <div class="text-[11px] text-slate-500 font-mono mt-1">Traccia qualsiasi dito ovunque sul pad</div>
           </div>
 
           <div class="flex justify-between items-center text-[10px] font-mono text-slate-500 font-semibold">
@@ -208,6 +248,7 @@
         <canvas id="overlayCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       </div>
 
+      <!-- Barra Valori CC Monitor -->
       <div class="grid grid-cols-2 gap-2 text-xs font-mono">
         <div class="bg-slate-900/90 border border-pink-500/50 px-3 py-1.5 rounded-xl flex items-center justify-between shadow-sm">
           <span class="text-pink-400 font-bold text-[10px]">MANO SX CC:</span>
@@ -219,7 +260,7 @@
         </div>
       </div>
 
-      <!-- Presets & Hardware Routing -->
+      <!-- Live Preset Snapshots -->
       <div class="p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5 shadow">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Live Preset Quick-Recall:</span>
         <div class="grid grid-cols-4 gap-2">
@@ -231,7 +272,7 @@
       </div>
     </div>
 
-    <!-- COLONNA DESTRA: Matrice Espressione a 4 Assi -->
+    <!-- COLONNA DESTRA: Matrice Espressione a 4 Assi (6 Colonne) -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       <div class="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 shadow-md flex-1">
         <div class="flex items-center justify-between border-b border-slate-800 pb-1">
@@ -242,7 +283,7 @@
         </div>
 
         <!-- 1. MANO SX - ASSE X -->
-        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-3">
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-3">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
               <span class="text-pink-400 font-bold text-xs uppercase">Mano SX - Orizzontale (X)</span>
@@ -288,7 +329,7 @@
         </div>
 
         <!-- 2. MANO SX - ASSE Y -->
-        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-3">
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-3">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
               <span class="text-pink-400 font-bold text-xs uppercase">Mano SX - Verticale (Y)</span>
@@ -333,7 +374,7 @@
         </div>
 
         <!-- 3. MANO DX - ASSE X -->
-        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
               <span class="text-cyan-400 font-bold text-xs uppercase">Mano DX - Orizzontale (X)</span>
@@ -377,7 +418,7 @@
         </div>
 
         <!-- 4. MANO DX - ASSE Y -->
-        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
               <span class="text-cyan-400 font-bold text-xs uppercase">Mano DX - Verticale (Y)</span>
@@ -420,6 +461,7 @@
           </button>
         </div>
 
+        <!-- Sezione Smoothing e Test Audio -->
         <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800 text-[10px] text-slate-400">
           <div>
             <div class="flex justify-between mb-0.5">
@@ -446,9 +488,9 @@
   <!-- ========================================== -->
   <!-- VISTA 2: LIVE FADER DESK (MIXER STYLE)     -->
   <!-- ========================================== -->
-  <main id="viewFaders" class="hidden flex-col gap-3 flex-1">
+  <main id="viewFaders" class="hidden flex-col gap-3 flex-1 pb-4">
     
-    <!-- Barra Superiore Mixer: Macro Slider per scorrere più fader con una mano -->
+    <!-- Barra Superiore Mixer: Macro Sweep -->
     <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3 shadow-md">
       <div class="flex items-center gap-3 flex-1">
         <span class="text-xs font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
@@ -468,7 +510,7 @@
       </div>
     </div>
 
-    <!-- Banco a 8 Canali Verticali -->
+    <!-- Banco a 8 Canali Verticali Mixer -->
     <div class="grid grid-cols-4 md:grid-cols-8 gap-2.5 flex-1 p-3 rounded-2xl bg-slate-950 border border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.15)] overflow-x-auto">
       
       <!-- CANALE 1 (Cutoff) -->
@@ -477,12 +519,9 @@
           <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-cyan-300" value="74" title="Numero CC">
           <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Cutoff</span>
         </div>
-
-        <!-- Slider Verticale Ergonomico -->
         <div class="py-2 flex items-center justify-center">
           <input type="range" min="0" max="127" value="64" class="fader-slider vertical-slider">
         </div>
-
         <div class="w-full text-center space-y-1.5">
           <span class="fader-val font-mono font-black text-sm text-cyan-400 block">64</span>
           <div class="grid grid-cols-2 gap-1">
@@ -714,7 +753,7 @@
 
       const outSelect = document.getElementById('midiOutSelect');
       if (outSelect) {
-        outSelect.innerHTML = '<option value="none">Nessun synth rilevato</option>';
+        outSelect.innerHTML = '<option value="none">Nessun synth rilevato (collega via USB)</option>';
         midiOutputs = Array.from(midiAccess.outputs.values());
 
         midiOutputs.forEach((out, idx) => {
@@ -821,7 +860,7 @@
       });
     });
 
-    // Master Sweep per muovere proporzionalmente tutti i fader con un solo dito
+    // Master Sweep per muovere proporzionalmente tutti i fader
     const masterSweep = document.getElementById('masterSweepSlider');
     const masterSweepVal = document.getElementById('masterSweepVal');
 
@@ -867,7 +906,7 @@
       });
     });
 
-    // --- 5. LOGICA ORIGINALE TOUCH PAD & GESTI WEBCAM (SCHEDA 1) ---
+    // --- 5. LOGICA TOUCH PAD & GESTI WEBCAM (SCHEDA 1) ---
     function applyCurve(x, type) {
       x = Math.max(0, Math.min(1, x));
       switch(type) {
@@ -1195,7 +1234,7 @@
       });
     }
 
-    // Presets Live
+    // Preset Live
     const PRESETS = {
       1: { lx: '74', ly: '71', rx: '10', ry: '1', cLx: 'expo', cLy: 'linear', minLx: 10, maxLx: 120 },
       2: { lx: '1', ly: '11', rx: '10', ry: 'pitchbend', cLx: 'linear', cLy: 'scurve', minLx: 0, maxLx: 127 },
