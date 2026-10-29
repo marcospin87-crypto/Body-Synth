@@ -28,16 +28,6 @@
       transform: scaleX(-1);
       object-fit: cover;
     }
-    .neon-glow {
-      box-shadow: 0 0 15px rgba(0, 243, 255, 0.25);
-    }
-    .midi-active-pulse {
-      animation: midiPulse 0.15s ease-out;
-    }
-    @keyframes midiPulse {
-      0% { background-color: #22c55e; }
-      100% { background-color: transparent; }
-    }
     .learning-active {
       animation: learnBlink 0.9s infinite alternate;
       border-color: #facc15 !important;
@@ -60,16 +50,20 @@
       </div>
       <div>
         <h1 class="text-xl md:text-2xl font-black tracking-wider text-cyan-400 uppercase">CYBERPOSE STUDIO</h1>
-        <p class="text-[11px] text-cyan-300/70 font-mono">Optical Gesture Controller • Full MIDI Out/In Matrix • DSP Engine</p>
+        <p class="text-[11px] text-cyan-300/70 font-mono">Full 128 MIDI CC • MIDI Thru & Filtering • Optical Vision Synth</p>
       </div>
     </div>
 
     <!-- Barra Azioni Rapide -->
     <div class="flex flex-wrap items-center gap-2">
-      <!-- Indicatore Attività MIDI OUT/IN -->
+      <!-- Indicatore Attività MIDI OUT/IN & THRU -->
       <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-950/80 text-[11px] font-mono">
         <span class="flex items-center gap-1 text-slate-400">
           <span id="midiInLed" class="w-2 h-2 rounded-full bg-slate-600 transition-colors"></span> IN
+        </span>
+        <span class="text-slate-700">|</span>
+        <span class="flex items-center gap-1 text-slate-400">
+          <span id="midiThruLed" class="w-2 h-2 rounded-full bg-slate-600 transition-colors"></span> THRU
         </span>
         <span class="text-slate-700">|</span>
         <span class="flex items-center gap-1 text-slate-400">
@@ -97,7 +91,7 @@
   <!-- Area Principale -->
   <main class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
     
-    <!-- COLONNA SINISTRA: Video Tracking & Assegnazione Gesti (5 Colonne) -->
+    <!-- COLONNA SINISTRA: Video Tracking & MIDI Matrix Avanzata (5 Colonne) -->
     <div class="lg:col-span-5 flex flex-col gap-3">
       
       <!-- Box Video / Feedback -->
@@ -110,10 +104,10 @@
           </div>
           <h3 class="text-sm font-bold text-cyan-300 mb-1">Webcam Inattiva</h3>
           <p class="text-xs text-slate-400 max-w-xs mb-3">
-            Premi <b>"Accendi Cam"</b> per tracciare i movimenti o usa i controlli manuali / MIDI.
+            Premi <b>"Accendi Cam"</b> per tracciare i movimenti a mezz'aria.
           </p>
           <div class="flex items-center gap-2">
-            <select id="cameraFacing" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+            <select id="cameraFacing" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none">
               <option value="user">Camera Frontale</option>
               <option value="environment">Camera Posteriore</option>
             </select>
@@ -125,14 +119,14 @@
 
         <!-- Selettore Modalità Corpo -->
         <div class="absolute top-3 right-3 z-20">
-          <select id="modeSelect" class="bg-slate-950/90 border border-cyan-500/50 rounded-lg px-2 py-1 text-xs text-cyan-300 font-semibold focus:outline-none backdrop-blur">
+          <select id="modeSelect" class="bg-slate-950/90 border border-cyan-500/50 rounded-lg px-2.5 py-1 text-xs text-cyan-300 font-semibold focus:outline-none backdrop-blur">
             <option value="leftOnly" selected>Solo Mano SX (Companion)</option>
             <option value="rightOnly">Solo Mano DX (Companion)</option>
             <option value="both">Entrambe le Mani</option>
           </select>
         </div>
 
-        <!-- Indicatori Live -->
+        <!-- Indicatori Live Coordinate -->
         <div class="absolute bottom-3 left-3 right-3 z-20 flex justify-between pointer-events-none text-xs font-mono">
           <div class="bg-slate-950/80 border border-pink-500/40 backdrop-blur px-2.5 py-1 rounded-xl">
             <span class="text-pink-400 font-bold block text-[10px]">MANO SX</span>
@@ -145,15 +139,18 @@
         </div>
       </div>
 
-      <!-- Configurazione Hardware MIDI OUT Matrix -->
-      <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-purple-900/40 space-y-2.5 text-xs shadow-md">
+      <!-- Configurazione MIDI OUT & MIDI THRU MATRIX -->
+      <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-purple-900/40 space-y-3 text-xs shadow-md">
         <div class="flex items-center justify-between border-b border-purple-950 pb-1.5">
           <span class="font-bold text-purple-400 text-xs uppercase flex items-center gap-1.5">
-            <span>🔌 Routing MIDI Esterno (Hardware Synth)</span>
+            <span>🔌 Routing MIDI Esterno, THRU & CC Matrix</span>
           </span>
-          <span class="text-[10px] text-slate-400">Pilota filtri fisici via CC</span>
+          <button id="btnPanicMidi" class="text-[10px] text-red-400 hover:text-red-300 underline font-mono">
+            All Notes Off (Panic)
+          </button>
         </div>
 
+        <!-- Dispositivo e Canale -->
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div>
             <label class="block text-[10px] text-slate-400 mb-0.5">Dispositivo MIDI OUT</label>
@@ -162,7 +159,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-[10px] text-slate-400 mb-0.5">Canale MIDI (1-16)</label>
+            <label class="block text-[10px] text-slate-400 mb-0.5">Canale MIDI OUT (1-16)</label>
             <select id="midiOutChannel" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200">
               <option value="0">Canale 1</option><option value="1">Canale 2</option><option value="2">Canale 3</option>
               <option value="3">Canale 4</option><option value="4">Canale 5</option><option value="9">Canale 10 (Drums)</option>
@@ -171,54 +168,116 @@
           </div>
         </div>
 
-        <!-- Mappatura Assi a CC Hardware -->
-        <div class="grid grid-cols-2 gap-3 pt-1">
-          <!-- SX -> MIDI CC -->
-          <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/20 space-y-1">
-            <span class="text-pink-400 font-bold text-[10px] block">Mano SX → Assegna CC Esterno</span>
-            <div class="flex items-center justify-between gap-1">
-              <span class="text-[10px] text-slate-400">Asse X:</span>
-              <select id="midiOutCC_LX" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-200 w-36">
-                <option value="74" selected>CC#74 (Filter Cutoff)</option>
-                <option value="71">CC#71 (Resonance/Q)</option>
-                <option value="1">CC#1 (Modulation Wheel)</option>
-                <option value="11">CC#11 (Expression)</option>
-                <option value="7">CC#7 (Volume)</option>
-                <option value="none">Nessuno</option>
-              </select>
-            </div>
-            <div class="flex items-center justify-between gap-1">
-              <span class="text-[10px] text-slate-400">Asse Y:</span>
-              <select id="midiOutCC_LY" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-200 w-36">
-                <option value="71" selected>CC#71 (Resonance/Q)</option>
-                <option value="74">CC#74 (Filter Cutoff)</option>
-                <option value="91">CC#91 (Reverb Send)</option>
-                <option value="1">CC#1 (Modulation)</option>
-                <option value="none">Nessuno</option>
-              </select>
-            </div>
+        <!-- Sezione MIDI Thru & Filtro Dati -->
+        <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-1.5 font-bold text-cyan-300 cursor-pointer">
+              <input type="checkbox" id="midiThruEnabled" checked class="accent-cyan-400 rounded">
+              <span>Abilita MIDI Thru (IN ➔ OUT)</span>
+            </label>
+            <span class="text-[10px] text-slate-500 font-mono">Soft-Thru Filter</span>
           </div>
 
-          <!-- DX -> MIDI CC -->
-          <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/20 space-y-1">
-            <span class="text-cyan-400 font-bold text-[10px] block">Mano DX → Assegna CC Esterno</span>
-            <div class="flex items-center justify-between gap-1">
-              <span class="text-[10px] text-slate-400">Asse X:</span>
-              <select id="midiOutCC_RX" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-200 w-36">
-                <option value="none" selected>Nessuno</option>
-                <option value="1">CC#1 (Modulation)</option>
-                <option value="74">CC#74 (Cutoff)</option>
-                <option value="7">CC#7 (Volume)</option>
-              </select>
+          <div class="grid grid-cols-4 gap-1 text-[10px] pt-1 border-t border-slate-800/60 text-slate-300">
+            <label class="flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" id="thruFiltNotes" checked class="accent-cyan-400"> Note
+            </label>
+            <label class="flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" id="thruFiltBend" checked class="accent-cyan-400"> PitchBend
+            </label>
+            <label class="flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" id="thruFiltCC" checked class="accent-cyan-400"> CC
+            </label>
+            <label class="flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" id="thruFiltAfter" checked class="accent-cyan-400"> Pressure
+            </label>
+          </div>
+        </div>
+
+        <!-- Mappatura Gesti a Tutti i 128 MIDI CC (0-127) -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-[10px] text-slate-400">
+            <span class="font-semibold text-slate-300">Mappatura CC Liberi (0-127) o Nomi Standard</span>
+            <span class="text-cyan-400">Scrivi o seleziona</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Mano SX -->
+            <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/20 space-y-1.5">
+              <span class="text-pink-400 font-bold text-[10px] block">MANO SX ➔ MIDI OUT</span>
+              
+              <!-- SX X -->
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                  <span>Asse X:</span>
+                  <input type="number" id="numCC_LX" min="0" max="127" value="74" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-pink-300 font-mono">
+                </div>
+                <select id="presetCC_LX" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
+                  <option value="custom">-- Personalizzato --</option>
+                  <option value="74" selected>CC#74 (Filter Cutoff / Brightness)</option>
+                  <option value="71">CC#71 (Filter Resonance / Q)</option>
+                  <option value="1">CC#1 (Modulation Wheel)</option>
+                  <option value="11">CC#11 (Expression)</option>
+                  <option value="7">CC#7 (Volume Master)</option>
+                  <option value="10">CC#10 (Pan Stereo)</option>
+                  <option value="91">CC#91 (Reverb Send)</option>
+                  <option value="92">CC#92 (Delay Send)</option>
+                  <option value="off">Disattivato</option>
+                </select>
+              </div>
+
+              <!-- SX Y -->
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                  <span>Asse Y:</span>
+                  <input type="number" id="numCC_LY" min="0" max="127" value="71" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-pink-300 font-mono">
+                </div>
+                <select id="presetCC_LY" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
+                  <option value="custom">-- Personalizzato --</option>
+                  <option value="71" selected>CC#71 (Filter Resonance / Q)</option>
+                  <option value="74">CC#74 (Filter Cutoff / Brightness)</option>
+                  <option value="1">CC#1 (Modulation Wheel)</option>
+                  <option value="91">CC#91 (Reverb Send)</option>
+                  <option value="11">CC#11 (Expression)</option>
+                  <option value="off">Disattivato</option>
+                </select>
+              </div>
             </div>
-            <div class="flex items-center justify-between gap-1">
-              <span class="text-[10px] text-slate-400">Asse Y:</span>
-              <select id="midiOutCC_RY" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-200 w-36">
-                <option value="note">Note Pitch (Melodia)</option>
-                <option value="1">CC#1 (Modulation)</option>
-                <option value="74">CC#74 (Cutoff)</option>
-                <option value="none">Nessuno</option>
-              </select>
+
+            <!-- Mano DX -->
+            <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/20 space-y-1.5">
+              <span class="text-cyan-400 font-bold text-[10px] block">MANO DX ➔ MIDI OUT</span>
+              
+              <!-- DX X -->
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                  <span>Asse X:</span>
+                  <input type="number" id="numCC_RX" min="0" max="127" value="1" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-cyan-300 font-mono">
+                </div>
+                <select id="presetCC_RX" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
+                  <option value="custom">-- Personalizzato --</option>
+                  <option value="1" selected>CC#1 (Modulation Wheel)</option>
+                  <option value="74">CC#74 (Cutoff)</option>
+                  <option value="10">CC#10 (Pan)</option>
+                  <option value="7">CC#7 (Volume)</option>
+                  <option value="off">Disattivato</option>
+                </select>
+              </div>
+
+              <!-- DX Y -->
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                  <span>Asse Y:</span>
+                  <input type="number" id="numCC_RY" min="0" max="127" value="11" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-cyan-300 font-mono">
+                </div>
+                <select id="presetCC_RY" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
+                  <option value="custom">-- Personalizzato --</option>
+                  <option value="11" selected>CC#11 (Expression)</option>
+                  <option value="74">CC#74 (Cutoff)</option>
+                  <option value="1">CC#1 (Modulation)</option>
+                  <option value="off">Disattivato</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -234,7 +293,7 @@
       <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 shadow-md">
         <div class="flex items-center justify-between border-b border-slate-800 pb-2">
           <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-            <span>🎹 Motore Sonoro & Architettura ADSR</span>
+            <span>🎹 Motore Sonoro Interno & Architettura ADSR</span>
           </h2>
           <span class="text-[10px] text-cyan-400 font-mono">Analog Modeling</span>
         </div>
@@ -544,7 +603,7 @@
     document.getElementById('sliderFeedback').addEventListener('input', (e) => updateAudioParam('feedback', parseFloat(e.target.value)));
     document.getElementById('sliderDistort').addEventListener('input', (e) => updateAudioParam('distort', parseFloat(e.target.value)));
 
-    // --- 3. GESTIONE MIDI IN/OUT & MIDI LEARN MATRIX ---
+    // --- 3. GESTIONE MIDI IN/OUT, THRU, FILTER & CC 0-127 ---
     let midiAccess = null;
     let midiOutputs = [];
     let selectedMidiOut = null;
@@ -553,11 +612,43 @@
     let lastMidiSentTime = 0;
 
     const midiInLed = document.getElementById('midiInLed');
+    const midiThruLed = document.getElementById('midiThruLed');
     const midiOutLed = document.getElementById('midiOutLed');
 
-    function flashLed(el) {
-      el.classList.add('bg-emerald-400');
-      setTimeout(() => el.classList.remove('bg-emerald-400'), 80);
+    function flashLed(el, color = 'bg-emerald-400') {
+      el.className = `w-2 h-2 rounded-full ${color} transition-colors`;
+      setTimeout(() => el.className = 'w-2 h-2 rounded-full bg-slate-600 transition-colors', 80);
+    }
+
+    // Configurazione link input numerico CC e preset tendina
+    ['LX', 'LY', 'RX', 'RY'].forEach(id => {
+      const numInput = document.getElementById(`numCC_${id}`);
+      const select = document.getElementById(`presetCC_${id}`);
+      
+      select.addEventListener('change', () => {
+        if (select.value === 'off') {
+          numInput.disabled = true;
+          numInput.classList.add('opacity-40');
+        } else if (select.value !== 'custom') {
+          numInput.disabled = false;
+          numInput.classList.remove('opacity-40');
+          numInput.value = select.value;
+        } else {
+          numInput.disabled = false;
+          numInput.classList.remove('opacity-40');
+        }
+      });
+
+      numInput.addEventListener('input', () => {
+        select.value = 'custom';
+      });
+    });
+
+    function getAssignedCC(id) {
+      const select = document.getElementById(`presetCC_${id}`);
+      if (select.value === 'off') return null;
+      const num = parseInt(document.getElementById(`numCC_${id}`).value);
+      return (num >= 0 && num <= 127) ? num : null;
     }
 
     if (navigator.requestMIDIAccess) {
@@ -571,12 +662,10 @@
     }
 
     function populateMidiPorts() {
-      // Ingressi
       for (let input of midiAccess.inputs.values()) {
         input.onmidimessage = handleMIDIInput;
       }
 
-      // Uscite (Hardware Synth / DAW)
       const outSelect = document.getElementById('midiOutSelect');
       outSelect.innerHTML = '<option value="none">Nessun synth esterno</option>';
       midiOutputs = Array.from(midiAccess.outputs.values());
@@ -598,18 +687,27 @@
       selectedMidiOut = e.target.value === 'none' ? null : midiOutputs[parseInt(e.target.value)];
     });
 
+    // Panic MIDI Esterno (All Notes Off)
+    document.getElementById('btnPanicMidi').addEventListener('click', () => {
+      if (!selectedMidiOut) return;
+      const ch = parseInt(document.getElementById('midiOutChannel').value);
+      selectedMidiOut.send([0xB0 | ch, 123, 0]); // All Notes Off
+      selectedMidiOut.send([0xB0 | ch, 120, 0]); // All Sound Off
+      selectedMidiOut.send([0xB0 | ch, 121, 0]); // Reset All Controllers
+      flashLed(midiOutLed, 'bg-red-400');
+    });
+
     function sendMidiCC(ccNumber, normVal) {
-      if (!selectedMidiOut || ccNumber === 'none') return;
+      if (!selectedMidiOut || ccNumber === null || ccNumber === undefined) return;
       const ch = parseInt(document.getElementById('midiOutChannel').value);
       const val7bit = Math.max(0, Math.min(127, Math.round(normVal * 127)));
 
-      // Throttling 50 FPS per non intasare il buffer hardware del synth
+      // Throttling 55 FPS per non sovraccaricare il bus hardware
       const now = performance.now();
       if (now - lastMidiSentTime < 18) return;
       lastMidiSentTime = now;
 
-      // Invio messaggio CC: [0xB0 + canale, CC#, Valore]
-      selectedMidiOut.send([0xB0 | ch, parseInt(ccNumber), val7bit]);
+      selectedMidiOut.send([0xB0 | ch, ccNumber, val7bit]);
       flashLed(midiOutLed);
     }
 
@@ -617,8 +715,24 @@
       flashLed(midiInLed);
       const [status, data1, data2] = event.data;
       const cmd = status >> 4;
+      const channel = status & 0x0F;
 
-      // Note ON da tastiera esterna
+      // 1. GESTIONE SOFT MIDI THRU CON FILTRI
+      const thruActive = document.getElementById('midiThruEnabled').checked;
+      if (thruActive && selectedMidiOut) {
+        let allowPass = false;
+        if ((cmd === 9 || cmd === 8) && document.getElementById('thruFiltNotes').checked) allowPass = true;
+        else if (cmd === 14 && document.getElementById('thruFiltBend').checked) allowPass = true;
+        else if (cmd === 11 && document.getElementById('thruFiltCC').checked) allowPass = true;
+        else if ((cmd === 13 || cmd === 10) && document.getElementById('thruFiltAfter').checked) allowPass = true;
+
+        if (allowPass) {
+          selectedMidiOut.send(event.data);
+          flashLed(midiThruLed, 'bg-cyan-400');
+        }
+      }
+
+      // 2. Controllo Synth Interno via Note ON
       if (cmd === 9 && data2 > 0) {
         if (!synth) initAudioEngine();
         const freq = Tone.mtof(data1);
@@ -627,7 +741,7 @@
         subSynth.triggerAttack(freq / 2);
       }
 
-      // Control Change (CC)
+      // 3. MIDI Learn su Ingressi CC
       if (cmd === 11) {
         const ccNum = data1;
         const normVal = data2 / 127;
@@ -698,7 +812,6 @@
       await initAudioEngine();
 
       if (isCamActive) {
-        // SPEGNI WEBCAM
         if (currentStream) {
           currentStream.getTracks().forEach(track => track.stop());
           currentStream = null;
@@ -710,7 +823,6 @@
         camIcon.innerText = "📷";
         btnCamToggle.className = "px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-black font-extrabold text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-1.5";
       } else {
-        // ACCENDI WEBCAM
         const facing = document.getElementById('cameraFacing').value;
         try {
           currentStream = await navigator.mediaDevices.getUserMedia({
@@ -730,7 +842,7 @@
 
           if (!animId) requestAnimationFrame(engineLoop);
         } catch(err) {
-          alert("Impossibile avviare la webcam: " + err.message + "\nAttivo la simulazione.");
+          alert("Impossibile avviare la webcam: " + err.message + "\nAttivo la modalità simulazione.");
           document.getElementById('btnDemo').click();
         }
       }
@@ -779,7 +891,6 @@
     }
 
     function processGestureParameters() {
-      // Smoothing
       leftHand.x += (leftHand.targetX - leftHand.x) * 0.2;
       leftHand.y += (leftHand.targetY - leftHand.y) * 0.2;
       rightHand.x += (rightHand.targetX - rightHand.x) * 0.2;
@@ -792,13 +903,11 @@
         const nLX = Math.max(0, Math.min(1, leftHand.x));
         const nLY = Math.max(0, Math.min(1, 1 - leftHand.y));
 
-        // Parametri interni
         updateAudioParam('cutoff', nLX, true);
         updateAudioParam('reverb', nLY, true);
 
-        // Parametri Esterni MIDI CC
-        sendMidiCC(document.getElementById('midiOutCC_LX').value, nLX);
-        sendMidiCC(document.getElementById('midiOutCC_LY').value, nLY);
+        sendMidiCC(getAssignedCC('LX'), nLX);
+        sendMidiCC(getAssignedCC('LY'), nLY);
 
         document.getElementById('leftCoords').innerText = `X:${Math.round(nLX*100)}% | Y:${Math.round(nLY*100)}%`;
       }
@@ -810,10 +919,8 @@
 
         updateAudioParam('pitch', nRY, true);
 
-        sendMidiCC(document.getElementById('midiOutCC_RX').value, nRX);
-        if (document.getElementById('midiOutCC_RY').value !== 'note') {
-          sendMidiCC(document.getElementById('midiOutCC_RY').value, nRY);
-        }
+        sendMidiCC(getAssignedCC('RX'), nRX);
+        sendMidiCC(getAssignedCC('RY'), nRY);
 
         document.getElementById('rightCoords').innerText = `X:${Math.round(nRX*100)}% | Y:${Math.round(nRY*100)}%`;
       }
