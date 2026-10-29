@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Offline Controller & Fader Desk</title>
+  <title>CyberPose MIDI - Offline Resilient Tracking</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -12,7 +12,6 @@
   <link rel="manifest" href="./manifest.json" />
 
   <style>
-    /* RESET & BASE ZERO-DEPENDENCY */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background-color: #060913;
@@ -72,7 +71,6 @@
     }
     input[type=range] { accent-color: #00f3ff; }
 
-    /* LAYOUT & COMPONENTI */
     .flex { display: flex; }
     .flex-col { flex-direction: column; }
     .items-center { align-items: center; }
@@ -83,9 +81,7 @@
     .gap-3 { gap: 12px; }
     .hidden { display: none !important; }
     .grid { display: grid; }
-    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     
     @media (min-width: 1024px) {
       .lg-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -107,8 +103,8 @@
         ⚡
       </div>
       <div>
-        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI (OFFLINE MODE)</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">100% Standalone • Zero External Requests</p>
+        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Offline Resilient • Split Camera 0-127 • Freeze Control</p>
       </div>
     </div>
 
@@ -157,7 +153,7 @@
         <span style="font-weight: bold; color: #facc15; font-size: 11px;">📥 MIDI IN:</span>
         <select id="midiInSelect"><option value="all">Tutte le porte</option></select>
         <span id="midiInMonitor" style="background: #020617; border: 1px solid #1e293b; padding: 2px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399;">
-          IN: Pronto
+          IN: In attesa...
         </span>
       </div>
 
@@ -170,7 +166,9 @@
   <!-- VISTA 1: PAD & CAM -->
   <main id="viewPad" class="lg-grid-2col" style="flex: 1;">
     <div class="flex flex-col gap-2">
-      <div class="flex justify-between items-center" style="background: rgba(15,23,42,0.9); border: 1px solid #1e293b; border-radius: 10px; padding: 6px 10px; font-size: 11px;">
+      <div class="flex justify-between items-center" style="background: rgba(15,23,42,0.9); border: 1px solid #1e293b; border-radius: 10px; padding: 6px 10px; font-size: 11px; flex-wrap: wrap; gap: 6px;">
+        
+        <!-- Controlli Dita (Cam spenta) -->
         <div id="touchTargetControls" class="flex items-center gap-1">
           <span style="color: #94a3b8; font-weight: bold; font-size: 10px;">DITA:</span>
           <button class="touch-target-btn" data-target="left" style="background: #831843; border: 1px solid #db2777; color: #f472b6; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">1° SX</button>
@@ -179,8 +177,9 @@
           <button class="touch-target-btn" data-target="triple" style="background: #020617; border: 1px solid #334155; color: #94a3b8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">3 Dita</button>
         </div>
 
+        <!-- Controlli Cam (Cam accesa) -->
         <div id="camModeControls" class="hidden items-center gap-1">
-          <span style="color: #facc15; font-weight: bold; font-size: 10px;">CAM:</span>
+          <span style="color: #facc15; font-weight: bold; font-size: 10px;">MANI:</span>
           <select id="camTrackingTarget" style="color: #22d3ee; font-weight: bold;">
             <option value="both" selected>SX + DX</option>
             <option value="leftOnly">Solo SX</option>
@@ -188,23 +187,24 @@
           </select>
         </div>
 
-        <div class="flex items-center gap-1">
-          <button id="btnTrackingTrigger" class="hidden" style="background: #451a03; border: 1px solid #f59e0b; color: #fde68a; font-weight: 900; font-size: 10px; padding: 3px 8px; border-radius: 6px;">
-            ⏸️ Freeza Cam
+        <!-- Trigger di Avvio/Freeze e Reset -->
+        <div class="flex items-center gap-1" style="margin-left: auto;">
+          <button id="btnTrackingTrigger" class="hidden" style="background: #451a03; border: 2px solid #f59e0b; color: #fde68a; font-weight: 900; font-size: 10px; padding: 4px 10px; border-radius: 6px;">
+            ▶️ Avvia Tracking
           </button>
           <select id="cameraFacing"><option value="user">Front</option><option value="environment">Rear</option></select>
-          <button id="btnCenterPad" style="background: #020617; border: 1px solid #334155; color: #cbd5e1; padding: 3px 8px; border-radius: 6px; font-size: 10px;">Centra</button>
+          <button id="btnCenterPad" style="background: #020617; border: 1px solid #334155; color: #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 10px;">Centra</button>
         </div>
       </div>
 
-      <!-- Area Pad / Cam -->
+      <!-- Area Pad & Video -->
       <div id="camPadContainer" style="position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 14px; overflow: hidden; background: #020617; border: 2px solid rgba(6,182,212,0.4); display: flex; align-items: center; justify-content: center; cursor: crosshair; touch-action: none;">
         <video id="videoElement" playsinline muted autoplay class="mirror-view hidden" style="position: absolute; inset: 0; width: 100%; height: 100%;"></video>
 
         <div id="touchPadBg" class="pad-grid pad-subgrid flex flex-col justify-between" style="position: absolute; inset: 0; padding: 12px; pointer-events: none;">
           <div class="flex justify-between items-center" style="font-family: monospace; font-size: 10px; font-weight: bold;">
             <span id="padStatusBadge" style="background: rgba(8,47,73,0.8); border: 1px solid rgba(6,182,212,0.4); color: #22d3ee; padding: 2px 6px; border-radius: 4px;">PAD ATTIVO</span>
-            <span style="color: #94a3b8;">Basso: 0 ➔ Alto: 127</span>
+            <span id="padTrackingStatusText" style="color: #94a3b8;">Basso: 0 ➔ Alto: 127</span>
           </div>
 
           <div id="camSplitIndicator" class="hidden" style="position: absolute; top:0; bottom:0; left:50%; width:1px; border-right: 1px dashed rgba(6,182,212,0.6);"></div>
@@ -221,6 +221,7 @@
         <canvas id="overlayCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
       </div>
 
+      <!-- Monitor Valori a 3 Punti -->
       <div class="grid grid-cols-3 gap-2" style="font-family: monospace; font-size: 11px;">
         <div id="boxMonP1" style="background: rgba(15,23,42,0.9); border: 1px solid rgba(236,72,153,0.5); padding: 6px; border-radius: 8px; text-align: center;">
           <span style="color: #f472b6; font-size: 9px; display: block;">1° SX (ROSA)</span>
@@ -374,7 +375,6 @@
   </main>
 
   <script>
-    // LISTA 128 CC
     const ALL_MIDI_CCS = [
       { cc: 1, name: "CC#1: ModWheel" }, { cc: 2, name: "CC#2: Spice" },
       { cc: 5, name: "CC#5: Glide" }, { cc: 7, name: "CC#7: Volume" },
@@ -401,18 +401,12 @@
       });
     });
 
-    // Registrazione Service Worker Offline
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then((reg) => {
-          console.log('Service Worker registrato per uso offline');
-        }).catch((err) => {
-          console.log('Errore SW:', err);
-        });
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
       });
     }
 
-    // Switcher Schede
     const tabBtnPad = document.getElementById('tabBtnPad');
     const tabBtnFaders = document.getElementById('tabBtnFaders');
     const viewPad = document.getElementById('viewPad');
@@ -433,7 +427,6 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // Hardware MIDI
     let midiAccess = null;
     let midiOutputs = [];
     let selectedMidiOut = null;
@@ -668,6 +661,7 @@
     const camToggleText = document.getElementById('camToggleText');
     const padModeTitle = document.getElementById('padModeTitle');
     const padStatusBadge = document.getElementById('padStatusBadge');
+    const padTrackingStatusText = document.getElementById('padTrackingStatusText');
     const camSplitIndicator = document.getElementById('camSplitIndicator');
     const touchTargetControls = document.getElementById('touchTargetControls');
     const camModeControls = document.getElementById('camModeControls');
@@ -678,7 +672,7 @@
     const boxMonP3 = document.getElementById('boxMonP3');
 
     let isCamActive = false;
-    let isTrackingRunning = true;
+    let isTrackingRunning = false; // Freeze assoluto all'avvio della cam
     let currentStream = null;
 
     function resizeCanvas() {
@@ -710,11 +704,17 @@
     btnTrackingTrigger.addEventListener('click', () => {
       isTrackingRunning = !isTrackingRunning;
       if (isTrackingRunning) {
-        btnTrackingTrigger.innerText = "⏸️ Freeza Cam";
-        btnTrackingTrigger.style.background = "#451a03"; btnTrackingTrigger.style.borderColor = "#f59e0b";
+        btnTrackingTrigger.innerText = "⏸️ Freeza Tracking";
+        btnTrackingTrigger.style.background = "#450a0a";
+        btnTrackingTrigger.style.borderColor = "#ef4444";
+        btnTrackingTrigger.style.color = "#fecaca";
+        padTrackingStatusText.innerText = "Tracking ATTIVO (Muovi le mani)";
       } else {
-        btnTrackingTrigger.innerText = "▶️ Avvia Cam";
-        btnTrackingTrigger.style.background = "#064e3b"; btnTrackingTrigger.style.borderColor = "#10b981";
+        btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
+        btnTrackingTrigger.style.background = "#451a03";
+        btnTrackingTrigger.style.borderColor = "#f59e0b";
+        btnTrackingTrigger.style.color = "#fde68a";
+        padTrackingStatusText.innerText = "Parametri CONGELATI";
       }
     });
 
@@ -727,7 +727,9 @@
     async function toggleWebcam() {
       if (isCamActive) {
         if (currentStream) {
-          currentStream.getTracks().forEach(t => t.stop());
+          try {
+            currentStream.getTracks().forEach(t => t.stop());
+          } catch(e) {}
           currentStream = null;
         }
         video.srcObject = null;
@@ -739,11 +741,13 @@
         btnTrackingTrigger.classList.add('hidden');
 
         isCamActive = false;
+        isTrackingRunning = false;
         hasPrevFrame = false;
 
         camToggleText.innerText = "Accendi Cam";
         padStatusBadge.innerText = "PAD ATTIVO";
         padModeTitle.innerText = "TOUCH SURFACE";
+        padTrackingStatusText.innerText = "Basso: 0 ➔ Alto: 127";
         updateCursorVisibility();
       } else {
         const facing = document.getElementById('cameraFacing')?.value || 'user';
@@ -763,12 +767,17 @@
           btnTrackingTrigger.classList.remove('hidden');
 
           isCamActive = true;
-          isTrackingRunning = true;
+          isTrackingRunning = false; // Freeze garantito al cambio modalità
 
-          btnTrackingTrigger.innerText = "⏸️ Freeza Cam";
+          btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
+          btnTrackingTrigger.style.background = "#451a03";
+          btnTrackingTrigger.style.borderColor = "#f59e0b";
+          btnTrackingTrigger.style.color = "#fde68a";
+
           camToggleText.innerText = "Spegni Cam";
-          padStatusBadge.innerText = "CAM LIVE";
+          padStatusBadge.innerText = "CAM CONGELATA";
           padModeTitle.innerText = "WEBCAM TRACKING";
+          padTrackingStatusText.innerText = "Parametri CONGELATI (Premi Avvia)";
 
           updateCursorVisibility();
           resizeCanvas();
@@ -781,50 +790,52 @@
 
     function computeOpticalMotion() {
       if (!isCamActive || !isTrackingRunning || !video.videoWidth) return;
-      pCtx.drawImage(video, 0, 0, procCanvas.width, procCanvas.height);
-      const data = pCtx.getImageData(0, 0, procCanvas.width, procCanvas.height).data;
+      try {
+        pCtx.drawImage(video, 0, 0, procCanvas.width, procCanvas.height);
+        const data = pCtx.getImageData(0, 0, procCanvas.width, procCanvas.height).data;
 
-      const midX = 30;
-      let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
-      const targetMode = camTrackingTarget.value;
+        const midX = 30;
+        let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
+        const targetMode = camTrackingTarget.value;
 
-      if (hasPrevFrame) {
-        for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-          const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
-          const diff = Math.abs(brightness - prevFrameData[p]);
+        if (hasPrevFrame) {
+          for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+            const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
+            const diff = Math.abs(brightness - prevFrameData[p]);
 
-          if (diff > 18) {
-            const px = p % 60;
-            const py = (p / 60) | 0;
+            if (diff > 18) {
+              const px = p % 60;
+              const py = (p / 60) | 0;
 
-            if (px >= midX && (targetMode === 'both' || targetMode === 'leftOnly')) {
-              lX += px * diff; lY += py * diff; lW += diff;
-            } else if (px < midX && (targetMode === 'both' || targetMode === 'rightOnly')) {
-              rX += px * diff; rY += py * diff; rW += diff;
+              if (px >= midX && (targetMode === 'both' || targetMode === 'leftOnly')) {
+                lX += px * diff; lY += py * diff; lW += diff;
+              } else if (px < midX && (targetMode === 'both' || targetMode === 'rightOnly')) {
+                rX += px * diff; rY += py * diff; rW += diff;
+              }
             }
+            prevFrameData[p] = brightness;
           }
-          prevFrameData[p] = brightness;
-        }
 
-        if (lW > 160) {
-          const rawNormX = 1 - (lX / lW) / 60;
-          const clampedX = Math.max(0.02, Math.min(0.48, rawNormX));
-          p1.targetX = (clampedX - 0.02) / (0.48 - 0.02) * 0.5;
-          p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / 45));
-        }
+          if (lW > 160) {
+            const rawNormX = 1 - (lX / lW) / 60;
+            const clampedX = Math.max(0.02, Math.min(0.48, rawNormX));
+            p1.targetX = (clampedX - 0.02) / (0.48 - 0.02) * 0.5;
+            p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / 45));
+          }
 
-        if (rW > 160) {
-          const rawNormX = 1 - (rX / rW) / 60;
-          const clampedX = Math.max(0.52, Math.min(0.98, rawNormX));
-          p2.targetX = 0.5 + ((clampedX - 0.52) / (0.98 - 0.52) * 0.5);
-          p2.targetY = Math.max(0.02, Math.min(0.98, (rY / rW) / 45));
+          if (rW > 160) {
+            const rawNormX = 1 - (rX / rW) / 60;
+            const clampedX = Math.max(0.52, Math.min(0.98, rawNormX));
+            p2.targetX = 0.5 + ((clampedX - 0.52) / (0.98 - 0.52) * 0.5);
+            p2.targetY = Math.max(0.02, Math.min(0.98, (rY / rW) / 45));
+          }
+        } else {
+          for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+            prevFrameData[p] = (data[i] + data[i+1] + data[i+2]) / 3;
+          }
+          hasPrevFrame = true;
         }
-      } else {
-        for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-          prevFrameData[p] = (data[i] + data[i+1] + data[i+2]) / 3;
-        }
-        hasPrevFrame = true;
-      }
+      } catch (e) {}
     }
 
     let pointerSlotMap = new Map();
@@ -889,13 +900,16 @@
     });
 
     function processParameters() {
-      const smoothing = isCamActive ? 0.35 : 0.8;
-      p1.x += (p1.targetX - p1.x) * smoothing;
-      p1.y += (p1.targetY - p1.y) * smoothing;
-      p2.x += (p2.targetX - p2.x) * smoothing;
-      p2.y += (p2.targetY - p2.y) * smoothing;
-      p3.x += (p3.targetX - p3.x) * smoothing;
-      p3.y += (p3.targetY - p3.y) * smoothing;
+      // Se il tracking è congelato in modalità cam, non aggiorna le coordinate ottiche
+      if (!isCamActive || isTrackingRunning) {
+        const smoothing = isCamActive ? 0.35 : 0.8;
+        p1.x += (p1.targetX - p1.x) * smoothing;
+        p1.y += (p1.targetY - p1.y) * smoothing;
+        p2.x += (p2.targetX - p2.x) * smoothing;
+        p2.y += (p2.targetY - p2.y) * smoothing;
+        p3.x += (p3.targetX - p3.x) * smoothing;
+        p3.y += (p3.targetY - p3.y) * smoothing;
+      }
 
       let nP1X, nP2X;
       if (isCamActive) {
@@ -968,9 +982,11 @@
     }
 
     function mainEngineLoop() {
-      if (isCamActive) computeOpticalMotion();
-      processParameters();
-      renderFeedbackCanvas();
+      try {
+        if (isCamActive) computeOpticalMotion();
+        processParameters();
+        renderFeedbackCanvas();
+      } catch (e) {}
       requestAnimationFrame(mainEngineLoop);
     }
     requestAnimationFrame(mainEngineLoop);
