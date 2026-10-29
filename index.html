@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Universal Controller, Cam & Fader Desk</title>
+  <title>CyberPose MIDI - Optical & Fader Controller</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -96,7 +96,6 @@
 </head>
 <body class="min-h-screen flex flex-col p-2 md:p-3 overflow-y-auto">
 
-  <!-- Header Principale -->
   <header class="flex flex-wrap items-center justify-between gap-2 mb-2 border-b border-cyan-950 pb-2">
     <div class="flex items-center gap-2.5">
       <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 font-bold text-lg shadow-[0_0_12px_rgba(6,182,212,0.4)]">
@@ -104,11 +103,10 @@
       </div>
       <div>
         <h1 class="text-base md:text-lg font-black tracking-wider text-cyan-400 uppercase">CYBERPOSE MIDI CONTROLLER</h1>
-        <p class="text-[9px] text-cyan-300/70 font-mono">Webcam Tracking • 3-Point Pad • Editable Faders Desk (0-127)</p>
+        <p class="text-[9px] text-cyan-300/70 font-mono">Zero-Leak Optical Engine • Range 0-127 • Universal Map</p>
       </div>
     </div>
 
-    <!-- Schede di visualizzazione -->
     <div class="inline-flex rounded-xl border border-cyan-500/40 bg-slate-950 p-1">
       <button id="tabBtnPad" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all bg-cyan-500 text-black shadow-[0_0_12px_rgba(6,182,212,0.6)]">
         🎛️ XY Pad & Cam
@@ -118,13 +116,16 @@
       </button>
     </div>
 
-    <!-- Barra Azioni Rapide -->
     <div class="flex items-center gap-2">
+      <!-- Pulsante Installa PWA -->
+      <button id="btnPwaInstall" class="hidden px-3 py-1.5 rounded-xl border border-cyan-400 bg-cyan-950 text-cyan-300 font-bold text-xs uppercase animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.4)]">
+        📲 Installa App
+      </button>
+
       <button id="btnConnectMidi" class="px-3 py-1.5 rounded-xl border border-emerald-500 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 font-bold text-xs uppercase transition-all shadow-[0_0_10px_rgba(16,185,129,0.3)]">
         🔌 Inizializza MIDI
       </button>
 
-      <!-- Tasto Attivazione Webcam -->
       <button id="btnCamToggle" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 active:scale-95 text-black font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_12px_rgba(6,182,212,0.4)] flex items-center gap-1.5">
         <span id="camIcon">📷</span> <span id="camToggleText">Accendi Cam</span>
       </button>
@@ -148,8 +149,6 @@
   <!-- BARRA HARDWARE & AUTO-MAP UNIVERSALE -->
   <section class="mb-2 p-2.5 rounded-2xl bg-slate-900/90 border border-purple-950/70 shadow-md">
     <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
-      
-      <!-- MIDI OUT -->
       <div class="md:col-span-4 flex items-center gap-1.5">
         <span class="font-bold text-purple-400 text-xs uppercase whitespace-nowrap">🔌 MIDI OUT:</span>
         <select id="midiOutSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1 text-xs text-slate-200 focus:outline-none">
@@ -161,7 +160,6 @@
         </select>
       </div>
 
-      <!-- MIDI IN & MONITOR DIAGNOSTICA -->
       <div class="md:col-span-5 flex items-center gap-1.5">
         <span class="font-bold text-yellow-400 text-xs uppercase whitespace-nowrap">📥 MIDI IN:</span>
         <select id="midiInSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1 text-xs text-slate-200 focus:outline-none">
@@ -172,13 +170,11 @@
         </span>
       </div>
 
-      <!-- BOTTONE AUTO-MAP INTELLIGENTE E UNIVERSALE -->
       <div class="md:col-span-3 flex items-center justify-end gap-2">
         <button id="btnAutoMapUniversal" class="w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-black font-black text-xs uppercase shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all">
           ⚡ Auto-Map
         </button>
       </div>
-
     </div>
   </section>
 
@@ -186,7 +182,6 @@
   <!-- VISTA 1: 3-POINT TOUCH PAD & WEBCAM TRACKING             -->
   <!-- ======================================================== -->
   <main id="viewPad" class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 pb-4">
-    
     <div class="lg:col-span-6 flex flex-col gap-2">
       <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
         <div class="flex items-center gap-1.5">
@@ -199,7 +194,6 @@
           </div>
         </div>
 
-        <!-- Selettore Fotocamera Tablet -->
         <div class="flex items-center gap-1.5">
           <select id="cameraFacing" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-300">
             <option value="user">Front Cam</option>
@@ -211,23 +205,18 @@
         </div>
       </div>
 
-      <!-- Area Pad Touch con Video di Sfondo per la Webcam -->
       <div id="camPadContainer" class="relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border-2 border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex items-center justify-center cursor-crosshair touch-none select-none">
-        
-        <!-- Elemento Video Webcam -->
         <video id="videoElement" playsinline muted class="absolute inset-0 w-full h-full mirror-view hidden"></video>
 
         <div id="touchPadBg" class="absolute inset-0 pad-grid pad-subgrid flex flex-col justify-between p-3.5 pointer-events-none transition-opacity duration-300">
           <div class="flex justify-between items-center text-[10px] font-mono font-bold">
             <span class="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-400">PAD / WEBCAM 0-127 ATTIVO</span>
-            <span class="text-slate-400">Basso: 0 (Chiuso) ➔ Alto: 127 (Aperto)</span>
+            <span class="text-slate-400">Basso: 0 ➔ Alto: 127</span>
           </div>
-
           <div class="text-center pointer-events-none">
             <div id="padModeTitle" class="text-2xl font-black text-cyan-500/20 tracking-widest uppercase">TOUCH SURFACE</div>
             <div id="padModeSubtitle" class="text-[10px] text-slate-500 font-mono mt-0.5">Tocca il pad o accendi la fotocamera per il motion tracking</div>
           </div>
-
           <div class="flex justify-between items-center text-[10px] font-mono text-slate-500 font-semibold">
             <span>[X:0 | Y:0]</span>
             <span>[X:127 | Y:127]</span>
@@ -238,22 +227,22 @@
       </div>
 
       <div class="grid grid-cols-3 gap-2 text-xs font-mono">
-        <div class="bg-slate-900/90 border border-pink-500/50 px-2.5 py-1.5 rounded-xl shadow-sm text-center">
+        <div class="bg-slate-900/90 border border-pink-500/50 px-2.5 py-1.5 rounded-xl text-center">
           <span class="text-pink-400 font-bold text-[9px] block">1° DITO / SX (ROSA)</span>
           <span id="monP1" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
         </div>
-        <div class="bg-slate-900/90 border border-cyan-500/50 px-2.5 py-1.5 rounded-xl shadow-sm text-center">
+        <div class="bg-slate-900/90 border border-cyan-500/50 px-2.5 py-1.5 rounded-xl text-center">
           <span class="text-cyan-400 font-bold text-[9px] block">2° DITO / DX (CYAN)</span>
           <span id="monP2" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
         </div>
-        <div class="bg-slate-900/90 border border-yellow-500/50 px-2.5 py-1.5 rounded-xl shadow-sm text-center">
+        <div class="bg-slate-900/90 border border-yellow-500/50 px-2.5 py-1.5 rounded-xl text-center">
           <span class="text-yellow-400 font-bold text-[9px] block">3° DITO / FX (GIALLO)</span>
           <span id="monP3" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
         </div>
       </div>
     </div>
 
-    <!-- COLONNA DESTRA: MATRICE ASSI (RANGE 0-127 & LEARN) -->
+    <!-- COLONNA DESTRA: MATRICE ASSI -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       <div class="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 shadow-md flex-1">
         <div class="flex items-center justify-between border-b border-slate-800 pb-1">
@@ -261,7 +250,7 @@
           <span class="text-[10px] text-yellow-400 font-mono">CC Selezionabili o Learn</span>
         </div>
 
-        <!-- ASSE 1: 1° SX - X -->
+        <!-- 1° SX - X -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -284,15 +273,11 @@
               </div>
             </div>
           </div>
-          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="LX">
-            LEARN
-          </button>
-          <button id="hold_LX" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
-            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
-          </button>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="LX">LEARN</button>
+          <button id="hold_LX" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95"><span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span></button>
         </div>
 
-        <!-- ASSE 2: 1° SX - Y -->
+        <!-- 1° SX - Y -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -315,15 +300,11 @@
               </div>
             </div>
           </div>
-          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="LY">
-            LEARN
-          </button>
-          <button id="hold_LY" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
-            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
-          </button>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="LY">LEARN</button>
+          <button id="hold_LY" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95"><span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span></button>
         </div>
 
-        <!-- ASSE 3: 2° DX - X -->
+        <!-- 2° DX - X -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -346,15 +327,11 @@
               </div>
             </div>
           </div>
-          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="RX">
-            LEARN
-          </button>
-          <button id="hold_RX" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
-            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
-          </button>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="RX">LEARN</button>
+          <button id="hold_RX" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95"><span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span></button>
         </div>
 
-        <!-- ASSE 4: 2° DX - Y -->
+        <!-- 2° DX - Y -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -377,15 +354,11 @@
               </div>
             </div>
           </div>
-          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="RY">
-            LEARN
-          </button>
-          <button id="hold_RY" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
-            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
-          </button>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="RY">LEARN</button>
+          <button id="hold_RY" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95"><span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span></button>
         </div>
 
-        <!-- ASSE 5: 3° FX - X -->
+        <!-- 3° FX - X -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-yellow-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -406,15 +379,11 @@
               </div>
             </div>
           </div>
-          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="P3X">
-            LEARN
-          </button>
-          <button id="hold_P3X" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
-            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
-          </button>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="P3X">LEARN</button>
+          <button id="hold_P3X" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95"><span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span></button>
         </div>
 
-        <!-- ASSE 6: 3° FX - Y -->
+        <!-- 3° FX - Y -->
         <div class="p-2 rounded-xl bg-slate-950/60 border border-yellow-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
@@ -435,12 +404,8 @@
               </div>
             </div>
           </div>
-          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="P3Y">
-            LEARN
-          </button>
-          <button id="hold_P3Y" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
-            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
-          </button>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="P3Y">LEARN</button>
+          <button id="hold_P3Y" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95"><span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span></button>
         </div>
 
       </div>
@@ -475,7 +440,7 @@
   </main>
 
   <script>
-    // 1. LISTA COMPLETA 128 CC STANDARD MIDI & MICROFREAK
+    // LISTA 128 CC STANDARD MIDI & MICROFREAK
     const ALL_MIDI_CCS = [
       { cc: 1, name: "CC#1: Modulation Wheel" },
       { cc: 2, name: "CC#2: Breath / Spice" },
@@ -522,6 +487,25 @@
         if (item.cc === def) opt.selected = true;
         sel.appendChild(opt);
       });
+    });
+
+    // PWA Service Worker & Install Prompt Nativo
+    let deferredInstallPrompt = null;
+    const btnPwaInstall = document.getElementById('btnPwaInstall');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      btnPwaInstall.classList.remove('hidden');
+    });
+
+    btnPwaInstall.addEventListener('click', async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') btnPwaInstall.classList.add('hidden');
+        deferredInstallPrompt = null;
+      }
     });
 
     if ('serviceWorker' in navigator) {
@@ -657,30 +641,29 @@
       });
     });
 
-    // Auto-Map Intelligente
     document.getElementById('btnAutoMapUniversal').addEventListener('click', () => {
       const outName = selectedMidiOut && selectedMidiOut.name ? selectedMidiOut.name.toLowerCase() : '';
       const isMicroFreak = outName.includes('microfreak') || outName.includes('arturia');
 
       if (isMicroFreak) {
-        document.getElementById('selCC_LX').value = "23"; // Cutoff MicroFreak
-        document.getElementById('selCC_LY').value = "83"; // Resonance
-        document.getElementById('selCC_RX').value = "9";  // Type
-        document.getElementById('selCC_RY').value = "10"; // Wave
-        document.getElementById('selCC_P3X').value = "12"; // Timbre
-        document.getElementById('selCC_P3Y').value = "13"; // Shape
+        document.getElementById('selCC_LX').value = "23";
+        document.getElementById('selCC_LY').value = "83";
+        document.getElementById('selCC_RX').value = "9";
+        document.getElementById('selCC_RY').value = "10";
+        document.getElementById('selCC_P3X').value = "12";
+        document.getElementById('selCC_P3Y').value = "13";
 
         const mfDefaults = [23, 83, 9, 10, 12, 13, 102, 5];
         faderConfigs.forEach((f, idx) => {
           if (idx < mfDefaults.length) setFaderCC(idx, mfDefaults[idx]);
         });
       } else {
-        document.getElementById('selCC_LX').value = "74"; // Cutoff Standard GM
-        document.getElementById('selCC_LY').value = "71"; // Resonance Standard GM
-        document.getElementById('selCC_RX').value = "1";  // ModWheel
-        document.getElementById('selCC_RY').value = "11"; // Expression
-        document.getElementById('selCC_P3X').value = "7"; // Volume
-        document.getElementById('selCC_P3Y').value = "10"; // Pan
+        document.getElementById('selCC_LX').value = "74";
+        document.getElementById('selCC_LY').value = "71";
+        document.getElementById('selCC_RX').value = "1";
+        document.getElementById('selCC_RY').value = "11";
+        document.getElementById('selCC_P3X').value = "7";
+        document.getElementById('selCC_P3Y').value = "10";
 
         const gmDefaults = [74, 71, 1, 11, 7, 10, 91, 92];
         faderConfigs.forEach((f, idx) => {
@@ -709,7 +692,6 @@
       flashLed(midiOutLed, 'bg-red-400');
     });
 
-    // Curva di risposta 0-127
     function applyCurve(x, type) {
       x = Math.max(0, Math.min(1, x));
       switch(type) {
@@ -764,7 +746,6 @@
       flashLed(midiOutLed);
     }
 
-    // Modalità Touch Target Dita
     let currentTouchTarget = 'triple';
     document.querySelectorAll('.touch-target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -810,12 +791,13 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Gestione Webcam Hardware
+    // MOTORE OTTICO OTTIMIZZATO SENZA MEMORY LEAK (Array statici riutilizzati)
     const procCanvas = document.createElement('canvas');
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
-    procCanvas.width = 80;
-    procCanvas.height = 60;
-    let prevFrameData = null;
+    procCanvas.width = 40;
+    procCanvas.height = 30;
+    let prevFrameData = new Uint8ClampedArray(40 * 30);
+    let hasPrevFrame = false;
 
     async function toggleWebcam() {
       if (isCamActive) {
@@ -827,6 +809,7 @@
         video.classList.add('hidden');
         touchPadBg.classList.remove('opacity-20');
         isCamActive = false;
+        hasPrevFrame = false;
         camToggleText.innerText = "Accendi Cam";
         padModeTitle.innerText = "TOUCH SURFACE";
         padModeSubtitle.innerText = "Tocca il pad o accendi la fotocamera per il motion tracking";
@@ -835,7 +818,7 @@
         const facing = document.getElementById('cameraFacing')?.value || 'user';
         try {
           currentStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: facing, width: { ideal: 640 }, height: { ideal: 480 } },
+            video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 } },
             audio: false
           });
           video.srcObject = currentStream;
@@ -863,19 +846,17 @@
       const frame = pCtx.getImageData(0, 0, procCanvas.width, procCanvas.height);
       const data = frame.data;
 
-      if (prevFrameData) {
-        const midX = procCanvas.width / 2;
-        let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
+      const midX = 20; // 40 / 2
+      let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
 
-        for (let i = 0; i < data.length; i += 4) {
-          const diff = (Math.abs(data[i] - prevFrameData[i]) +
-                        Math.abs(data[i+1] - prevFrameData[i+1]) +
-                        Math.abs(data[i+2] - prevFrameData[i+2])) / 3;
+      if (hasPrevFrame) {
+        for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+          const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
+          const diff = Math.abs(brightness - prevFrameData[p]);
 
-          if (diff > 25) {
-            const idx = i / 4;
-            const px = idx % procCanvas.width;
-            const py = Math.floor(idx / procCanvas.width);
+          if (diff > 30) {
+            const px = p % 40;
+            const py = (p / 40) | 0;
 
             if (px < midX) {
               rX += px * diff; rY += py * diff; rW += diff;
@@ -883,21 +864,25 @@
               lX += px * diff; lY += py * diff; lW += diff;
             }
           }
+          prevFrameData[p] = brightness;
         }
 
-        if (lW > 250) {
-          p1.targetX = 1 - (lX / lW) / procCanvas.width;
-          p1.targetY = (lY / lW) / procCanvas.height;
+        if (lW > 200) {
+          p1.targetX = 1 - (lX / lW) / 40;
+          p1.targetY = (lY / lW) / 30;
         }
-        if (rW > 250) {
-          p2.targetX = 1 - (rX / rW) / procCanvas.width;
-          p2.targetY = (rY / rW) / procCanvas.height;
+        if (rW > 200) {
+          p2.targetX = 1 - (rX / rW) / 40;
+          p2.targetY = (rY / rW) / 30;
         }
+      } else {
+        for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+          prevFrameData[p] = (data[i] + data[i+1] + data[i+2]) / 3;
+        }
+        hasPrevFrame = true;
       }
-      prevFrameData = frame.data.slice();
     }
 
-    // Touch Pad Pointers
     let pointerSlotMap = new Map();
 
     function updatePointFromTouch(e, pt) {
@@ -908,7 +893,7 @@
 
     if (padContainer) {
       padContainer.addEventListener('pointerdown', (e) => {
-        if (isCamActive) return; // Se la cam è attiva prevale l'ottica
+        if (isCamActive) return;
         e.preventDefault();
         padContainer.setPointerCapture(e.pointerId);
 
@@ -1041,7 +1026,7 @@
     }
     requestAnimationFrame(mainEngineLoop);
 
-    // --- FADER DESK DINAMICO ---
+    // FADER DESK
     const fadersContainer = document.getElementById('fadersContainer');
     const faderCountDisp = document.getElementById('faderCountDisp');
 
