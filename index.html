@@ -697,4 +697,283 @@
         if (currentTouchTarget === 'left') {
           btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-pink-400 bg-pink-950/80 border border-pink-700/60 shadow-[0_0_8px_rgba(236,72,153,0.4)] transition-all";
         } else if (currentTouchTarget === 'right') {
-          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-cyan-300 bg-cyan-950/80
+          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-cyan-300 bg-cyan-950/80 border border-cyan-700/60 shadow-[0_0_8px_rgba(6,182,212,0.4)] transition-all";
+        } else {
+          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-yellow-300 bg-yellow-950/80 border border-yellow-700/60 shadow-[0_0_8px_rgba(234,179,8,0.4)] transition-all";
+        }
+      });
+    });
+
+    // --- 6. COORDINATE TOUCH PAD (SUPERFICIE LIBERA AL 100%) ---
+    const padContainer = document.getElementById('camPadContainer');
+    const touchPadBg = document.getElementById('touchPadBg');
+    const video = document.getElementById('videoElement');
+    const canvas = document.getElementById('overlayCanvas');
+    const ctx = canvas.getContext('2d');
+    const btnCamToggle = document.getElementById('btnCamToggle');
+    const camToggleText = document.getElementById('camToggleText');
+
+    let currentStream = null;
+    let isCamActive = false;
+    let isDemo = false;
+    let animId = null;
+
+    let leftHand = { x: 0.35, y: 0.5, targetX: 0.35, targetY: 0.5 };
+    let rightHand = { x: 0.65, y: 0.5, targetX: 0.65, targetY: 0.5 };
+    let smoothing = 0.22;
+
+    function resizeCanvas() {
+      canvas.width = padContainer.clientWidth || 640;
+      canvas.height = padContainer.clientHeight || 400;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let activePointers = new Map();
+
+    function handlePointer(e) {
+      if (isCamActive && !isDemo) return;
+      e.preventDefault();
+
+      const rect = padContainer.getBoundingClientRect();
+      const normX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const normY = Math.max(0, Math.min(1, 1 - ((e.clientY - rect.top) / rect.height)));
+
+      if (currentTouchTarget === 'left') {
+        leftHand.targetX = normX;
+        leftHand.targetY = 1 - normY;
+      } else if (currentTouchTarget === 'right') {
+        rightHand.targetX = normX;
+        rightHand.targetY = 1 - normY;
+      } else if (currentTouchTarget === 'dual') {
+        if (normX < 0.5) {
+          leftHand.targetX = normX * 2;
+          leftHand.targetY = 1 - normY;
+        } else {
+          rightHand.targetX = (normX - 0.5) * 2;
+          rightHand.targetY = 1 - normY;
+        }
+      }
+    }
+
+    padContainer.addEventListener('pointerdown', (e) => {
+      activePointers.set(e.pointerId, true);
+      handlePointer(e);
+    });
+
+    padContainer.addEventListener('pointermove', (e) => {
+      if (activePointers.has(e.pointerId)) {
+        handlePointer(e);
+      }
+    });
+
+    function releasePointer(e) {
+      activePointers.delete(e.pointerId);
+    }
+    padContainer.addEventListener('pointerup', releasePointer);
+    padContainer.addEventListener('pointercancel', releasePointer);
+
+    // --- 7. GESTIONE WEBCAM ---
+    const procCanvas = document.createElement('canvas');
+    const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
+    procCanvas.width = 80;
+    procCanvas.height = 60;
+    let prevFrameData = null;
+
+    async function toggleWebcam() {
+      if (isCamActive) {
+        if (currentStream) {
+          currentStream.getTracks().forEach(t => t.stop());
+          currentStream = null;
+        }
+        video.srcObject = null;
+        video.classList.add('hidden');
+        touchPadBg.classList.remove('opacity-20');
+        isCamActive = false;
+        camToggleText.innerText = "Accendi Cam";
+        btnCamToggle.className = "px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 active:scale-95 text-black font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-1.5";
+      } else {
+        const facing = document.getElementById('cameraFacing').value;
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facing, width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: false
+          });
+          video.srcObject = currentStream;
+          await video.play();
+
+          video.classList.remove('hidden');
+          touchPadBg.classList.add('opacity-20');
+          isCamActive = true;
+          camToggleText.innerText = "Spegni Cam";
+          btnCamToggle.className = "px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 active:scale-95 text-white font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)] flex items-center gap-1.5";
+
+          resizeCanvas();
+        } catch(err) {
+          alert("Impossibile avviare fotocamera: " + err.message + "\nUsa il Touch Pad.");
+        }
+      }
+    }
+    btnCamToggle.addEventListener('click', toggleWebcam);
+
+    function computeOpticalMotion() {
+      if (!isCamActive || video.readyState < 2) return;
+      pCtx.drawImage(video, 0, 0, procCanvas.width, procCanvas.height);
+      const frame = pCtx.getImageData(0, 0, procCanvas.width, procCanvas.height);
+      const data = frame.data;
+
+      if (prevFrameData) {
+        const mode = document.getElementById('modeSelect').value;
+        const midX = procCanvas.width / 2;
+        let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const diff = (Math.abs(data[i] - prevFrameData[i]) +
+                        Math.abs(data[i+1] - prevFrameData[i+1]) +
+                        Math.abs(data[i+2] - prevFrameData[i+2])) / 3;
+
+          if (diff > 25) {
+            const idx = i / 4;
+            const px = idx % procCanvas.width;
+            const py = Math.floor(idx / procCanvas.width);
+
+            if (px < midX) {
+              if (mode === 'both' || mode === 'rightOnly') { rX += px * diff; rY += py * diff; rW += diff; }
+            } else {
+              if (mode === 'both' || mode === 'leftOnly') { lX += px * diff; lY += py * diff; lW += diff; }
+            }
+          }
+        }
+
+        if (lW > 280) {
+          leftHand.targetX = 1 - (lX / lW) / procCanvas.width;
+          leftHand.targetY = (lY / lW) / procCanvas.height;
+        }
+        if (rW > 280) {
+          rightHand.targetX = 1 - (rX / rW) / procCanvas.width;
+          rightHand.targetY = (rY / rW) / procCanvas.height;
+        }
+      }
+      prevFrameData = frame.data.slice();
+    }
+
+    function processGestureParameters() {
+      smoothing = parseFloat(document.getElementById('smoothingInput').value);
+      leftHand.x += (leftHand.targetX - leftHand.x) * smoothing;
+      leftHand.y += (leftHand.targetY - leftHand.y) * smoothing;
+      rightHand.x += (rightHand.targetX - rightHand.x) * smoothing;
+      rightHand.y += (rightHand.targetY - rightHand.y) * smoothing;
+
+      const nLX = Math.max(0, Math.min(1, leftHand.x));
+      const nLY = Math.max(0, Math.min(1, 1 - leftHand.y));
+      const nRX = Math.max(0, Math.min(1, rightHand.x));
+      const nRY = Math.max(0, Math.min(1, 1 - rightHand.y));
+
+      sendMidiExpression('LX', nLX);
+      sendMidiExpression('LY', nLY);
+      sendMidiExpression('RX', nRX);
+      sendMidiExpression('RY', nRY);
+
+      document.getElementById('leftCcMonitor').innerText = `X: ${Math.round(nLX*127)} | Y: ${Math.round(nLY*127)}`;
+      document.getElementById('rightCcMonitor').innerText = `X: ${Math.round(nRX*127)} | Y: ${Math.round(nRY*127)}`;
+    }
+
+    function renderFeedbackCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Cursore Mano SX (Rosa)
+      const lx = leftHand.x * canvas.width;
+      const ly = leftHand.y * canvas.height;
+      ctx.beginPath();
+      ctx.arc(lx, ly, 26, 0, Math.PI * 2);
+      ctx.strokeStyle = "#ec4899";
+      ctx.lineWidth = 3.5;
+      ctx.fillStyle = "rgba(236, 72, 153, 0.3)";
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(lx - 35, ly); ctx.lineTo(lx + 35, ly);
+      ctx.moveTo(lx, ly - 35); ctx.lineTo(lx, ly + 35);
+      ctx.strokeStyle = "rgba(236, 72, 153, 0.6)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Cursore Mano DX (Cyan)
+      const rx = rightHand.x * canvas.width;
+      const ry = rightHand.y * canvas.height;
+      ctx.beginPath();
+      ctx.arc(rx, ry, 26, 0, Math.PI * 2);
+      ctx.strokeStyle = "#00f3ff";
+      ctx.lineWidth = 3.5;
+      ctx.fillStyle = "rgba(0, 243, 255, 0.3)";
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(rx - 35, ry); ctx.lineTo(rx + 35, ry);
+      ctx.moveTo(rx, ry - 35); ctx.lineTo(rx, ry + 35);
+      ctx.strokeStyle = "rgba(0, 243, 255, 0.6)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function engineLoop(now) {
+      if (!isDemo && isCamActive) {
+        computeOpticalMotion();
+      } else if (isDemo) {
+        const t = now * 0.002;
+        leftHand.targetX = 0.3 + Math.cos(t * 0.8) * 0.2;
+        leftHand.targetY = 0.5 + Math.sin(t * 1.2) * 0.35;
+        rightHand.targetX = 0.7 + Math.sin(t * 1.1) * 0.2;
+        rightHand.targetY = 0.5 + Math.cos(t * 1.4) * 0.35;
+      }
+
+      processGestureParameters();
+      renderFeedbackCanvas();
+      animId = requestAnimationFrame(engineLoop);
+    }
+    requestAnimationFrame(engineLoop);
+
+    // Modalità Demo
+    document.getElementById('btnDemo').addEventListener('click', () => {
+      isDemo = !isDemo;
+      document.getElementById('btnDemo').innerText = isDemo ? "⏹️ Ferma" : "🪄 Simula";
+    });
+
+    document.getElementById('smoothingInput').addEventListener('input', (e) => {
+      document.getElementById('smoothingVal').innerText = parseFloat(e.target.value).toFixed(2);
+    });
+
+    // Preset Live Snapshots
+    const PRESETS = {
+      1: { lx: '74', ly: '71', rx: '10', ry: '1', cLx: 'expo', cLy: 'linear', minLx: 10, maxLx: 120 },
+      2: { lx: '1', ly: '11', rx: '10', ry: 'pitchbend', cLx: 'linear', cLy: 'scurve', minLx: 0, maxLx: 127 },
+      3: { lx: '7', ly: '91', rx: '74', ry: '71', cLx: 'log', cLy: 'linear', minLx: 20, maxLx: 127 },
+      4: { lx: '74', ly: '1', rx: '10', ry: '11', cLx: 'linear', cLy: 'linear', minLx: 0, maxLx: 127 }
+    };
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const slot = btn.dataset.slot;
+        const p = PRESETS[slot];
+        if (!p) return;
+
+        document.querySelectorAll('.preset-btn').forEach(b => {
+          b.className = "preset-btn py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95";
+        });
+        btn.className = "preset-btn py-2.5 rounded-xl bg-cyan-950 border-2 border-cyan-500 text-cyan-300 font-black text-xs uppercase transition-all active:scale-95 shadow-[0_0_12px_rgba(6,182,212,0.4)]";
+
+        document.getElementById('selCC_LX').value = p.lx;
+        document.getElementById('selCC_LY').value = p.ly;
+        document.getElementById('selCC_RX').value = p.rx;
+        document.getElementById('selCC_RY').value = p.ry;
+        document.getElementById('curve_LX').value = p.cLx;
+        document.getElementById('curve_LY').value = p.cLy;
+        document.getElementById('min_LX').value = p.minLx;
+        document.getElementById('max_LX').value = p.maxLx;
+      });
+    });
+  </script>
+</body>
+</html>
