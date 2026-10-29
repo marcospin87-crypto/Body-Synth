@@ -3,17 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose Studio - Hardware MIDI Controller & Optical Synth</title>
+  <title>CyberPose MIDI - Hardware Expression Controller</title>
   <meta name="theme-color" content="#060913" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-  <!-- Manifest Inline PWA -->
   <link rel="manifest" id="pwaManifest" />
-
-  <!-- Tailwind CSS & Tone.js Engine -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
   <style>
     body {
@@ -28,428 +24,366 @@
       transform: scaleX(-1);
       object-fit: cover;
     }
-    .learning-active {
-      animation: learnBlink 0.9s infinite alternate;
-      border-color: #facc15 !important;
-      color: #fef08a !important;
-    }
-    @keyframes learnBlink {
-      0% { box-shadow: 0 0 4px #facc15; }
-      100% { box-shadow: 0 0 16px #facc15; }
+    .btn-hold-active {
+      background-color: #0284c7 !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
     }
     input[type=range] { accent-color: #00f3ff; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col p-3 md:p-5">
+<body class="min-h-screen flex flex-col p-2 md:p-4">
 
   <!-- Header Superiore -->
-  <header class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-cyan-950 pb-3">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 font-bold text-xl shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-        ⚡
+  <header class="flex flex-wrap items-center justify-between gap-2 mb-3 border-b border-cyan-950 pb-2.5">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 font-bold text-lg shadow-[0_0_12px_rgba(6,182,212,0.4)]">
+        🎛️
       </div>
       <div>
-        <h1 class="text-xl md:text-2xl font-black tracking-wider text-cyan-400 uppercase">CYBERPOSE STUDIO</h1>
-        <p class="text-[11px] text-cyan-300/70 font-mono">Full 128 MIDI CC • MIDI Thru & Filtering • Optical Vision Synth</p>
+        <h1 class="text-lg md:text-xl font-black tracking-wider text-cyan-400 uppercase">CYBERPOSE MIDI CONTROLLER</h1>
+        <p class="text-[10px] text-cyan-300/70 font-mono">Live Hardware Synth Gestural Expression • Zero Internal CPU Load</p>
       </div>
     </div>
 
-    <!-- Barra Azioni Rapide -->
-    <div class="flex flex-wrap items-center gap-2">
-      <!-- Indicatore Attività MIDI OUT/IN & THRU -->
-      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-950/80 text-[11px] font-mono">
+    <!-- Barra Attività e Quick Panic -->
+    <div class="flex items-center gap-2">
+      <!-- LED Bus MIDI -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-950/80 text-[10px] font-mono">
         <span class="flex items-center gap-1 text-slate-400">
-          <span id="midiInLed" class="w-2 h-2 rounded-full bg-slate-600 transition-colors"></span> IN
+          <span id="midiInLed" class="w-2 h-2 rounded-full bg-slate-600"></span> IN
         </span>
         <span class="text-slate-700">|</span>
         <span class="flex items-center gap-1 text-slate-400">
-          <span id="midiThruLed" class="w-2 h-2 rounded-full bg-slate-600 transition-colors"></span> THRU
+          <span id="midiThruLed" class="w-2 h-2 rounded-full bg-slate-600"></span> THRU
         </span>
         <span class="text-slate-700">|</span>
         <span class="flex items-center gap-1 text-slate-400">
-          <span id="midiOutLed" class="w-2 h-2 rounded-full bg-slate-600 transition-colors"></span> OUT
+          <span id="midiOutLed" class="w-2 h-2 rounded-full bg-slate-600"></span> OUT
         </span>
       </div>
 
-      <!-- Tasto Panic / Mute -->
-      <button id="btnPanic" class="px-3.5 py-2 rounded-xl border border-red-500/50 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-bold text-xs uppercase transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)]">
-        🛑 <span id="panicText">Mute</span>
+      <!-- Quick Panic (All Notes Off + Reset Controllers) -->
+      <button id="btnMidiPanic" class="px-3 py-1.5 rounded-xl border border-red-500/60 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-bold text-xs uppercase transition-all shadow-[0_0_10px_rgba(239,68,68,0.25)]">
+        🛑 PANIC
       </button>
 
-      <!-- Simulatore Senza Cam -->
-      <button id="btnDemo" class="px-3 py-2 rounded-xl border border-fuchsia-500/40 bg-fuchsia-950/40 hover:bg-fuchsia-900/60 text-fuchsia-300 font-semibold text-xs transition-all">
-        🪄 Simula
-      </button>
-
-      <!-- Interruttore Accendi/Spegni Webcam -->
-      <button id="btnCamToggle" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-black font-extrabold text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-1.5">
+      <!-- Interruttore Cam On/Off -->
+      <button id="btnCamToggle" class="px-4 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-black font-extrabold text-xs uppercase tracking-wide transition-all shadow-[0_0_12px_rgba(6,182,212,0.4)] flex items-center gap-1.5">
         <span id="camIcon">📷</span> <span id="camToggleText">Accendi Cam</span>
       </button>
     </div>
   </header>
 
-  <!-- Area Principale -->
-  <main class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+  <!-- Layout Live Performance -->
+  <main class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1">
     
-    <!-- COLONNA SINISTRA: Video Tracking & MIDI Matrix Avanzata (5 Colonne) -->
-    <div class="lg:col-span-5 flex flex-col gap-3">
+    <!-- COLONNA SINISTRA: Video & Tracking Expression (5 Colonne) -->
+    <div class="lg:col-span-5 flex flex-col gap-2.5">
       
-      <!-- Box Video / Feedback -->
+      <!-- Video Live Box -->
       <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-950 border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)] flex items-center justify-center">
         
-        <!-- Placeholder Cam Spenta -->
-        <div id="camPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 bg-slate-950/95 transition-opacity">
-          <div class="w-12 h-12 rounded-full border border-cyan-500/30 flex items-center justify-center text-xl mb-3 text-cyan-400">
+        <div id="camPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 bg-slate-950/95">
+          <div class="w-10 h-10 rounded-full border border-cyan-500/30 flex items-center justify-center text-lg mb-2 text-cyan-400">
             📷
           </div>
-          <h3 class="text-sm font-bold text-cyan-300 mb-1">Webcam Inattiva</h3>
-          <p class="text-xs text-slate-400 max-w-xs mb-3">
-            Premi <b>"Accendi Cam"</b> per tracciare i movimenti a mezz'aria.
+          <h3 class="text-xs font-bold text-cyan-300 mb-1">Webcam Pronta</h3>
+          <p class="text-[11px] text-slate-400 max-w-xs mb-2">
+            Premi <b>"Accendi Cam"</b> per modulare i synth a mezz'aria durante il live.
           </p>
-          <div class="flex items-center gap-2">
-            <select id="cameraFacing" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none">
-              <option value="user">Camera Frontale</option>
-              <option value="environment">Camera Posteriore</option>
-            </select>
-          </div>
+          <select id="cameraFacing" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300">
+            <option value="user">Camera Frontale</option>
+            <option value="environment">Camera Posteriore</option>
+          </select>
         </div>
 
         <video id="videoElement" playsinline muted class="absolute inset-0 w-full h-full mirror-view"></video>
         <canvas id="overlayCanvas" class="absolute inset-0 w-full h-full mirror-view pointer-events-none"></canvas>
 
-        <!-- Selettore Modalità Corpo -->
-        <div class="absolute top-3 right-3 z-20">
-          <select id="modeSelect" class="bg-slate-950/90 border border-cyan-500/50 rounded-lg px-2.5 py-1 text-xs text-cyan-300 font-semibold focus:outline-none backdrop-blur">
+        <!-- Selettore Modalità Performance Live -->
+        <div class="absolute top-2.5 right-2.5 z-20">
+          <select id="modeSelect" class="bg-slate-950/90 border border-cyan-500/50 rounded-lg px-2 py-1 text-xs text-cyan-300 font-semibold focus:outline-none backdrop-blur">
             <option value="leftOnly" selected>Solo Mano SX (Companion)</option>
             <option value="rightOnly">Solo Mano DX (Companion)</option>
-            <option value="both">Entrambe le Mani</option>
+            <option value="both">Entrambe le Mani (Dual Mod)</option>
           </select>
         </div>
 
-        <!-- Indicatori Live Coordinate -->
-        <div class="absolute bottom-3 left-3 right-3 z-20 flex justify-between pointer-events-none text-xs font-mono">
-          <div class="bg-slate-950/80 border border-pink-500/40 backdrop-blur px-2.5 py-1 rounded-xl">
-            <span class="text-pink-400 font-bold block text-[10px]">MANO SX</span>
-            <div id="leftCoords" class="text-slate-300 text-[11px]">X: -- | Y: --</div>
+        <!-- Indicatore Valori CC Trasmessi -->
+        <div class="absolute bottom-2.5 left-2.5 right-2.5 z-20 flex justify-between pointer-events-none text-xs font-mono">
+          <div class="bg-slate-950/85 border border-pink-500/40 backdrop-blur px-2.5 py-1 rounded-xl">
+            <span class="text-pink-400 font-bold block text-[9px]">MANO SX CC</span>
+            <div id="leftCcMonitor" class="text-slate-200 text-xs font-bold">X: -- | Y: --</div>
           </div>
-          <div class="bg-slate-950/80 border border-cyan-500/40 backdrop-blur px-2.5 py-1 rounded-xl text-right">
-            <span class="text-cyan-400 font-bold block text-[10px]">MANO DX</span>
-            <div id="rightCoords" class="text-slate-300 text-[11px]">X: -- | Y: --</div>
+          <div class="bg-slate-950/85 border border-cyan-500/40 backdrop-blur px-2.5 py-1 rounded-xl text-right">
+            <span class="text-cyan-400 font-bold block text-[9px]">MANO DX CC</span>
+            <div id="rightCcMonitor" class="text-slate-200 text-xs font-bold">X: -- | Y: --</div>
           </div>
         </div>
       </div>
 
-      <!-- Configurazione MIDI OUT & MIDI THRU MATRIX -->
-      <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-purple-900/40 space-y-3 text-xs shadow-md">
-        <div class="flex items-center justify-between border-b border-purple-950 pb-1.5">
-          <span class="font-bold text-purple-400 text-xs uppercase flex items-center gap-1.5">
-            <span>🔌 Routing MIDI Esterno, THRU & CC Matrix</span>
-          </span>
-          <button id="btnPanicMidi" class="text-[10px] text-red-400 hover:text-red-300 underline font-mono">
-            All Notes Off (Panic)
-          </button>
+      <!-- Snapshot / Preset Live per il palco -->
+      <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs">
+        <span class="text-[11px] font-bold text-slate-400 uppercase">Live Preset Snapshot:</span>
+        <div class="flex gap-1.5 font-mono">
+          <button class="preset-btn px-2.5 py-1 rounded bg-cyan-950 border border-cyan-500 text-cyan-300 font-bold" data-slot="1">P1</button>
+          <button class="preset-btn px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400" data-slot="2">P2</button>
+          <button class="preset-btn px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400" data-slot="3">P3</button>
+          <button class="preset-btn px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400" data-slot="4">P4</button>
         </div>
+      </div>
 
-        <!-- Dispositivo e Canale -->
-        <div class="grid grid-cols-2 gap-2 text-xs">
+      <!-- Routing Porte Hardware MIDI OUT & IN -->
+      <div class="p-3 rounded-2xl bg-slate-900/80 border border-purple-950 space-y-2 text-xs shadow">
+        <span class="font-bold text-purple-400 text-xs uppercase flex items-center gap-1.5">
+          <span>🔌 Connessioni Hardware MIDI</span>
+        </span>
+
+        <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[10px] text-slate-400 mb-0.5">Dispositivo MIDI OUT</label>
+            <label class="block text-[10px] text-slate-400 mb-0.5">Dispositivo MIDI OUT (Synth)</label>
             <select id="midiOutSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200">
-              <option value="none">Nessun synth esterno</option>
+              <option value="none">Nessun synth rilevato</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] text-slate-400 mb-0.5">Canale MIDI OUT (1-16)</label>
+            <label class="block text-[10px] text-slate-400 mb-0.5">Canale Synth OUT (1-16)</label>
             <select id="midiOutChannel" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200">
               <option value="0">Canale 1</option><option value="1">Canale 2</option><option value="2">Canale 3</option>
-              <option value="3">Canale 4</option><option value="4">Canale 5</option><option value="9">Canale 10 (Drums)</option>
+              <option value="3">Canale 4</option><option value="4">Canale 5</option><option value="9">Canale 10</option>
               <option value="15">Canale 16</option>
             </select>
           </div>
         </div>
 
-        <!-- Sezione MIDI Thru & Filtro Dati -->
-        <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1.5">
+        <!-- MIDI Thru con Filtri -->
+        <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
           <div class="flex items-center justify-between">
             <label class="flex items-center gap-1.5 font-bold text-cyan-300 cursor-pointer">
               <input type="checkbox" id="midiThruEnabled" checked class="accent-cyan-400 rounded">
-              <span>Abilita MIDI Thru (IN ➔ OUT)</span>
+              <span>MIDI Thru Attivo (IN ➔ OUT)</span>
             </label>
-            <span class="text-[10px] text-slate-500 font-mono">Soft-Thru Filter</span>
+            <span class="text-[9px] text-slate-500 font-mono">Realtime Merge</span>
           </div>
 
-          <div class="grid grid-cols-4 gap-1 text-[10px] pt-1 border-t border-slate-800/60 text-slate-300">
-            <label class="flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" id="thruFiltNotes" checked class="accent-cyan-400"> Note
-            </label>
-            <label class="flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" id="thruFiltBend" checked class="accent-cyan-400"> PitchBend
-            </label>
-            <label class="flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" id="thruFiltCC" checked class="accent-cyan-400"> CC
-            </label>
-            <label class="flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" id="thruFiltAfter" checked class="accent-cyan-400"> Pressure
-            </label>
+          <div class="grid grid-cols-4 gap-1 text-[10px] pt-1 border-t border-slate-800 text-slate-300">
+            <label class="flex items-center gap-1"><input type="checkbox" id="thruFiltNotes" checked class="accent-cyan-400"> Note</label>
+            <label class="flex items-center gap-1"><input type="checkbox" id="thruFiltBend" checked class="accent-cyan-400"> PitchBend</label>
+            <label class="flex items-center gap-1"><input type="checkbox" id="thruFiltCC" checked class="accent-cyan-400"> CC</label>
+            <label class="flex items-center gap-1"><input type="checkbox" id="thruFiltClock" checked class="accent-cyan-400"> Clock</label>
           </div>
         </div>
-
-        <!-- Mappatura Gesti a Tutti i 128 MIDI CC (0-127) -->
-        <div class="space-y-2">
-          <div class="flex justify-between items-center text-[10px] text-slate-400">
-            <span class="font-semibold text-slate-300">Mappatura CC Liberi (0-127) o Nomi Standard</span>
-            <span class="text-cyan-400">Scrivi o seleziona</span>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <!-- Mano SX -->
-            <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/20 space-y-1.5">
-              <span class="text-pink-400 font-bold text-[10px] block">MANO SX ➔ MIDI OUT</span>
-              
-              <!-- SX X -->
-              <div>
-                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
-                  <span>Asse X:</span>
-                  <input type="number" id="numCC_LX" min="0" max="127" value="74" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-pink-300 font-mono">
-                </div>
-                <select id="presetCC_LX" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
-                  <option value="custom">-- Personalizzato --</option>
-                  <option value="74" selected>CC#74 (Filter Cutoff / Brightness)</option>
-                  <option value="71">CC#71 (Filter Resonance / Q)</option>
-                  <option value="1">CC#1 (Modulation Wheel)</option>
-                  <option value="11">CC#11 (Expression)</option>
-                  <option value="7">CC#7 (Volume Master)</option>
-                  <option value="10">CC#10 (Pan Stereo)</option>
-                  <option value="91">CC#91 (Reverb Send)</option>
-                  <option value="92">CC#92 (Delay Send)</option>
-                  <option value="off">Disattivato</option>
-                </select>
-              </div>
-
-              <!-- SX Y -->
-              <div>
-                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
-                  <span>Asse Y:</span>
-                  <input type="number" id="numCC_LY" min="0" max="127" value="71" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-pink-300 font-mono">
-                </div>
-                <select id="presetCC_LY" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
-                  <option value="custom">-- Personalizzato --</option>
-                  <option value="71" selected>CC#71 (Filter Resonance / Q)</option>
-                  <option value="74">CC#74 (Filter Cutoff / Brightness)</option>
-                  <option value="1">CC#1 (Modulation Wheel)</option>
-                  <option value="91">CC#91 (Reverb Send)</option>
-                  <option value="11">CC#11 (Expression)</option>
-                  <option value="off">Disattivato</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Mano DX -->
-            <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/20 space-y-1.5">
-              <span class="text-cyan-400 font-bold text-[10px] block">MANO DX ➔ MIDI OUT</span>
-              
-              <!-- DX X -->
-              <div>
-                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
-                  <span>Asse X:</span>
-                  <input type="number" id="numCC_RX" min="0" max="127" value="1" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-cyan-300 font-mono">
-                </div>
-                <select id="presetCC_RX" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
-                  <option value="custom">-- Personalizzato --</option>
-                  <option value="1" selected>CC#1 (Modulation Wheel)</option>
-                  <option value="74">CC#74 (Cutoff)</option>
-                  <option value="10">CC#10 (Pan)</option>
-                  <option value="7">CC#7 (Volume)</option>
-                  <option value="off">Disattivato</option>
-                </select>
-              </div>
-
-              <!-- DX Y -->
-              <div>
-                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
-                  <span>Asse Y:</span>
-                  <input type="number" id="numCC_RY" min="0" max="127" value="11" class="w-12 bg-slate-900 border border-slate-700 text-center rounded text-[10px] text-cyan-300 font-mono">
-                </div>
-                <select id="presetCC_RY" class="w-full bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-[10px] text-slate-200">
-                  <option value="custom">-- Personalizzato --</option>
-                  <option value="11" selected>CC#11 (Expression)</option>
-                  <option value="74">CC#74 (Cutoff)</option>
-                  <option value="1">CC#1 (Modulation)</option>
-                  <option value="off">Disattivato</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
-
     </div>
 
-    <!-- COLONNA DESTRA: Sintetizzatore, DSP & MIDI Learn In (7 Colonne) -->
-    <div class="lg:col-span-7 flex flex-col gap-3">
+    <!-- COLONNA DESTRA: Matrice Parametri CC, Curve di Risposta & Hold (7 Colonne) -->
+    <div class="lg:col-span-7 flex flex-col gap-2.5">
       
-      <!-- Modulo Oscillatore + Sub-Oscillatore -->
-      <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-            <span>🎹 Motore Sonoro Interno & Architettura ADSR</span>
-          </h2>
-          <span class="text-[10px] text-cyan-400 font-mono">Analog Modeling</span>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Oscillatore 1</label>
-            <select id="waveSelect1" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200">
-              <option value="sawtooth">Sawtooth</option>
-              <option value="square">Square</option>
-              <option value="triangle">Triangle</option>
-              <option value="sine">Sine</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Sub-Oscillatore</label>
-            <select id="subOscSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200">
-              <option value="off">Disattivato</option>
-              <option value="sub1" selected>-1 Ottava (Sine)</option>
-              <option value="sub2">-2 Ottave (Sub Bass)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Scala Melodica</label>
-            <select id="scaleSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200">
-              <option value="pentatonic">Pentatonica Min (La)</option>
-              <option value="dorian">Modo Dorico (Re)</option>
-              <option value="blues">Scala Blues</option>
-              <option value="major">Scala Maggiore (Do)</option>
-              <option value="theremin">Continuo (Theremin)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Glide / Portamento</label>
-            <input id="glideInput" type="range" min="0" max="0.25" step="0.01" value="0.04" class="w-full">
-          </div>
-        </div>
-
-        <!-- Inviluppo ADSR Ampiezza -->
-        <div class="grid grid-cols-4 gap-2 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-          <div>
-            <span class="text-[10px] text-slate-400 block mb-1">Attack (<span id="valA">0.05</span>s)</span>
-            <input id="adsrA" type="range" min="0.01" max="2" step="0.01" value="0.05" class="w-full">
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-400 block mb-1">Decay (<span id="valD">0.2</span>s)</span>
-            <input id="adsrD" type="range" min="0.05" max="3" step="0.05" value="0.2" class="w-full">
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-400 block mb-1">Sustain (<span id="valS">0.8</span>)</span>
-            <input id="adsrS" type="range" min="0" max="1" step="0.02" value="0.8" class="w-full">
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-400 block mb-1">Release (<span id="valR">0.5</span>s)</span>
-            <input id="adsrR" type="range" min="0.05" max="4" step="0.05" value="0.5" class="w-full">
-          </div>
-        </div>
-      </div>
-
-      <!-- DSP FX Matrix & MIDI IN Learn -->
+      <!-- Box Assegnazione Assi & Modulazioni -->
       <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 shadow-md flex-1">
         <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-pink-400 flex items-center gap-1.5">
-            <span>✨ Effetti DSP & MIDI IN Learn</span>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+            <span>🎚️ Matrice Modulazione Espressione Gestuale</span>
           </h2>
-          <span class="text-[10px] text-yellow-400 font-mono">Premi [LEARN] e ruota un knob hardware</span>
+          <span class="text-[10px] text-slate-400 font-mono">Curva, Range & Hold per Asse</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-          
-          <!-- Filtro Passa-Basso -->
-          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-cyan-300">Cutoff: <span id="lblCutoff">1200 Hz</span></span>
-              <button class="learn-btn px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all" data-param="cutoff">
-                LEARN <span class="midi-tag">--</span>
-              </button>
+        <!-- CANALE 1: MANO SX - ASSE X -->
+        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-pink-500/20 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-pink-400 font-bold text-xs uppercase">Mano SX - Asse Orizzontale (X)</span>
+              <span id="dispVal_LX" class="px-1.5 py-0.5 rounded bg-pink-950 border border-pink-800 text-pink-300 font-mono text-[11px] font-bold">CC#74: 0</span>
             </div>
-            <input id="sliderCutoff" type="range" min="80" max="10000" step="10" value="1200" class="w-full">
-
-            <div class="flex justify-between items-center pt-1">
-              <span class="font-semibold text-slate-400 text-[11px]">Resonance (Q): <span id="lblQ">2.0</span></span>
-              <button class="learn-btn px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all" data-param="q">
-                LEARN <span class="midi-tag">--</span>
-              </button>
-            </div>
-            <input id="sliderQ" type="range" min="0.5" max="15" step="0.1" value="2" class="w-full">
+            <button id="hold_LX" class="hold-btn px-2 py-0.5 rounded border border-slate-700 bg-slate-900 text-slate-300 text-[10px] font-mono">
+              HOLD: OFF
+            </button>
           </div>
 
-          <!-- Saturazione & Distorsione -->
-          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-amber-400">Drive Distorsione: <span id="lblDistort">0%</span></span>
-              <button class="learn-btn px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all" data-param="distort">
-                LEARN <span class="midi-tag">--</span>
-              </button>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px]">
+            <div>
+              <label class="block text-slate-400 mb-0.5">Assegna CC (0-127)</label>
+              <select id="selCC_LX" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                <option value="74" selected>CC#74 (Filter Cutoff)</option>
+                <option value="71">CC#71 (Resonance/Q)</option>
+                <option value="1">CC#1 (Modulation Wheel)</option>
+                <option value="11">CC#11 (Expression)</option>
+                <option value="7">CC#7 (Volume)</option>
+                <option value="10">CC#10 (Pan)</option>
+                <option value="custom">Altro CC...</option>
+                <option value="off">Disattivato</option>
+              </select>
             </div>
-            <input id="sliderDistort" type="range" min="0" max="1" step="0.01" value="0" class="w-full">
 
-            <div class="flex justify-between items-center pt-1">
-              <span class="font-semibold text-purple-300 text-[11px]">Riverbero Wet: <span id="lblReverb">25%</span></span>
-              <button class="learn-btn px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all" data-param="reverb">
-                LEARN <span class="midi-tag">--</span>
-              </button>
+            <div>
+              <label class="block text-slate-400 mb-0.5">Curva Risposta</label>
+              <select id="curve_LX" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                <option value="linear" selected>Lineare (1:1)</option>
+                <option value="expo">Esponenziale (Filtro fine)</option>
+                <option value="log">Logaritmica (Apertura rapida)</option>
+                <option value="scurve">S-Curve (Sigmoide morbida)</option>
+              </select>
             </div>
-            <input id="sliderReverb" type="range" min="0" max="1" step="0.01" value="0.25" class="w-full">
-          </div>
 
-          <!-- Delay Stereo Ping-Pong -->
-          <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5 md:col-span-2">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="flex justify-between items-center mb-1">
-                  <span class="font-bold text-emerald-400">Delay Wet: <span id="lblDelay">20%</span></span>
-                  <button class="learn-btn px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all" data-param="delay">
-                    LEARN <span class="midi-tag">--</span>
-                  </button>
-                </div>
-                <input id="sliderDelay" type="range" min="0" max="1" step="0.01" value="0.2" class="w-full">
-              </div>
-
-              <div>
-                <div class="flex justify-between items-center mb-1">
-                  <span class="font-semibold text-slate-300">Feedback: <span id="lblFeedback">35%</span></span>
-                  <button class="learn-btn px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all" data-param="feedback">
-                    LEARN <span class="midi-tag">--</span>
-                  </button>
-                </div>
-                <input id="sliderFeedback" type="range" min="0" max="0.9" step="0.02" value="0.35" class="w-full">
+            <div>
+              <label class="block text-slate-400 mb-0.5">Range Min/Max (<span id="rangeLbl_LX">0 - 127</span>)</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="min_LX" min="0" max="127" value="0" class="w-11 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                <span class="text-slate-600">-</span>
+                <input type="number" id="max_LX" min="0" max="127" value="127" class="w-11 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
               </div>
             </div>
-          </div>
 
+            <div class="flex items-center justify-around pt-3">
+              <label class="flex items-center gap-1 cursor-pointer text-slate-300">
+                <input type="checkbox" id="inv_LX" class="accent-pink-400"> Inverti
+              </label>
+            </div>
+          </div>
         </div>
+
+        <!-- CANALE 2: MANO SX - ASSE Y -->
+        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-pink-500/20 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-pink-400 font-bold text-xs uppercase">Mano SX - Asse Verticale (Y)</span>
+              <span id="dispVal_LY" class="px-1.5 py-0.5 rounded bg-pink-950 border border-pink-800 text-pink-300 font-mono text-[11px] font-bold">CC#71: 0</span>
+            </div>
+            <button id="hold_LY" class="hold-btn px-2 py-0.5 rounded border border-slate-700 bg-slate-900 text-slate-300 text-[10px] font-mono">
+              HOLD: OFF
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px]">
+            <div>
+              <label class="block text-slate-400 mb-0.5">Assegna CC (0-127)</label>
+              <select id="selCC_LY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                <option value="71" selected>CC#71 (Resonance/Q)</option>
+                <option value="74">CC#74 (Filter Cutoff)</option>
+                <option value="1">CC#1 (Modulation)</option>
+                <option value="11">CC#11 (Expression)</option>
+                <option value="91">CC#91 (Reverb FX)</option>
+                <option value="custom">Altro CC...</option>
+                <option value="off">Disattivato</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-0.5">Curva Risposta</label>
+              <select id="curve_LY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                <option value="linear" selected>Lineare (1:1)</option>
+                <option value="expo">Esponenziale</option>
+                <option value="log">Logaritmica</option>
+                <option value="scurve">S-Curve</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-0.5">Range Min/Max (<span id="rangeLbl_LY">0 - 127</span>)</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="min_LY" min="0" max="127" value="0" class="w-11 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                <span class="text-slate-600">-</span>
+                <input type="number" id="max_LY" min="0" max="127" value="127" class="w-11 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+              </div>
+            </div>
+
+            <div class="flex items-center justify-around pt-3">
+              <label class="flex items-center gap-1 cursor-pointer text-slate-300">
+                <input type="checkbox" id="inv_LY" class="accent-pink-400"> Inverti
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CANALE 3: MANO DX - ASSE Y (Spesso Pitch Bend o ModWheel) -->
+        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-cyan-500/20 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-cyan-400 font-bold text-xs uppercase">Mano DX - Asse Verticale (Y)</span>
+              <span id="dispVal_RY" class="px-1.5 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono text-[11px] font-bold">CC#1: 0</span>
+            </div>
+            <button id="hold_RY" class="hold-btn px-2 py-0.5 rounded border border-slate-700 bg-slate-900 text-slate-300 text-[10px] font-mono">
+              HOLD: OFF
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px]">
+            <div>
+              <label class="block text-slate-400 mb-0.5">Assegna Canale</label>
+              <select id="selCC_RY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                <option value="1" selected>CC#1 (Modulation)</option>
+                <option value="pitchbend">Pitch Bend Reale (14-bit)</option>
+                <option value="11">CC#11 (Expression)</option>
+                <option value="74">CC#74 (Cutoff)</option>
+                <option value="custom">Altro CC...</option>
+                <option value="off">Disattivato</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-0.5">Curva Risposta</label>
+              <select id="curve_RY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                <option value="linear" selected>Lineare (1:1)</option>
+                <option value="expo">Esponenziale</option>
+                <option value="log">Logaritmica</option>
+                <option value="scurve">S-Curve</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-0.5">Range Min/Max (<span id="rangeLbl_RY">0 - 127</span>)</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="min_RY" min="0" max="127" value="0" class="w-11 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                <span class="text-slate-600">-</span>
+                <input type="number" id="max_RY" min="0" max="127" value="127" class="w-11 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+              </div>
+            </div>
+
+            <div class="flex items-center justify-around pt-3">
+              <label class="flex items-center gap-1 cursor-pointer text-slate-300">
+                <input type="checkbox" id="inv_RY" class="accent-cyan-400"> Inverti
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sezione Smoothing e Test Audio (Opzionale a Basso Impatto) -->
+        <div class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-800 text-[11px] text-slate-400">
+          <div>
+            <div class="flex justify-between mb-0.5">
+              <span>Fluidità Tracking (Smoothing LERP)</span>
+              <span id="smoothingVal" class="text-cyan-400 font-mono">0.22</span>
+            </div>
+            <input id="smoothingInput" type="range" min="0.05" max="0.5" step="0.01" value="0.22" class="w-full">
+          </div>
+
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <div>
+              <span class="font-bold text-slate-300 block">Test Monitor Audio Tablet</span>
+              <span class="text-[9px] text-slate-500">Beeper di test interno opzionale</span>
+            </div>
+            <label class="flex items-center gap-1 cursor-pointer text-cyan-400 font-mono text-xs">
+              <input type="checkbox" id="audioTestEnabled" class="accent-cyan-400"> ATTIVO
+            </label>
+          </div>
+        </div>
+
       </div>
 
     </div>
   </main>
 
   <script>
-    // --- 1. MANIFEST & SERVICE WORKER (PWA OFFLINE-READY) ---
+    // --- 1. CONFIGURAZIONE PWA ---
     const manifest = {
-      name: "CyberPose Studio Synth",
-      short_name: "CyberPose",
+      name: "CyberPose MIDI Studio",
+      short_name: "CyberMIDI",
       start_url: "./",
       display: "standalone",
       background_color: "#060913",
-      theme_color: "#060913",
-      icons: [{
-        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23060913'/%3E%3Cpath d='M30 65 L45 25 L55 50 L70 35' stroke='%2300f3ff' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E",
-        sizes: "192x192 512x512",
-        type: "image/svg+xml"
-      }]
+      theme_color: "#060913"
     };
     const mBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
     document.getElementById('pwaManifest').setAttribute('href', URL.createObjectURL(mBlob));
@@ -459,157 +393,60 @@
       navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw], { type: 'text/javascript' }))).catch(() => {});
     }
 
-    // --- 2. MOTORE AUDIO DSP COMPLETO (Tone.js) ---
-    let synth, subSynth, filter, distortion, delay, reverb, masterGain;
-    let isMuted = false;
-    let currentPitch = 220;
+    // --- 2. SISTEMA AUDIO MINIMO (SOLO MONITOR OPZIONALE A BASSO CONSUMO) ---
+    let audioCtx = null;
+    let testOsc = null;
+    let testGain = null;
 
-    const SCALES = {
-      pentatonic: [110, 130.81, 146.83, 164.81, 196.00, 220, 261.63, 293.66, 329.63, 392.00, 440, 523.25, 587.33, 659.25, 783.99, 880],
-      dorian: [110, 123.47, 130.81, 146.83, 164.81, 185.00, 196.00, 220, 246.94, 261.63, 293.66, 329.63, 369.99, 392.00, 440],
-      blues: [110, 130.81, 146.83, 155.56, 164.81, 196.00, 220, 261.63, 293.66, 311.13, 329.63, 392.00, 440],
-      major: [130.81, 146.83, 164.81, 174.61, 196.00, 220, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440, 493.88, 523.25],
-      theremin: null
-    };
+    function initMinimalAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      testGain = audioCtx.createGain();
+      testGain.gain.value = 0;
+      testGain.connect(audioCtx.destination);
 
-    async function initAudioEngine() {
-      if (synth) return;
-      await Tone.start();
-
-      masterGain = new Tone.Gain(0.8).toDestination();
-      reverb = new Tone.Reverb({ decay: 3, wet: 0.25 }).connect(masterGain);
-      delay = new Tone.FeedbackDelay({ delayTime: "8n", feedback: 0.35, wet: 0.2 }).connect(reverb);
-      distortion = new Tone.Distortion({ distortion: 0, wet: 0 }).connect(delay);
-      filter = new Tone.Filter({ frequency: 1200, type: "lowpass", rolloff: -24, Q: 2 }).connect(distortion);
-
-      const envParams = {
-        attack: parseFloat(document.getElementById('adsrA').value),
-        decay: parseFloat(document.getElementById('adsrD').value),
-        sustain: parseFloat(document.getElementById('adsrS').value),
-        release: parseFloat(document.getElementById('adsrR').value)
-      };
-
-      synth = new Tone.Synth({
-        oscillator: { type: document.getElementById('waveSelect1').value },
-        envelope: envParams
-      }).connect(filter);
-
-      subSynth = new Tone.Synth({
-        oscillator: { type: "sine" },
-        envelope: envParams
-      }).connect(filter);
-
-      synth.set({ portamento: 0.04 });
-      subSynth.set({ portamento: 0.04 });
-      synth.triggerAttack(currentPitch);
-      subSynth.triggerAttack(currentPitch / 2);
+      testOsc = audioCtx.createOscillator();
+      testOsc.type = 'sine';
+      testOsc.frequency.value = 440;
+      testOsc.connect(testGain);
+      testOsc.start();
     }
 
-    function updateAudioParam(name, val, isNormalized = false) {
-      if (!filter) return;
-      switch(name) {
-        case 'cutoff': {
-          const v = isNormalized ? Math.round(80 + Math.pow(val, 2.2) * 9920) : val;
-          filter.frequency.rampTo(v, 0.04);
-          document.getElementById('lblCutoff').innerText = `${Math.round(v)} Hz`;
-          document.getElementById('sliderCutoff').value = v;
-          break;
-        }
-        case 'q': {
-          const v = isNormalized ? (0.5 + val * 14.5) : val;
-          filter.Q.rampTo(v, 0.04);
-          document.getElementById('lblQ').innerText = v.toFixed(1);
-          document.getElementById('sliderQ').value = v;
-          break;
-        }
-        case 'reverb': {
-          reverb.wet.rampTo(val, 0.04);
-          document.getElementById('lblReverb').innerText = `${Math.round(val * 100)}%`;
-          document.getElementById('sliderReverb').value = val;
-          break;
-        }
-        case 'delay': {
-          delay.wet.rampTo(val, 0.04);
-          document.getElementById('lblDelay').innerText = `${Math.round(val * 100)}%`;
-          document.getElementById('sliderDelay').value = val;
-          break;
-        }
-        case 'feedback': {
-          const v = isNormalized ? (val * 0.9) : val;
-          delay.feedback.rampTo(v, 0.04);
-          document.getElementById('lblFeedback').innerText = `${Math.round(v * 100)}%`;
-          document.getElementById('sliderFeedback').value = v;
-          break;
-        }
-        case 'distort': {
-          distortion.distortion = val;
-          distortion.wet.rampTo(val > 0 ? 0.8 : 0, 0.04);
-          document.getElementById('lblDistort').innerText = `${Math.round(val * 100)}%`;
-          document.getElementById('sliderDistort').value = val;
-          break;
-        }
-        case 'pitch': {
-          const scale = document.getElementById('scaleSelect').value;
-          let freq = 220;
-          if (scale === 'theremin' || !SCALES[scale]) {
-            freq = 80 + val * 800;
-          } else {
-            const arr = SCALES[scale];
-            const idx = Math.min(arr.length - 1, Math.floor(val * arr.length));
-            freq = arr[idx];
-          }
-          currentPitch = freq;
-          if (synth) synth.set({ frequency: freq });
-          if (subSynth) {
-            const subMode = document.getElementById('subOscSelect').value;
-            if (subMode === 'sub1') subSynth.set({ frequency: freq / 2 });
-            else if (subMode === 'sub2') subSynth.set({ frequency: freq / 4 });
-          }
-          break;
-        }
+    document.getElementById('audioTestEnabled').addEventListener('change', (e) => {
+      initMinimalAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      testGain.gain.setValueAtTime(e.target.checked ? 0.08 : 0, audioCtx.currentTime);
+    });
+
+    // --- 3. MOTORE MATEMATICO DELLE CURVE DI RISPOSTA ---
+    function applyCurve(x, type) {
+      x = Math.max(0, Math.min(1, x));
+      switch(type) {
+        case 'expo': return Math.pow(x, 2.5);
+        case 'log': return Math.pow(x, 0.4);
+        case 'scurve': return (Math.sin((x - 0.5) * Math.PI) + 1) / 2;
+        default: return x; // Linear
       }
     }
 
-    // ADSR Handlers
-    ['A', 'D', 'S', 'R'].forEach(p => {
-      document.getElementById(`adsr${p}`).addEventListener('input', (e) => {
-        const val = parseFloat(e.target.value);
-        document.getElementById(`val${p}`).innerText = val;
-        if (!synth) return;
-        const env = {};
-        if (p === 'A') env.attack = val;
-        if (p === 'D') env.decay = val;
-        if (p === 'S') env.sustain = val;
-        if (p === 'R') env.release = val;
-        synth.set({ envelope: env });
-        subSynth.set({ envelope: env });
-      });
-    });
+    function calculateMidiValue(normVal, axisId) {
+      let v = normVal;
+      if (document.getElementById(`inv_${axisId}`).checked) v = 1 - v;
+      v = applyCurve(v, document.getElementById(`curve_${axisId}`).value);
 
-    document.getElementById('waveSelect1').addEventListener('change', (e) => {
-      if (synth) synth.set({ oscillator: { type: e.target.value } });
-    });
+      const minVal = parseInt(document.getElementById(`min_${axisId}`).value) || 0;
+      const maxVal = parseInt(document.getElementById(`max_${axisId}`).value) || 127;
 
-    document.getElementById('glideInput').addEventListener('input', (e) => {
-      const g = parseFloat(e.target.value);
-      if (synth) { synth.set({ portamento: g }); subSynth.set({ portamento: g }); }
-    });
+      return Math.round(minVal + v * (maxVal - minVal));
+    }
 
-    // Sliders manuali
-    document.getElementById('sliderCutoff').addEventListener('input', (e) => updateAudioParam('cutoff', parseFloat(e.target.value)));
-    document.getElementById('sliderQ').addEventListener('input', (e) => updateAudioParam('q', parseFloat(e.target.value)));
-    document.getElementById('sliderReverb').addEventListener('input', (e) => updateAudioParam('reverb', parseFloat(e.target.value)));
-    document.getElementById('sliderDelay').addEventListener('input', (e) => updateAudioParam('delay', parseFloat(e.target.value)));
-    document.getElementById('sliderFeedback').addEventListener('input', (e) => updateAudioParam('feedback', parseFloat(e.target.value)));
-    document.getElementById('sliderDistort').addEventListener('input', (e) => updateAudioParam('distort', parseFloat(e.target.value)));
-
-    // --- 3. GESTIONE MIDI IN/OUT, THRU, FILTER & CC 0-127 ---
+    // --- 4. GESTIONE MIDI HARDWARE & MIDI THRU MATRIX ---
     let midiAccess = null;
     let midiOutputs = [];
     let selectedMidiOut = null;
-    let activeLearnParam = null;
-    let midiMappings = JSON.parse(localStorage.getItem('cyber_midi_in_map') || '{}');
-    let lastMidiSentTime = 0;
+    let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0 };
+    let holdStates = { LX: false, LY: false, RY: false };
+    let lastSentValues = { LX: null, LY: null, RY: null };
 
     const midiInLed = document.getElementById('midiInLed');
     const midiThruLed = document.getElementById('midiThruLed');
@@ -617,39 +454,23 @@
 
     function flashLed(el, color = 'bg-emerald-400') {
       el.className = `w-2 h-2 rounded-full ${color} transition-colors`;
-      setTimeout(() => el.className = 'w-2 h-2 rounded-full bg-slate-600 transition-colors', 80);
+      setTimeout(() => el.className = 'w-2 h-2 rounded-full bg-slate-600 transition-colors', 75);
     }
 
-    // Configurazione link input numerico CC e preset tendina
-    ['LX', 'LY', 'RX', 'RY'].forEach(id => {
-      const numInput = document.getElementById(`numCC_${id}`);
-      const select = document.getElementById(`presetCC_${id}`);
-      
-      select.addEventListener('change', () => {
-        if (select.value === 'off') {
-          numInput.disabled = true;
-          numInput.classList.add('opacity-40');
-        } else if (select.value !== 'custom') {
-          numInput.disabled = false;
-          numInput.classList.remove('opacity-40');
-          numInput.value = select.value;
+    // Tasti Hold
+    ['LX', 'LY', 'RY'].forEach(id => {
+      const btn = document.getElementById(`hold_${id}`);
+      btn.addEventListener('click', () => {
+        holdStates[id] = !holdStates[id];
+        if (holdStates[id]) {
+          btn.classList.add('btn-hold-active');
+          btn.innerText = "HOLD: ON";
         } else {
-          numInput.disabled = false;
-          numInput.classList.remove('opacity-40');
+          btn.classList.remove('btn-hold-active');
+          btn.innerText = "HOLD: OFF";
         }
       });
-
-      numInput.addEventListener('input', () => {
-        select.value = 'custom';
-      });
     });
-
-    function getAssignedCC(id) {
-      const select = document.getElementById(`presetCC_${id}`);
-      if (select.value === 'off') return null;
-      const num = parseInt(document.getElementById(`numCC_${id}`).value);
-      return (num >= 0 && num <= 127) ? num : null;
-    }
 
     if (navigator.requestMIDIAccess) {
       navigator.requestMIDIAccess({ sysex: false }).then(onMIDISuccess, () => console.log('MIDI non disponibile'));
@@ -667,7 +488,7 @@
       }
 
       const outSelect = document.getElementById('midiOutSelect');
-      outSelect.innerHTML = '<option value="none">Nessun synth esterno</option>';
+      outSelect.innerHTML = '<option value="none">Nessun synth rilevato</option>';
       midiOutputs = Array.from(midiAccess.outputs.values());
 
       midiOutputs.forEach((out, idx) => {
@@ -677,7 +498,7 @@
         outSelect.appendChild(opt);
       });
 
-      if (midiOutputs.length > 0 && outSelect.value === 'none') {
+      if (midiOutputs.length > 0 && (outSelect.value === 'none' || outSelect.value === '')) {
         outSelect.value = 0;
         selectedMidiOut = midiOutputs[0];
       }
@@ -687,113 +508,85 @@
       selectedMidiOut = e.target.value === 'none' ? null : midiOutputs[parseInt(e.target.value)];
     });
 
-    // Panic MIDI Esterno (All Notes Off)
-    document.getElementById('btnPanicMidi').addEventListener('click', () => {
+    // MIDI THRU Realtime
+    function handleMIDIInput(event) {
+      flashLed(midiInLed);
+      const thruActive = document.getElementById('midiThruEnabled').checked;
+
+      if (thruActive && selectedMidiOut) {
+        const status = event.data[0];
+        const cmd = status >> 4;
+
+        let pass = false;
+        if ((cmd === 9 || cmd === 8) && document.getElementById('thruFiltNotes').checked) pass = true;
+        else if (cmd === 14 && document.getElementById('thruFiltBend').checked) pass = true;
+        else if (cmd === 11 && document.getElementById('thruFiltCC').checked) pass = true;
+        else if (status >= 0xF8 && document.getElementById('thruFiltClock').checked) pass = true; // Clock / Start / Stop
+
+        if (pass) {
+          selectedMidiOut.send(event.data);
+          flashLed(midiThruLed, 'bg-cyan-400');
+        }
+      }
+    }
+
+    // Invia CC / PitchBend con Throttling 60Hz anti-jitter
+    function sendMidiExpression(axisId, normVal) {
+      if (!selectedMidiOut) return;
+      if (holdStates[axisId]) return; // Non aggiorna se in Hold
+
+      const sel = document.getElementById(`selCC_${axisId}`).value;
+      if (sel === 'off') return;
+
+      const ch = parseInt(document.getElementById('midiOutChannel').value);
+      const now = performance.now();
+      if (now - lastMidiTimes[axisId] < 16) return; // 60 FPS cap
+      lastMidiTimes[axisId] = now;
+
+      if (sel === 'pitchbend') {
+        // 14-bit Pitch Bend (Centro: 8192)
+        const bendVal = Math.round(normVal * 16383);
+        const lsb = bendVal & 0x7F;
+        const msb = (bendVal >> 7) & 0x7F;
+        selectedMidiOut.send([0xE0 | ch, lsb, msb]);
+        document.getElementById(`dispVal_${axisId}`).innerText = `P.BEND: ${bendVal - 8192}`;
+      } else {
+        const ccNum = parseInt(sel);
+        const finalVal = calculateMidiValue(normVal, axisId);
+
+        if (finalVal !== lastSentValues[axisId]) {
+          selectedMidiOut.send([0xB0 | ch, ccNum, finalVal]);
+          lastSentValues[axisId] = finalVal;
+          document.getElementById(`dispVal_${axisId}`).innerText = `CC#${ccNum}: ${finalVal}`;
+        }
+      }
+
+      flashLed(midiOutLed);
+
+      // Aggiorna beeper test tablet se attivo
+      if (testOsc && document.getElementById('audioTestEnabled').checked && axisId === 'LX') {
+        testOsc.frequency.setValueAtTime(100 + normVal * 800, audioCtx.currentTime);
+      }
+    }
+
+    // Panic Button (Reset All Controllers & All Notes Off)
+    document.getElementById('btnMidiPanic').addEventListener('click', () => {
       if (!selectedMidiOut) return;
       const ch = parseInt(document.getElementById('midiOutChannel').value);
       selectedMidiOut.send([0xB0 | ch, 123, 0]); // All Notes Off
       selectedMidiOut.send([0xB0 | ch, 120, 0]); // All Sound Off
       selectedMidiOut.send([0xB0 | ch, 121, 0]); // Reset All Controllers
+      selectedMidiOut.send([0xE0 | ch, 0, 64]);  // Centra Pitch Bend
       flashLed(midiOutLed, 'bg-red-400');
     });
 
-    function sendMidiCC(ccNumber, normVal) {
-      if (!selectedMidiOut || ccNumber === null || ccNumber === undefined) return;
-      const ch = parseInt(document.getElementById('midiOutChannel').value);
-      const val7bit = Math.max(0, Math.min(127, Math.round(normVal * 127)));
-
-      // Throttling 55 FPS per non sovraccaricare il bus hardware
-      const now = performance.now();
-      if (now - lastMidiSentTime < 18) return;
-      lastMidiSentTime = now;
-
-      selectedMidiOut.send([0xB0 | ch, ccNumber, val7bit]);
-      flashLed(midiOutLed);
-    }
-
-    function handleMIDIInput(event) {
-      flashLed(midiInLed);
-      const [status, data1, data2] = event.data;
-      const cmd = status >> 4;
-      const channel = status & 0x0F;
-
-      // 1. GESTIONE SOFT MIDI THRU CON FILTRI
-      const thruActive = document.getElementById('midiThruEnabled').checked;
-      if (thruActive && selectedMidiOut) {
-        let allowPass = false;
-        if ((cmd === 9 || cmd === 8) && document.getElementById('thruFiltNotes').checked) allowPass = true;
-        else if (cmd === 14 && document.getElementById('thruFiltBend').checked) allowPass = true;
-        else if (cmd === 11 && document.getElementById('thruFiltCC').checked) allowPass = true;
-        else if ((cmd === 13 || cmd === 10) && document.getElementById('thruFiltAfter').checked) allowPass = true;
-
-        if (allowPass) {
-          selectedMidiOut.send(event.data);
-          flashLed(midiThruLed, 'bg-cyan-400');
-        }
-      }
-
-      // 2. Controllo Synth Interno via Note ON
-      if (cmd === 9 && data2 > 0) {
-        if (!synth) initAudioEngine();
-        const freq = Tone.mtof(data1);
-        currentPitch = freq;
-        synth.triggerAttack(freq);
-        subSynth.triggerAttack(freq / 2);
-      }
-
-      // 3. MIDI Learn su Ingressi CC
-      if (cmd === 11) {
-        const ccNum = data1;
-        const normVal = data2 / 127;
-
-        if (activeLearnParam) {
-          midiMappings[activeLearnParam] = ccNum;
-          localStorage.setItem('cyber_midi_in_map', JSON.stringify(midiMappings));
-          activeLearnParam = null;
-          document.querySelectorAll('.learn-btn').forEach(b => b.classList.remove('learning-active'));
-          refreshMidiLearnLabels();
-        }
-
-        for (const [p, mappedCC] of Object.entries(midiMappings)) {
-          if (mappedCC === ccNum) {
-            updateAudioParam(p, normVal, true);
-          }
-        }
-      }
-    }
-
-    function refreshMidiLearnLabels() {
-      document.querySelectorAll('.learn-btn').forEach(btn => {
-        const p = btn.dataset.param;
-        const tag = btn.querySelector('.midi-tag');
-        tag.innerText = midiMappings[p] !== undefined ? `CC#${midiMappings[p]}` : '--';
-        tag.className = midiMappings[p] !== undefined ? 'midi-tag text-yellow-300 font-bold ml-1' : 'midi-tag text-slate-500 ml-1';
-      });
-    }
-    refreshMidiLearnLabels();
-
-    document.querySelectorAll('.learn-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const p = btn.dataset.param;
-        if (activeLearnParam === p) {
-          activeLearnParam = null;
-          btn.classList.remove('learning-active');
-        } else {
-          document.querySelectorAll('.learn-btn').forEach(b => b.classList.remove('learning-active'));
-          activeLearnParam = p;
-          btn.classList.add('learning-active');
-        }
-      });
-    });
-
-    // --- 4. WEBCAM ON/OFF & TRACKING OTTICO COMPLETO ---
+    // --- 5. TRACKING OTTICO AD ALTA REATTIVITÀ (LOW CPU) ---
     const video = document.getElementById('videoElement');
     const canvas = document.getElementById('overlayCanvas');
     const ctx = canvas.getContext('2d');
     const placeholder = document.getElementById('camPlaceholder');
     const btnCamToggle = document.getElementById('btnCamToggle');
     const camToggleText = document.getElementById('camToggleText');
-    const camIcon = document.getElementById('camIcon');
 
     let currentStream = null;
     let isCamActive = false;
@@ -802,26 +595,25 @@
 
     let leftHand = { x: 0.3, y: 0.5, targetX: 0.3, targetY: 0.5 };
     let rightHand = { x: 0.7, y: 0.5, targetX: 0.7, targetY: 0.5 };
+    let smoothing = 0.22;
+
     const procCanvas = document.createElement('canvas');
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
-    procCanvas.width = 96;
-    procCanvas.height = 72;
+    procCanvas.width = 80;
+    procCanvas.height = 60;
     let prevFrameData = null;
 
     async function toggleWebcam() {
-      await initAudioEngine();
-
       if (isCamActive) {
         if (currentStream) {
-          currentStream.getTracks().forEach(track => track.stop());
+          currentStream.getTracks().forEach(t => t.stop());
           currentStream = null;
         }
         video.srcObject = null;
         isCamActive = false;
         placeholder.style.display = 'flex';
         camToggleText.innerText = "Accendi Cam";
-        camIcon.innerText = "📷";
-        btnCamToggle.className = "px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-black font-extrabold text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-1.5";
+        btnCamToggle.className = "px-4 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-black font-extrabold text-xs uppercase tracking-wide transition-all shadow-[0_0_12px_rgba(6,182,212,0.4)] flex items-center gap-1.5";
       } else {
         const facing = document.getElementById('cameraFacing').value;
         try {
@@ -837,13 +629,11 @@
           placeholder.style.display = 'none';
           isCamActive = true;
           camToggleText.innerText = "Spegni Cam";
-          camIcon.innerText = "🛑";
-          btnCamToggle.className = "px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 text-white font-extrabold text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)] flex items-center gap-1.5";
+          btnCamToggle.className = "px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 text-white font-extrabold text-xs uppercase tracking-wide transition-all shadow-[0_0_12px_rgba(239,68,68,0.4)] flex items-center gap-1.5";
 
           if (!animId) requestAnimationFrame(engineLoop);
         } catch(err) {
-          alert("Impossibile avviare la webcam: " + err.message + "\nAttivo la modalità simulazione.");
-          document.getElementById('btnDemo').click();
+          alert("Impossibile avviare fotocamera: " + err.message);
         }
       }
     }
@@ -878,11 +668,11 @@
           }
         }
 
-        if (lW > 300) {
+        if (lW > 280) {
           leftHand.targetX = 1 - (lX / lW) / procCanvas.width;
           leftHand.targetY = (lY / lW) / procCanvas.height;
         }
-        if (rW > 300) {
+        if (rW > 280) {
           rightHand.targetX = 1 - (rX / rW) / procCanvas.width;
           rightHand.targetY = (rY / rW) / procCanvas.height;
         }
@@ -891,38 +681,29 @@
     }
 
     function processGestureParameters() {
-      leftHand.x += (leftHand.targetX - leftHand.x) * 0.2;
-      leftHand.y += (leftHand.targetY - leftHand.y) * 0.2;
-      rightHand.x += (rightHand.targetX - rightHand.x) * 0.2;
-      rightHand.y += (rightHand.targetY - rightHand.y) * 0.2;
+      smoothing = parseFloat(document.getElementById('smoothingInput').value);
+      leftHand.x += (leftHand.targetX - leftHand.x) * smoothing;
+      leftHand.y += (leftHand.targetY - leftHand.y) * smoothing;
+      rightHand.x += (rightHand.targetX - rightHand.x) * smoothing;
+      rightHand.y += (rightHand.targetY - rightHand.y) * smoothing;
 
       const mode = document.getElementById('modeSelect').value;
 
-      // Mano Sinistra
+      // Mano SX
       if (mode === 'both' || mode === 'leftOnly') {
         const nLX = Math.max(0, Math.min(1, leftHand.x));
-        const nLY = Math.max(0, Math.min(1, 1 - leftHand.y));
+        const nLY = Math.max(0, Math.min(1, 1 - leftHand.y)); // Alto = 1
 
-        updateAudioParam('cutoff', nLX, true);
-        updateAudioParam('reverb', nLY, true);
-
-        sendMidiCC(getAssignedCC('LX'), nLX);
-        sendMidiCC(getAssignedCC('LY'), nLY);
-
-        document.getElementById('leftCoords').innerText = `X:${Math.round(nLX*100)}% | Y:${Math.round(nLY*100)}%`;
+        sendMidiExpression('LX', nLX);
+        sendMidiExpression('LY', nLY);
+        document.getElementById('leftCcMonitor').innerText = `X:${Math.round(nLX*127)} | Y:${Math.round(nLY*127)}`;
       }
 
-      // Mano Destra
+      // Mano DX
       if (mode === 'both' || mode === 'rightOnly') {
-        const nRX = Math.max(0, Math.min(1, rightHand.x));
         const nRY = Math.max(0, Math.min(1, 1 - rightHand.y));
-
-        updateAudioParam('pitch', nRY, true);
-
-        sendMidiCC(getAssignedCC('RX'), nRX);
-        sendMidiCC(getAssignedCC('RY'), nRY);
-
-        document.getElementById('rightCoords').innerText = `X:${Math.round(nRX*100)}% | Y:${Math.round(nRY*100)}%`;
+        sendMidiExpression('RY', nRY);
+        document.getElementById('rightCcMonitor').innerText = `Y:${Math.round(nRY*127)}`;
       }
     }
 
@@ -937,7 +718,7 @@
         ctx.arc(lx, ly, 22, 0, Math.PI * 2);
         ctx.strokeStyle = "#ec4899";
         ctx.lineWidth = 3;
-        ctx.fillStyle = "rgba(236, 72, 153, 0.2)";
+        ctx.fillStyle = "rgba(236, 72, 153, 0.25)";
         ctx.fill(); ctx.stroke();
       }
 
@@ -948,7 +729,7 @@
         ctx.arc(rx, ry, 22, 0, Math.PI * 2);
         ctx.strokeStyle = "#00f3ff";
         ctx.lineWidth = 3;
-        ctx.fillStyle = "rgba(0, 243, 255, 0.2)";
+        ctx.fillStyle = "rgba(0, 243, 255, 0.25)";
         ctx.fill(); ctx.stroke();
       }
     }
@@ -971,22 +752,45 @@
     }
 
     // Modalità Demo
-    document.getElementById('btnDemo').addEventListener('click', async () => {
-      await initAudioEngine();
+    document.getElementById('btnDemo').addEventListener('click', () => {
       isDemo = !isDemo;
       placeholder.style.display = isDemo ? 'none' : (isCamActive ? 'none' : 'flex');
       document.getElementById('btnDemo').innerText = isDemo ? "⏹️ Ferma" : "🪄 Simula";
       if (!animId) requestAnimationFrame(engineLoop);
     });
 
-    // Panic / Mute
-    document.getElementById('btnPanic').addEventListener('click', () => {
-      isMuted = !isMuted;
-      if (masterGain) masterGain.gain.rampTo(isMuted ? 0 : 0.8, 0.05);
-      document.getElementById('panicText').innerText = isMuted ? "Unmute" : "Mute";
-      document.getElementById('btnPanic').className = isMuted
-        ? "px-3.5 py-2 rounded-xl border border-emerald-500 bg-emerald-950/60 text-emerald-300 font-bold text-xs uppercase transition-all"
-        : "px-3.5 py-2 rounded-xl border border-red-500/50 bg-red-950/40 text-red-300 font-bold text-xs uppercase transition-all";
+    // Sliders
+    document.getElementById('smoothingInput').addEventListener('input', (e) => {
+      document.getElementById('smoothingVal').innerText = parseFloat(e.target.value).toFixed(2);
+    });
+
+    // Preset Live Snapshots
+    const PRESETS = {
+      1: { lx: '74', ly: '71', ry: '1', cLx: 'expo', cLy: 'linear', minLx: 10, maxLx: 120 },
+      2: { lx: '1', ly: '11', ry: 'pitchbend', cLx: 'linear', cLy: 'scurve', minLx: 0, maxLx: 127 },
+      3: { lx: '7', ly: '91', ry: '74', cLx: 'log', cLy: 'linear', minLx: 20, maxLx: 127 },
+      4: { lx: '74', ly: '1', ry: '11', cLx: 'linear', cLy: 'linear', minLx: 0, maxLx: 127 }
+    };
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const slot = btn.dataset.slot;
+        const p = PRESETS[slot];
+        if (!p) return;
+
+        document.querySelectorAll('.preset-btn').forEach(b => {
+          b.className = "preset-btn px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400";
+        });
+        btn.className = "preset-btn px-2.5 py-1 rounded bg-cyan-950 border border-cyan-500 text-cyan-300 font-bold";
+
+        document.getElementById('selCC_LX').value = p.lx;
+        document.getElementById('selCC_LY').value = p.ly;
+        document.getElementById('selCC_RY').value = p.ry;
+        document.getElementById('curve_LX').value = p.cLx;
+        document.getElementById('curve_LY').value = p.cLy;
+        document.getElementById('min_LX').value = p.minLx;
+        document.getElementById('max_LX').value = p.maxLx;
+      });
     });
   </script>
 </body>
