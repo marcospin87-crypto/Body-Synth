@@ -9,8 +9,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-  <!-- Manifest PWA Standard Compatibile Chrome Android -->
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22CyberPose%20MIDI%22%2C%22short_name%22%3A%22CyberMIDI%22%2C%22start_url%22%3A%22.%2F%22%2C%22id%22%3A%22cyberpose-midi%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23060913%22%2C%22theme_color%22%3A%22%23060913%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAAB%2F%2FJN3AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF%2F%2F%2F%2F06fZAAAAOnRSTlMAAAAAAAAAYi1EogAAAHRJREFUeNrswTEBAAAAwqD1T20MH6AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOBbAZ4AAQE%2BwJ11AAAAAElFTkSuQmCC%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
+  <!-- Collegamento al vero manifest.json -->
+  <link rel="manifest" href="./manifest.json" />
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -64,7 +64,6 @@
 </head>
 <body class="min-h-screen flex flex-col p-2 md:p-3">
 
-  <!-- Header Superiore -->
   <header class="flex flex-wrap items-center justify-between gap-2 mb-2 border-b border-cyan-950 pb-2">
     <div class="flex items-center gap-2.5">
       <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 font-bold text-lg shadow-[0_0_12px_rgba(6,182,212,0.4)]">
@@ -76,14 +75,12 @@
       </div>
     </div>
 
-    <!-- Barra Azioni -->
     <div class="flex items-center gap-2">
-      <!-- Pulsante Installa PWA Nativo (appare se non installata) -->
-      <button id="btnPwaInstall" class="hidden px-3 py-2 rounded-xl border border-cyan-400 bg-cyan-950 text-cyan-300 font-bold text-xs uppercase animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.4)]">
+      <!-- Pulsante Installa PWA -->
+      <button id="btnPwaInstall" class="hidden px-3.5 py-2 rounded-xl border-2 border-cyan-400 bg-cyan-950 text-cyan-300 font-black text-xs uppercase animate-pulse shadow-[0_0_12px_rgba(6,182,212,0.5)]">
         📲 Installa App
       </button>
 
-      <!-- LED Bus MIDI -->
       <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-950/80 text-[10px] font-mono">
         <span class="flex items-center gap-1 text-slate-400">
           <span id="midiInLed" class="w-2.5 h-2.5 rounded-full bg-slate-600"></span> IN
@@ -98,30 +95,24 @@
         </span>
       </div>
 
-      <!-- Quick Panic Grosso -->
       <button id="btnMidiPanic" class="px-4 py-2 rounded-xl border-2 border-red-500 bg-red-950 hover:bg-red-900 active:scale-95 text-red-200 font-black text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)]">
         🛑 PANIC
       </button>
 
-      <!-- Simulatore -->
       <button id="btnDemo" class="px-3 py-2 rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/60 hover:bg-fuchsia-900 active:scale-95 text-fuchsia-300 font-bold text-xs transition-all">
         🪄 Simula
       </button>
 
-      <!-- Webcam On/Off -->
       <button id="btnCamToggle" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 active:scale-95 text-black font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-1.5">
         <span id="camIcon">📷</span> <span id="camToggleText">Accendi Cam</span>
       </button>
     </div>
   </header>
 
-  <!-- Layout Live Performance -->
   <main class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1">
     
-    <!-- COLONNA SINISTRA: Video & Touch Pad Libero da Bottoni (6 Colonne) -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       
-      <!-- Barra Controlli Esterni del Pad (FUORI DAL PAD) -->
       <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
         <div class="flex items-center gap-1.5">
           <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Modalità Dita:</span>
@@ -151,10 +142,8 @@
         </div>
       </div>
 
-      <!-- AREA PAD MULTI-TOUCH INDIPENDENTE (ZERO INTERFERENZE) -->
       <div id="camPadContainer" class="relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border-2 border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex items-center justify-center cursor-crosshair touch-none select-none">
         
-        <!-- Sfondo Griglia Kaoss a Cam Spenta -->
         <div id="touchPadBg" class="absolute inset-0 pad-grid pad-subgrid flex flex-col justify-between p-3.5 pointer-events-none transition-opacity duration-300">
           <div class="flex justify-between items-center text-[10px] font-mono text-cyan-400 font-bold">
             <span class="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40">MULTI-TOUCH XY CONTROLLER</span>
@@ -176,7 +165,6 @@
         <canvas id="overlayCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       </div>
 
-      <!-- Barra Valori CC Monitor -->
       <div class="grid grid-cols-2 gap-2 text-xs font-mono">
         <div class="bg-slate-900/90 border border-pink-500/50 px-3 py-1.5 rounded-xl flex items-center justify-between shadow-sm">
           <span class="text-pink-400 font-bold text-[10px]">MANO SX CC:</span>
@@ -188,7 +176,6 @@
         </div>
       </div>
 
-      <!-- Live Preset Snapshots -->
       <div class="p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5 shadow">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Live Preset Quick-Recall:</span>
         <div class="grid grid-cols-4 gap-2">
@@ -207,7 +194,6 @@
         </div>
       </div>
 
-      <!-- Routing Porte Hardware MIDI OUT & THRU -->
       <div class="p-2.5 rounded-2xl bg-slate-900/80 border border-purple-950 space-y-2 text-xs shadow">
         <div class="flex items-center justify-between">
           <span class="font-bold text-purple-400 text-xs uppercase flex items-center gap-1.5">
@@ -233,7 +219,6 @@
           </div>
         </div>
 
-        <!-- MIDI Thru con Filtri -->
         <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
           <div class="flex items-center justify-between">
             <label class="flex items-center gap-1.5 font-bold text-cyan-300 cursor-pointer text-[11px]">
@@ -253,7 +238,6 @@
       </div>
     </div>
 
-    <!-- COLONNA DESTRA: Matrice Espressione a 4 Assi con Tasti HOLD Quadrati (6 Colonne) -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       
       <div class="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2.5 shadow-md flex-1">
@@ -463,7 +447,6 @@
           </button>
         </div>
 
-        <!-- Sezione Smoothing e Test Audio -->
         <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800 text-[10px] text-slate-400">
           <div>
             <div class="flex justify-between mb-0.5">
@@ -490,7 +473,7 @@
   </main>
 
   <script>
-    // --- 1. PROMPT INSTALLAZIONE PWA DIRETTO SU CHROME ANDROID ---
+    // --- 1. PROMPT INSTALLAZIONE PWA DIRETTO ---
     let deferredPrompt;
     const btnPwaInstall = document.getElementById('btnPwaInstall');
 
@@ -512,7 +495,7 @@
     });
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGUgPT4gZS5yZXNwb25kV2l0aChmZXRjaChlLnJlcXVlc3QpLmNhdGNoKCgpID0%2BIG5ldyBSZXNwb25zZSgnJyksKSkpOw%3D%3D').catch(() => {});
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
     // --- 2. SISTEMA TEST AUDIO LEGGERO ---
@@ -536,7 +519,7 @@
       testGain.gain.setValueAtTime(e.target.checked ? 0.08 : 0, audioCtx.currentTime);
     });
 
-    // --- 3. CURVE DI RISPOSTA MATEMATICHE ---
+    // --- 3. CURVE DI RISPOSTA ---
     function applyCurve(x, type) {
       x = Math.max(0, Math.min(1, x));
       switch(type) {
@@ -557,7 +540,7 @@
       return Math.round(minVal + v * (maxVal - minVal));
     }
 
-    // --- 4. GESTIONE MIDI HARDWARE & MIDI THRU MATRIX ---
+    // --- 4. GESTIONE MIDI HARDWARE & THRU ---
     let midiAccess = null;
     let midiOutputs = [];
     let selectedMidiOut = null;
@@ -690,8 +673,8 @@
       flashLed(midiOutLed, 'bg-red-400');
     });
 
-    // --- 5. GESTIONE TARGET TOUCH A BOTTONI GRANDI ---
-    let currentTouchTarget = 'dual'; // Default 2 Dita Indipendenti
+    // --- 5. TARGET TOUCH BUTTONS ---
+    let currentTouchTarget = 'dual';
     document.querySelectorAll('.touch-target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         currentTouchTarget = btn.dataset.target;
@@ -708,7 +691,7 @@
       });
     });
 
-    // --- 6. GESTIONE MULTI-TOUCH ASSOLUTO CON POINTER ID DEDICATI ---
+    // --- 6. MULTI-TOUCH ASSOLUTO AD ALTA PRECISIONE ---
     const padContainer = document.getElementById('camPadContainer');
     const touchPadBg = document.getElementById('touchPadBg');
     const video = document.getElementById('videoElement');
@@ -724,7 +707,6 @@
 
     let leftHand = { x: 0.35, y: 0.5, targetX: 0.35, targetY: 0.5 };
     let rightHand = { x: 0.65, y: 0.5, targetX: 0.65, targetY: 0.5 };
-    let smoothing = 0.22;
 
     function resizeCanvas() {
       canvas.width = padContainer.clientWidth || 640;
@@ -733,9 +715,8 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Mappa Pointer ID per evitare conflitti o scambi accidentali di dita
-    let primaryPointerId = null;   // Assegnato stabilmente a SX
-    let secondaryPointerId = null; // Assegnato stabilmente a DX
+    let primaryPointerId = null;
+    let secondaryPointerId = null;
 
     function updateFingerPosition(e, targetHand) {
       const rect = padContainer.getBoundingClientRect();
@@ -761,7 +742,6 @@
       } else if (currentTouchTarget === 'right') {
         updateFingerPosition(e, 'right');
       } else if (currentTouchTarget === 'dual') {
-        // Assegnazione rigorosa e stabile del dito
         if (primaryPointerId === null) {
           primaryPointerId = e.pointerId;
           updateFingerPosition(e, 'left');
@@ -884,8 +864,7 @@
     }
 
     function processGestureParameters() {
-      // Quando si usa il tocco a dita, la risposta è istantanea (smoothing rapido), con la cam usa lo slider
-      const activeSmoothing = (isCamActive || isDemo) ? parseFloat(document.getElementById('smoothingInput').value) : 0.65;
+      const activeSmoothing = (isCamActive || isDemo) ? parseFloat(document.getElementById('smoothingInput').value) : 0.75;
 
       leftHand.x += (leftHand.targetX - leftHand.x) * activeSmoothing;
       leftHand.y += (leftHand.targetY - leftHand.y) * activeSmoothing;
@@ -893,7 +872,7 @@
       rightHand.y += (rightHand.targetY - rightHand.y) * activeSmoothing;
 
       const nLX = Math.max(0, Math.min(1, leftHand.x));
-      const nLY = Math.max(0, Math.min(1, 1 - leftHand.y)); // Invertito: alto = 1
+      const nLY = Math.max(0, Math.min(1, 1 - leftHand.y));
       const nRX = Math.max(0, Math.min(1, rightHand.x));
       const nRY = Math.max(0, Math.min(1, 1 - rightHand.y));
 
