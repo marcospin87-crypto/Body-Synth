@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Live Multi-Touch & Fader Desk</title>
+  <title>CyberPose MIDI - MicroFreak 3-Finger Touch & MIDI Learn</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -45,6 +45,16 @@
       box-shadow: 0 0 16px rgba(56, 189, 248, 0.7);
       transform: scale(0.96);
     }
+    .midi-learning-active {
+      animation: pulseLearn 0.8s infinite alternate;
+      border-color: #facc15 !important;
+      background-color: #713f12 !important;
+      color: #fef08a !important;
+    }
+    @keyframes pulseLearn {
+      0% { box-shadow: 0 0 4px #facc15; }
+      100% { box-shadow: 0 0 16px #facc15; }
+    }
     .pad-grid {
       background-image: 
         linear-gradient(to right, rgba(0, 243, 255, 0.15) 1px, transparent 1px),
@@ -81,15 +91,6 @@
       box-shadow: 0 0 12px rgba(0, 243, 255, 0.8);
       cursor: pointer;
     }
-    .vertical-slider::-moz-range-thumb {
-      width: 40px;
-      height: 34px;
-      background: linear-gradient(180deg, #00f3ff, #0284c7);
-      border-radius: 8px;
-      border: 2px solid #ffffff;
-      box-shadow: 0 0 12px rgba(0, 243, 255, 0.8);
-      cursor: pointer;
-    }
     input[type=range] { accent-color: #00f3ff; }
   </style>
 </head>
@@ -102,15 +103,15 @@
         ⚡
       </div>
       <div>
-        <h1 class="text-base md:text-lg font-black tracking-wider text-cyan-400 uppercase">CYBERPOSE LIVE CONTROLLER</h1>
-        <p class="text-[9px] text-cyan-300/70 font-mono">Stage Hardware Expression • Gestural & Mixer Desk</p>
+        <h1 class="text-base md:text-lg font-black tracking-wider text-cyan-400 uppercase">CYBERPOSE MIDI CONTROLLER</h1>
+        <p class="text-[9px] text-cyan-300/70 font-mono">MicroFreak Fast MIDI Learn • 3-Point Touch Pad • Hardware Desk</p>
       </div>
     </div>
 
-    <!-- Selettore Pagine / Schede Live -->
+    <!-- Selettore Schede Live -->
     <div class="inline-flex rounded-xl border border-cyan-500/40 bg-slate-950 p-1">
       <button id="tabBtnPad" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all bg-cyan-500 text-black shadow-[0_0_12px_rgba(6,182,212,0.6)]">
-        🎛️ XY Pad & Cam
+        🎛️ 3-Point Touch Pad
       </button>
       <button id="tabBtnFaders" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider text-slate-400 hover:text-cyan-300 transition-all">
         🎚️ Live Fader Desk
@@ -147,19 +148,15 @@
     </div>
   </header>
 
-  <!-- ======================================================== -->
-  <!-- BARRA ORIZZONTALE HARDWARE MIDI (SEMPRE VISIBILE AL 100%) -->
-  <!-- ======================================================== -->
+  <!-- BARRA ORIZZONTALE HARDWARE MIDI (SEMPRE IN PRIMO PIANO) -->
   <section class="mb-2 p-2 rounded-2xl bg-slate-900/90 border border-purple-950/70 shadow-md">
     <div class="flex flex-wrap items-center justify-between gap-2.5">
-      
-      <!-- Dispositivo e Canale -->
       <div class="flex items-center gap-2 flex-1 min-w-[280px]">
         <span class="font-bold text-purple-400 text-xs uppercase flex items-center gap-1 whitespace-nowrap">
-          <span>🔌 MIDI OUT:</span>
+          <span>🔌 MicroFreak MIDI OUT:</span>
         </span>
         <select id="midiOutSelect" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200 focus:outline-none">
-          <option value="none">Nessun synth rilevato (collega via USB)</option>
+          <option value="none">Nessun synth rilevato (collega MicroFreak via USB)</option>
         </select>
         <select id="midiOutChannel" class="w-28 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs text-slate-200 focus:outline-none">
           <option value="0">Canale 1</option><option value="1">Canale 2</option><option value="2">Canale 3</option>
@@ -168,11 +165,10 @@
         </select>
       </div>
 
-      <!-- MIDI Thru con Filtri -->
       <div class="flex items-center gap-3 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
         <label class="flex items-center gap-1.5 font-bold text-cyan-300 cursor-pointer text-[11px] whitespace-nowrap">
           <input type="checkbox" id="midiThruEnabled" checked class="accent-cyan-400 rounded">
-          <span>MIDI Thru (Master ➔ Synth)</span>
+          <span>MIDI Thru (Tastiera ➔ MicroFreak)</span>
         </label>
         <div class="h-4 w-px bg-slate-800"></div>
         <div class="flex items-center gap-2.5 text-[10px] text-slate-300">
@@ -182,31 +178,33 @@
           <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="thruFiltClock" checked class="accent-cyan-400"> Clock</label>
         </div>
       </div>
-
     </div>
   </section>
 
-  <!-- ========================================== -->
-  <!-- VISTA 1: XY TOUCH PAD & WEBCAM GESTURE     -->
-  <!-- ========================================== -->
+  <!-- ======================================================== -->
+  <!-- VISTA 1: 3-POINT TOUCH PAD & GESTURE EXP (CON MIDI LEARN)-->
+  <!-- ======================================================== -->
   <main id="viewPad" class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 pb-4">
     
-    <!-- COLONNA SINISTRA: Touch Pad & Preset (6 Colonne) -->
+    <!-- COLONNA SINISTRA: Touch Pad a 3 Punti -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       
-      <!-- Barra Controlli Pad / Dita -->
+      <!-- Selettore Modalità Dita (Fino a 3 Dita) -->
       <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
         <div class="flex items-center gap-1.5">
-          <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Modalità Dita:</span>
+          <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Target Dita:</span>
           <div class="inline-flex rounded-lg border border-slate-700 bg-slate-950 p-0.5">
-            <button class="touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-pink-400 bg-pink-950/80 border border-pink-700/60 transition-all" data-target="left">
-              1 Dito: SX (Rosa)
+            <button class="touch-target-btn px-2 py-1 rounded-md text-[10px] font-bold text-pink-400 transition-all" data-target="left">
+              1°: SX (Rosa)
             </button>
-            <button class="touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-slate-400 hover:text-cyan-300 transition-all" data-target="right">
-              1 Dito: DX (Cyan)
+            <button class="touch-target-btn px-2 py-1 rounded-md text-[10px] font-bold text-cyan-300 transition-all" data-target="right">
+              2°: DX (Cyan)
             </button>
-            <button class="touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-yellow-300 bg-yellow-950/80 border border-yellow-700/60 transition-all" data-target="dual">
-              2 Dita Indipendenti
+            <button class="touch-target-btn px-2 py-1 rounded-md text-[10px] font-bold text-yellow-300 transition-all" data-target="point3">
+              3°: FX (Giallo)
+            </button>
+            <button class="touch-target-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-700/60 transition-all" data-target="triple">
+              3 Dita Simultanee
             </button>
           </div>
         </div>
@@ -224,23 +222,23 @@
         </div>
       </div>
 
-      <!-- Area Pad Touch / Video -->
+      <!-- Area Pad Touch a 3 Punti -->
       <div id="camPadContainer" class="relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950 border-2 border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex items-center justify-center cursor-crosshair touch-none select-none">
         
         <div id="touchPadBg" class="absolute inset-0 pad-grid pad-subgrid flex flex-col justify-between p-3.5 pointer-events-none transition-opacity duration-300">
-          <div class="flex justify-between items-center text-[10px] font-mono text-cyan-400 font-bold">
-            <span class="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40">MULTI-TOUCH XY CONTROLLER</span>
-            <span class="text-slate-400">1° dito = SX (Rosa) • 2° dito = DX (Cyan)</span>
+          <div class="flex justify-between items-center text-[10px] font-mono font-bold">
+            <span class="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-400">TRIPLE TOUCH PAD ATTIVO</span>
+            <span class="text-slate-400">1° Rosa • 2° Cyan • 3° Giallo (6 Parametri CC)</span>
           </div>
 
           <div class="text-center pointer-events-none">
-            <div class="text-3xl font-black text-cyan-500/20 tracking-widest uppercase">TOUCH PAD</div>
-            <div class="text-[11px] text-slate-500 font-mono mt-1">Traccia qualsiasi dito ovunque sul pad</div>
+            <div class="text-2xl font-black text-cyan-500/20 tracking-widest uppercase">MICROFREAK LIVE PAD</div>
+            <div class="text-[10px] text-slate-500 font-mono mt-0.5">Usa il MIDI Learn a destra per assegnare qualsiasi manopola fisica</div>
           </div>
 
           <div class="flex justify-between items-center text-[10px] font-mono text-slate-500 font-semibold">
-            <span>[X:0 | Y:0]</span>
-            <span>[X:127 | Y:127]</span>
+            <span>[0, 0] Min</span>
+            <span>[127, 127] Max</span>
           </div>
         </div>
 
@@ -248,237 +246,307 @@
         <canvas id="overlayCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       </div>
 
-      <!-- Barra Valori CC Monitor -->
-      <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-        <div class="bg-slate-900/90 border border-pink-500/50 px-3 py-1.5 rounded-xl flex items-center justify-between shadow-sm">
-          <span class="text-pink-400 font-bold text-[10px]">MANO SX CC:</span>
-          <span id="leftCcMonitor" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
+      <!-- Monitor Valori a 3 Punti Touch -->
+      <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+        <div class="bg-slate-900/90 border border-pink-500/50 px-2.5 py-1.5 rounded-xl shadow-sm text-center">
+          <span class="text-pink-400 font-bold text-[9px] block">1° DITO SX (ROSA)</span>
+          <span id="monP1" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
         </div>
-        <div class="bg-slate-900/90 border border-cyan-500/50 px-3 py-1.5 rounded-xl flex items-center justify-between shadow-sm">
-          <span class="text-cyan-400 font-bold text-[10px]">MANO DX CC:</span>
-          <span id="rightCcMonitor" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
+        <div class="bg-slate-900/90 border border-cyan-500/50 px-2.5 py-1.5 rounded-xl shadow-sm text-center">
+          <span class="text-cyan-400 font-bold text-[9px] block">2° DITO DX (CYAN)</span>
+          <span id="monP2" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
+        </div>
+        <div class="bg-slate-900/90 border border-yellow-500/50 px-2.5 py-1.5 rounded-xl shadow-sm text-center">
+          <span class="text-yellow-400 font-bold text-[9px] block">3° DITO FX (GIALLO)</span>
+          <span id="monP3" class="text-slate-200 text-xs font-black">X: 0 | Y: 0</span>
         </div>
       </div>
 
-      <!-- Live Preset Snapshots -->
-      <div class="p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5 shadow">
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Live Preset Quick-Recall:</span>
+      <!-- Live Snapshots -->
+      <div class="p-2 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 shadow">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Live Presets MicroFreak:</span>
         <div class="grid grid-cols-4 gap-2">
-          <button class="preset-btn py-2.5 rounded-xl bg-cyan-950 border-2 border-cyan-500 text-cyan-300 font-black text-xs uppercase transition-all active:scale-95 shadow-[0_0_10px_rgba(6,182,212,0.3)]" data-slot="1">P1: Filter</button>
-          <button class="preset-btn py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="2">P2: Lead Mod</button>
-          <button class="preset-btn py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="3">P3: Space FX</button>
-          <button class="preset-btn py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="4">P4: Dual Mod</button>
+          <button class="preset-btn py-2 rounded-xl bg-cyan-950 border-2 border-cyan-500 text-cyan-300 font-black text-xs uppercase transition-all active:scale-95 shadow-[0_0_10px_rgba(6,182,212,0.3)]" data-slot="1">P1: Cutoff/Timbre</button>
+          <button class="preset-btn py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="2">P2: Wave/Shape</button>
+          <button class="preset-btn py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="3">P3: Cycling Env</button>
+          <button class="preset-btn py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95" data-slot="4">P4: Glide/Spice</button>
         </div>
       </div>
     </div>
 
-    <!-- COLONNA DESTRA: Matrice Espressione a 4 Assi (6 Colonne) -->
+    <!-- COLONNA DESTRA: Matrice a 6 Assi con MIDI LEARN DEDICATO SU OGNI ASSE -->
     <div class="lg:col-span-6 flex flex-col gap-2">
       <div class="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 shadow-md flex-1">
         <div class="flex items-center justify-between border-b border-slate-800 pb-1">
           <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-            <span>🎚️ Matrice Espressione Gestuale & Touch (4 Assi)</span>
+            <span>🎚️ Matrice Controlli Touch & MIDI Learn (6 Assi)</span>
           </h2>
-          <span class="text-[10px] text-slate-400 font-mono">Curva, Range & Stompbox Hold</span>
+          <span class="text-[10px] text-yellow-400 font-mono">Premi [LEARN] e ruota la manopola del synth</span>
         </div>
 
-        <!-- 1. MANO SX - ASSE X -->
-        <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-3">
+        <!-- ASSE 1: 1° DITO SX - X -->
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-pink-400 font-bold text-xs uppercase">Mano SX - Orizzontale (X)</span>
+              <span class="text-pink-400 font-bold text-xs uppercase">1° Dito SX - Asse X</span>
               <span id="dispVal_LX" class="px-2 py-0.5 rounded bg-pink-950 border border-pink-800 text-pink-300 font-mono text-[11px] font-black">CC#74: 0</span>
             </div>
-            <div class="grid grid-cols-3 gap-2 text-[10px]">
+            <div class="grid grid-cols-4 gap-1.5 text-[10px]">
               <div>
                 <label class="block text-slate-400 mb-0.5">Assegna CC</label>
                 <select id="selCC_LX" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200 font-semibold">
                   <option value="74" selected>CC#74 (Cutoff)</option>
-                  <option value="71">CC#71 (Resonance)</option>
-                  <option value="1">CC#1 (ModWheel)</option>
-                  <option value="11">CC#11 (Expression)</option>
-                  <option value="7">CC#7 (Volume)</option>
-                  <option value="10">CC#10 (Pan)</option>
+                  <option value="83">CC#83 (Resonance)</option>
+                  <option value="9">CC#9 (Wave)</option>
+                  <option value="10">CC#10 (Timbre)</option>
+                  <option value="12">CC#12 (Shape)</option>
+                  <option value="1">CC#1 (Modulation)</option>
                   <option value="custom">Altro CC...</option>
-                  <option value="off">Off</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Curva Risposta</label>
+                <label class="block text-slate-400 mb-0.5">Curva</label>
                 <select id="curve_LX" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
-                  <option value="linear" selected>Lineare (1:1)</option>
-                  <option value="expo">Esponenziale</option>
-                  <option value="log">Logaritmica</option>
-                  <option value="scurve">S-Curve</option>
+                  <option value="linear" selected>Lineare</option><option value="expo">Expo</option><option value="log">Log</option><option value="scurve">S-Curve</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Range & Invert</label>
+                <label class="block text-slate-400 mb-0.5">Range Min/Max</label>
                 <div class="flex items-center gap-1">
-                  <input type="number" id="min_LX" min="0" max="127" value="0" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <span class="text-slate-600">-</span>
-                  <input type="number" id="max_LX" min="0" max="127" value="127" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <label class="flex items-center gap-0.5 cursor-pointer ml-1 text-pink-300"><input type="checkbox" id="inv_LX" class="accent-pink-400"> Inv</label>
+                  <input type="number" id="min_LX" min="0" max="127" value="0" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                  <input type="number" id="max_LX" min="0" max="127" value="127" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
                 </div>
+              </div>
+              <div class="flex items-center justify-around pt-2">
+                <label class="flex items-center gap-0.5 cursor-pointer text-pink-300"><input type="checkbox" id="inv_LX" class="accent-pink-400"> Inv</label>
               </div>
             </div>
           </div>
+          <!-- Tasto MIDI Learn Rapido -->
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="LX">
+            LEARN
+          </button>
           <button id="hold_LX" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
             <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
           </button>
         </div>
 
-        <!-- 2. MANO SX - ASSE Y -->
-        <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-3">
+        <!-- ASSE 2: 1° DITO SX - Y -->
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-pink-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-pink-400 font-bold text-xs uppercase">Mano SX - Verticale (Y)</span>
-              <span id="dispVal_LY" class="px-2 py-0.5 rounded bg-pink-950 border border-pink-800 text-pink-300 font-mono text-[11px] font-black">CC#71: 0</span>
+              <span class="text-pink-400 font-bold text-xs uppercase">1° Dito SX - Asse Y</span>
+              <span id="dispVal_LY" class="px-2 py-0.5 rounded bg-pink-950 border border-pink-800 text-pink-300 font-mono text-[11px] font-black">CC#83: 0</span>
             </div>
-            <div class="grid grid-cols-3 gap-2 text-[10px]">
+            <div class="grid grid-cols-4 gap-1.5 text-[10px]">
               <div>
                 <label class="block text-slate-400 mb-0.5">Assegna CC</label>
                 <select id="selCC_LY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200 font-semibold">
-                  <option value="71" selected>CC#71 (Resonance)</option>
+                  <option value="83" selected>CC#83 (Resonance)</option>
                   <option value="74">CC#74 (Cutoff)</option>
-                  <option value="1">CC#1 (ModWheel)</option>
-                  <option value="11">CC#11 (Expression)</option>
-                  <option value="91">CC#91 (Reverb)</option>
+                  <option value="10">CC#10 (Timbre)</option>
+                  <option value="12">CC#12 (Shape)</option>
                   <option value="custom">Altro CC...</option>
-                  <option value="off">Off</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Curva Risposta</label>
+                <label class="block text-slate-400 mb-0.5">Curva</label>
                 <select id="curve_LY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
-                  <option value="linear" selected>Lineare (1:1)</option>
-                  <option value="expo">Esponenziale</option>
-                  <option value="log">Logaritmica</option>
-                  <option value="scurve">S-Curve</option>
+                  <option value="linear" selected>Lineare</option><option value="expo">Expo</option><option value="log">Log</option><option value="scurve">S-Curve</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Range & Invert</label>
+                <label class="block text-slate-400 mb-0.5">Range Min/Max</label>
                 <div class="flex items-center gap-1">
-                  <input type="number" id="min_LY" min="0" max="127" value="0" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <span class="text-slate-600">-</span>
-                  <input type="number" id="max_LY" min="0" max="127" value="127" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <label class="flex items-center gap-0.5 cursor-pointer ml-1 text-pink-300"><input type="checkbox" id="inv_LY" class="accent-pink-400"> Inv</label>
+                  <input type="number" id="min_LY" min="0" max="127" value="0" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                  <input type="number" id="max_LY" min="0" max="127" value="127" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
                 </div>
+              </div>
+              <div class="flex items-center justify-around pt-2">
+                <label class="flex items-center gap-0.5 cursor-pointer text-pink-300"><input type="checkbox" id="inv_LY" class="accent-pink-400"> Inv</label>
               </div>
             </div>
           </div>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="LY">
+            LEARN
+          </button>
           <button id="hold_LY" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
             <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
           </button>
         </div>
 
-        <!-- 3. MANO DX - ASSE X -->
-        <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
+        <!-- ASSE 3: 2° DITO DX - X -->
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-cyan-400 font-bold text-xs uppercase">Mano DX - Orizzontale (X)</span>
-              <span id="dispVal_RX" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono text-[11px] font-black">CC#10: 64</span>
+              <span class="text-cyan-400 font-bold text-xs uppercase">2° Dito DX - Asse X</span>
+              <span id="dispVal_RX" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono text-[11px] font-black">CC#9: 64</span>
             </div>
-            <div class="grid grid-cols-3 gap-2 text-[10px]">
+            <div class="grid grid-cols-4 gap-1.5 text-[10px]">
               <div>
                 <label class="block text-slate-400 mb-0.5">Assegna CC</label>
                 <select id="selCC_RX" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200 font-semibold">
-                  <option value="10" selected>CC#10 (Pan Stereo)</option>
-                  <option value="1">CC#1 (Modulation)</option>
-                  <option value="74">CC#74 (Cutoff)</option>
-                  <option value="7">CC#7 (Volume)</option>
+                  <option value="9" selected>CC#9 (Wave)</option>
+                  <option value="10">CC#10 (Timbre)</option>
+                  <option value="12">CC#12 (Shape)</option>
+                  <option value="5">CC#5 (Glide)</option>
                   <option value="custom">Altro CC...</option>
-                  <option value="off">Off</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Curva Risposta</label>
+                <label class="block text-slate-400 mb-0.5">Curva</label>
                 <select id="curve_RX" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
-                  <option value="linear" selected>Lineare (1:1)</option>
-                  <option value="expo">Esponenziale</option>
-                  <option value="log">Logaritmica</option>
-                  <option value="scurve">S-Curve</option>
+                  <option value="linear" selected>Lineare</option><option value="expo">Expo</option><option value="log">Log</option><option value="scurve">S-Curve</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Range & Invert</label>
+                <label class="block text-slate-400 mb-0.5">Range Min/Max</label>
                 <div class="flex items-center gap-1">
-                  <input type="number" id="min_RX" min="0" max="127" value="0" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <span class="text-slate-600">-</span>
-                  <input type="number" id="max_RX" min="0" max="127" value="127" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <label class="flex items-center gap-0.5 cursor-pointer ml-1 text-cyan-300"><input type="checkbox" id="inv_RX" class="accent-cyan-400"> Inv</label>
+                  <input type="number" id="min_RX" min="0" max="127" value="0" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                  <input type="number" id="max_RX" min="0" max="127" value="127" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
                 </div>
+              </div>
+              <div class="flex items-center justify-around pt-2">
+                <label class="flex items-center gap-0.5 cursor-pointer text-cyan-300"><input type="checkbox" id="inv_RX" class="accent-cyan-400"> Inv</label>
               </div>
             </div>
           </div>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="RX">
+            LEARN
+          </button>
           <button id="hold_RX" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
             <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
           </button>
         </div>
 
-        <!-- 4. MANO DX - ASSE Y -->
-        <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
+        <!-- ASSE 4: 2° DITO DX - Y -->
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-2">
           <div class="flex-1 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-cyan-400 font-bold text-xs uppercase">Mano DX - Verticale (Y)</span>
-              <span id="dispVal_RY" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono text-[11px] font-black">CC#1: 0</span>
+              <span class="text-cyan-400 font-bold text-xs uppercase">2° Dito DX - Asse Y</span>
+              <span id="dispVal_RY" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono text-[11px] font-black">CC#10: 0</span>
             </div>
-            <div class="grid grid-cols-3 gap-2 text-[10px]">
+            <div class="grid grid-cols-4 gap-1.5 text-[10px]">
               <div>
                 <label class="block text-slate-400 mb-0.5">Assegna CC</label>
                 <select id="selCC_RY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200 font-semibold">
-                  <option value="1" selected>CC#1 (Modulation)</option>
-                  <option value="pitchbend">Pitch Bend (14-bit)</option>
-                  <option value="11">CC#11 (Expression)</option>
-                  <option value="74">CC#74 (Cutoff)</option>
+                  <option value="10" selected>CC#10 (Timbre)</option>
+                  <option value="12">CC#12 (Shape)</option>
+                  <option value="1">CC#1 (Modulation)</option>
                   <option value="custom">Altro CC...</option>
-                  <option value="off">Off</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Curva Risposta</label>
+                <label class="block text-slate-400 mb-0.5">Curva</label>
                 <select id="curve_RY" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
-                  <option value="linear" selected>Lineare (1:1)</option>
-                  <option value="expo">Esponenziale</option>
-                  <option value="log">Logaritmica</option>
-                  <option value="scurve">S-Curve</option>
+                  <option value="linear" selected>Lineare</option><option value="expo">Expo</option><option value="log">Log</option><option value="scurve">S-Curve</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-0.5">Range & Invert</label>
+                <label class="block text-slate-400 mb-0.5">Range Min/Max</label>
                 <div class="flex items-center gap-1">
-                  <input type="number" id="min_RY" min="0" max="127" value="0" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <span class="text-slate-600">-</span>
-                  <input type="number" id="max_RY" min="0" max="127" value="127" class="w-10 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
-                  <label class="flex items-center gap-0.5 cursor-pointer ml-1 text-cyan-300"><input type="checkbox" id="inv_RY" class="accent-cyan-400"> Inv</label>
+                  <input type="number" id="min_RY" min="0" max="127" value="0" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                  <input type="number" id="max_RY" min="0" max="127" value="127" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
                 </div>
+              </div>
+              <div class="flex items-center justify-around pt-2">
+                <label class="flex items-center gap-0.5 cursor-pointer text-cyan-300"><input type="checkbox" id="inv_RY" class="accent-cyan-400"> Inv</label>
               </div>
             </div>
           </div>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="RY">
+            LEARN
+          </button>
           <button id="hold_RY" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
             <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
           </button>
         </div>
 
-        <!-- Sezione Smoothing e Test Audio -->
-        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800 text-[10px] text-slate-400">
-          <div>
-            <div class="flex justify-between mb-0.5">
-              <span>Fluidità Tracking (Smoothing LERP)</span>
-              <span id="smoothingVal" class="text-cyan-400 font-mono">0.22</span>
+        <!-- ASSE 5: 3° DITO FX - X (NUOVO PUNTO GIALLO) -->
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-yellow-500/25 flex items-center gap-2">
+          <div class="flex-1 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-yellow-400 font-bold text-xs uppercase">3° Dito FX - Asse X</span>
+              <span id="dispVal_P3X" class="px-2 py-0.5 rounded bg-yellow-950 border border-yellow-800 text-yellow-300 font-mono text-[11px] font-black">CC#12: 50</span>
             </div>
-            <input id="smoothingInput" type="range" min="0.05" max="0.5" step="0.01" value="0.22" class="w-full">
-          </div>
-          <div class="flex items-center justify-between p-1.5 rounded-xl bg-slate-950 border border-slate-800">
-            <div>
-              <span class="font-bold text-slate-300 block">Test Audio Interno</span>
-              <span class="text-[9px] text-slate-500">Beeper di test per tablet</span>
+            <div class="grid grid-cols-4 gap-1.5 text-[10px]">
+              <div>
+                <label class="block text-slate-400 mb-0.5">Assegna CC</label>
+                <select id="selCC_P3X" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200 font-semibold">
+                  <option value="12" selected>CC#12 (Shape)</option>
+                  <option value="2">CC#2 (Cycling Rise)</option>
+                  <option value="3">CC#3 (Cycling Fall)</option>
+                  <option value="26">CC#26 (Spice)</option>
+                  <option value="custom">Altro CC...</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-0.5">Curva</label>
+                <select id="curve_P3X" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                  <option value="linear" selected>Lineare</option><option value="expo">Expo</option><option value="log">Log</option><option value="scurve">S-Curve</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-0.5">Range Min/Max</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="min_P3X" min="0" max="127" value="0" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                  <input type="number" id="max_P3X" min="0" max="127" value="127" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                </div>
+              </div>
+              <div class="flex items-center justify-around pt-2">
+                <label class="flex items-center gap-0.5 cursor-pointer text-yellow-300"><input type="checkbox" id="inv_P3X" class="accent-yellow-400"> Inv</label>
+              </div>
             </div>
-            <label class="flex items-center gap-1 cursor-pointer text-cyan-400 font-mono text-[11px]">
-              <input type="checkbox" id="audioTestEnabled" class="accent-cyan-400"> ATTIVO
-            </label>
           </div>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="P3X">
+            LEARN
+          </button>
+          <button id="hold_P3X" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
+            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
+          </button>
+        </div>
+
+        <!-- ASSE 6: 3° DITO FX - Y (NUOVO PUNTO GIALLO) -->
+        <div class="p-2 rounded-xl bg-slate-950/60 border border-yellow-500/25 flex items-center gap-2">
+          <div class="flex-1 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-yellow-400 font-bold text-xs uppercase">3° Dito FX - Asse Y</span>
+              <span id="dispVal_P3Y" class="px-2 py-0.5 rounded bg-yellow-950 border border-yellow-800 text-yellow-300 font-mono text-[11px] font-black">CC#2: 0</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-[10px]">
+              <div>
+                <label class="block text-slate-400 mb-0.5">Assegna CC</label>
+                <select id="selCC_P3Y" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200 font-semibold">
+                  <option value="2" selected>CC#2 (Cycling Rise)</option>
+                  <option value="3">CC#3 (Cycling Fall)</option>
+                  <option value="28">CC#28 (Matrix Amount)</option>
+                  <option value="custom">Altro CC...</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-0.5">Curva</label>
+                <select id="curve_P3Y" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-slate-200">
+                  <option value="linear" selected>Lineare</option><option value="expo">Expo</option><option value="log">Log</option><option value="scurve">S-Curve</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-0.5">Range Min/Max</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="min_P3Y" min="0" max="127" value="0" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                  <input type="number" id="max_P3Y" min="0" max="127" value="127" class="w-9 bg-slate-900 border border-slate-700 rounded p-0.5 text-center font-mono">
+                </div>
+              </div>
+              <div class="flex items-center justify-around pt-2">
+                <label class="flex items-center gap-0.5 cursor-pointer text-yellow-300"><input type="checkbox" id="inv_P3Y" class="accent-yellow-400"> Inv</label>
+              </div>
+            </div>
+          </div>
+          <button class="learn-axis-btn px-2.5 py-3 rounded-lg border border-yellow-500/40 bg-yellow-950/40 hover:bg-yellow-900 text-[10px] font-mono font-bold text-yellow-300 active:scale-95 transition-all" data-axis="P3Y">
+            LEARN
+          </button>
+          <button id="hold_P3Y" class="btn-hold-square border-2 border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-300 active:scale-95">
+            <span>HOLD</span><span class="text-[9px] text-slate-500 font-normal">OFF</span>
+          </button>
         </div>
 
       </div>
@@ -489,8 +557,6 @@
   <!-- VISTA 2: LIVE FADER DESK (MIXER STYLE)     -->
   <!-- ========================================== -->
   <main id="viewFaders" class="hidden flex-col gap-3 flex-1 pb-4">
-    
-    <!-- Barra Superiore Mixer: Macro Sweep -->
     <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3 shadow-md">
       <div class="flex items-center gap-3 flex-1">
         <span class="text-xs font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
@@ -499,172 +565,118 @@
         <input id="masterSweepSlider" type="range" min="0" max="127" value="64" class="flex-1 accent-cyan-400 cursor-pointer h-2 bg-slate-950 rounded-lg">
         <span id="masterSweepVal" class="font-mono text-cyan-300 font-bold text-sm w-8">64</span>
       </div>
-
       <div class="flex items-center gap-2">
-        <button id="btnResetAllFaders" class="px-3 py-1 rounded-lg border border-slate-700 bg-slate-950 hover:bg-slate-800 text-[11px] font-mono text-slate-300 transition-all">
-          Zero All
-        </button>
-        <button id="btnMaxAllFaders" class="px-3 py-1 rounded-lg border border-cyan-500/40 bg-cyan-950/60 hover:bg-cyan-900 text-[11px] font-mono text-cyan-300 transition-all">
-          Max All (127)
-        </button>
+        <button id="btnResetAllFaders" class="px-3 py-1 rounded-lg border border-slate-700 bg-slate-950 hover:bg-slate-800 text-[11px] font-mono text-slate-300 transition-all">Zero All</button>
+        <button id="btnMaxAllFaders" class="px-3 py-1 rounded-lg border border-cyan-500/40 bg-cyan-950/60 hover:bg-cyan-900 text-[11px] font-mono text-cyan-300 transition-all">Max All (127)</button>
       </div>
     </div>
 
-    <!-- Banco a 8 Canali Verticali Mixer -->
+    <!-- Banco a 8 Canali Verticali -->
     <div class="grid grid-cols-4 md:grid-cols-8 gap-2.5 flex-1 p-3 rounded-2xl bg-slate-950 border border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.15)] overflow-x-auto">
-      
-      <!-- CANALE 1 (Cutoff) -->
+      <!-- Canali con CC tipici del MicroFreak -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="1">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-cyan-300" value="74" title="Numero CC">
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-cyan-300" value="74">
           <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Cutoff</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="64" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="64" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
           <span class="fader-val font-mono font-black text-sm text-cyan-400 block">64</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
 
-      <!-- CANALE 2 (Resonance) -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="2">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-pink-300" value="71" title="Numero CC">
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-pink-300" value="83">
           <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Reson</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="30" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="30" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
           <span class="fader-val font-mono font-black text-sm text-pink-400 block">30</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
 
-      <!-- CANALE 3 (Modulation Wheel) -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="3">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-yellow-300" value="1" title="Numero CC">
-          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Mod</span>
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-yellow-300" value="9">
+          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Wave</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="0" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="40" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
-          <span class="fader-val font-mono font-black text-sm text-yellow-400 block">0</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <span class="fader-val font-mono font-black text-sm text-yellow-400 block">40</span>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
 
-      <!-- CANALE 4 (Expression) -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="4">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-purple-300" value="11" title="Numero CC">
-          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Expr</span>
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-purple-300" value="10">
+          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Timbre</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="100" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="64" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
-          <span class="fader-val font-mono font-black text-sm text-purple-400 block">100</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <span class="fader-val font-mono font-black text-sm text-purple-400 block">64</span>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
 
-      <!-- CANALE 5 (Reverb Send) -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="5">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-emerald-300" value="91" title="Numero CC">
-          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Reverb</span>
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-emerald-300" value="12">
+          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Shape</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="25" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="50" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
-          <span class="fader-val font-mono font-black text-sm text-emerald-400 block">25</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <span class="fader-val font-mono font-black text-sm text-emerald-400 block">50</span>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
 
-      <!-- CANALE 6 (Delay Send) -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="6">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-teal-300" value="92" title="Numero CC">
-          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Delay</span>
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-teal-300" value="2">
+          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Cyc Rise</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="20" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="20" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
           <span class="fader-val font-mono font-black text-sm text-teal-400 block">20</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
 
-      <!-- CANALE 7 (Pan) -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="7">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-amber-300" value="10" title="Numero CC">
-          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Pan</span>
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-amber-300" value="3">
+          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Cyc Fall</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="64" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="64" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
           <span class="fader-val font-mono font-black text-sm text-amber-400 block">64</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
 
-      <!-- CANALE 8 (Volume) -->
       <div class="fader-channel flex flex-col items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800" data-channel="8">
         <div class="w-full text-center space-y-1">
-          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-red-300" value="7" title="Numero CC">
-          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Vol</span>
+          <input type="number" class="fader-cc w-full bg-slate-950 border border-slate-700 text-center rounded text-[11px] font-mono font-bold text-red-300" value="5">
+          <span class="text-[9px] text-slate-400 font-semibold uppercase block truncate">Glide</span>
         </div>
-        <div class="py-2 flex items-center justify-center">
-          <input type="range" min="0" max="127" value="100" class="fader-slider vertical-slider">
-        </div>
+        <div class="py-2 flex items-center justify-center"><input type="range" min="0" max="127" value="0" class="fader-slider vertical-slider"></div>
         <div class="w-full text-center space-y-1.5">
-          <span class="fader-val font-mono font-black text-sm text-red-400 block">100</span>
-          <div class="grid grid-cols-2 gap-1">
-            <button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">0</button>
-            <button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400 hover:text-white">127</button>
-          </div>
+          <span class="fader-val font-mono font-black text-sm text-red-400 block">0</span>
+          <div class="grid grid-cols-2 gap-1"><button class="fader-btn-zero py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">0</button><button class="fader-btn-max py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono text-slate-400">127</button></div>
           <button class="fader-btn-hold w-full py-1 rounded bg-slate-950 border border-slate-700 text-[9px] font-mono font-bold text-slate-400">HOLD</button>
         </div>
       </div>
-
     </div>
   </main>
 
@@ -672,13 +684,11 @@
     // --- 1. PROMPT INSTALLAZIONE PWA ---
     let deferredPrompt;
     const btnPwaInstall = document.getElementById('btnPwaInstall');
-
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
       btnPwaInstall.classList.remove('hidden');
     });
-
     btnPwaInstall.addEventListener('click', async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -692,29 +702,23 @@
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
-    // --- 2. SWITCHER DELLE SCHEDE (TAB NAVIGATION) ---
+    // --- 2. SWITCHER DELLE SCHEDE ---
     const tabBtnPad = document.getElementById('tabBtnPad');
     const tabBtnFaders = document.getElementById('tabBtnFaders');
     const viewPad = document.getElementById('viewPad');
     const viewFaders = document.getElementById('viewFaders');
 
     tabBtnPad.addEventListener('click', () => {
-      viewPad.classList.remove('hidden');
-      viewPad.classList.add('grid');
-      viewFaders.classList.add('hidden');
-      viewFaders.classList.remove('flex');
-
+      viewPad.classList.remove('hidden'); viewPad.classList.add('grid');
+      viewFaders.classList.add('hidden'); viewFaders.classList.remove('flex');
       tabBtnPad.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all bg-cyan-500 text-black shadow-[0_0_12px_rgba(6,182,212,0.6)]";
       tabBtnFaders.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider text-slate-400 hover:text-cyan-300 transition-all";
       resizeCanvas();
     });
 
     tabBtnFaders.addEventListener('click', () => {
-      viewPad.classList.add('hidden');
-      viewPad.classList.remove('grid');
-      viewFaders.classList.remove('hidden');
-      viewFaders.classList.add('flex');
-
+      viewPad.classList.add('hidden'); viewPad.classList.remove('grid');
+      viewFaders.classList.remove('hidden'); viewFaders.classList.add('flex');
       tabBtnFaders.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all bg-cyan-500 text-black shadow-[0_0_12px_rgba(6,182,212,0.6)]";
       tabBtnPad.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider text-slate-400 hover:text-cyan-300 transition-all";
     });
@@ -723,9 +727,12 @@
     let midiAccess = null;
     let midiOutputs = [];
     let selectedMidiOut = null;
-    let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0 };
-    let holdStates = { LX: false, LY: false, RX: false, RY: false };
-    let lastSentValues = { LX: null, LY: null, RX: null, RY: null };
+    let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
+    let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
+    let lastSentValues = { LX: null, LY: null, RX: null, RY: null, P3X: null, P3Y: null };
+
+    // Stato di apprendimento MIDI Learn
+    let activeLearnAxis = null; // 'LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'
 
     const midiInLed = document.getElementById('midiInLed');
     const midiThruLed = document.getElementById('midiThruLed');
@@ -753,7 +760,7 @@
 
       const outSelect = document.getElementById('midiOutSelect');
       if (outSelect) {
-        outSelect.innerHTML = '<option value="none">Nessun synth rilevato (collega via USB)</option>';
+        outSelect.innerHTML = '<option value="none">Nessun synth rilevato (collega MicroFreak)</option>';
         midiOutputs = Array.from(midiAccess.outputs.values());
 
         midiOutputs.forEach((out, idx) => {
@@ -777,14 +784,48 @@
       });
     }
 
+    // GESTIONE INPUT MIDI CON MIDI LEARN RAPIDO
     function handleMIDIInput(event) {
       flashLed(midiInLed);
+      const [status, data1, data2] = event.data;
+      const cmd = status >> 4;
+
+      // Se siamo in attesa di MIDI Learn su un asse e riceviamo un CC
+      if (cmd === 11 && activeLearnAxis) {
+        const ccNum = data1;
+        const select = document.getElementById(`selCC_${activeLearnAxis}`);
+
+        // Assegna il CC al selettore
+        let found = false;
+        for (let opt of select.options) {
+          if (parseInt(opt.value) === ccNum) {
+            select.value = opt.value;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          const newOpt = document.createElement('option');
+          newOpt.value = ccNum;
+          newOpt.innerText = `CC#${ccNum} (Learn MicroFreak)`;
+          select.appendChild(newOpt);
+          select.value = ccNum;
+        }
+
+        // Salva in localStorage per le sessioni future
+        localStorage.setItem(`cyber_cc_${activeLearnAxis}`, ccNum);
+
+        // Disattiva il pulsante Learn
+        document.querySelectorAll('.learn-axis-btn').forEach(b => b.classList.remove('midi-learning-active'));
+        activeLearnAxis = null;
+        return;
+      }
+
+      // MIDI Thru soft
       const thruEl = document.getElementById('midiThruEnabled');
       const thruActive = thruEl ? thruEl.checked : true;
 
       if (thruActive && selectedMidiOut) {
-        const status = event.data[0];
-        const cmd = status >> 4;
         let pass = false;
         if ((cmd === 9 || cmd === 8) && document.getElementById('thruFiltNotes')?.checked) pass = true;
         else if (cmd === 14 && document.getElementById('thruFiltBend')?.checked) pass = true;
@@ -797,6 +838,42 @@
         }
       }
     }
+
+    // Configurazione tasti LEARN
+    document.querySelectorAll('.learn-axis-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const axis = btn.dataset.axis;
+        if (activeLearnAxis === axis) {
+          activeLearnAxis = null;
+          btn.classList.remove('midi-learning-active');
+        } else {
+          document.querySelectorAll('.learn-axis-btn').forEach(b => b.classList.remove('midi-learning-active'));
+          activeLearnAxis = axis;
+          btn.classList.add('midi-learning-active');
+        }
+      });
+    });
+
+    // Ripristino mappature memorizzate
+    ['LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'].forEach(axis => {
+      const saved = localStorage.getItem(`cyber_cc_${axis}`);
+      if (saved) {
+        const select = document.getElementById(`selCC_${axis}`);
+        if (select) {
+          let found = false;
+          for (let opt of select.options) {
+            if (opt.value === saved) { select.value = saved; found = true; break; }
+          }
+          if (!found) {
+            const opt = document.createElement('option');
+            opt.value = saved;
+            opt.innerText = `CC#${saved}`;
+            select.appendChild(opt);
+            select.value = saved;
+          }
+        }
+      }
+    });
 
     function sendRawMidiCC(ccNum, val7bit) {
       if (!selectedMidiOut || ccNum === null || ccNum === undefined) return;
@@ -817,96 +894,7 @@
       flashLed(midiOutLed, 'bg-red-400');
     });
 
-    // --- 4. GESTIONE DEI FADER VERTICALI (LIVE MIXER DESK) ---
-    const faderChannels = document.querySelectorAll('.fader-channel');
-    const faderHoldStates = new Map();
-
-    faderChannels.forEach((chEl) => {
-      const chId = chEl.dataset.channel;
-      const slider = chEl.querySelector('.fader-slider');
-      const valDisp = chEl.querySelector('.fader-val');
-      const ccInput = chEl.querySelector('.fader-cc');
-      const btnZero = chEl.querySelector('.fader-btn-zero');
-      const btnMax = chEl.querySelector('.fader-btn-max');
-      const btnHold = chEl.querySelector('.fader-btn-hold');
-
-      faderHoldStates.set(chId, false);
-
-      function updateFaderValue(newVal) {
-        if (faderHoldStates.get(chId)) return;
-        slider.value = newVal;
-        valDisp.innerText = newVal;
-        const cc = parseInt(ccInput.value);
-        if (!isNaN(cc)) sendRawMidiCC(cc, parseInt(newVal));
-      }
-
-      slider.addEventListener('input', (e) => {
-        updateFaderValue(e.target.value);
-      });
-
-      btnZero.addEventListener('click', () => updateFaderValue(0));
-      btnMax.addEventListener('click', () => updateFaderValue(127));
-
-      btnHold.addEventListener('click', () => {
-        const isHold = !faderHoldStates.get(chId);
-        faderHoldStates.set(chId, isHold);
-        if (isHold) {
-          btnHold.classList.add('bg-cyan-600', 'text-white', 'border-cyan-400');
-          btnHold.innerText = "LOCKED";
-        } else {
-          btnHold.classList.remove('bg-cyan-600', 'text-white', 'border-cyan-400');
-          btnHold.innerText = "HOLD";
-        }
-      });
-    });
-
-    // Master Sweep per muovere proporzionalmente tutti i fader
-    const masterSweep = document.getElementById('masterSweepSlider');
-    const masterSweepVal = document.getElementById('masterSweepVal');
-
-    masterSweep.addEventListener('input', (e) => {
-      const val = parseInt(e.target.value);
-      masterSweepVal.innerText = val;
-      faderChannels.forEach(chEl => {
-        const chId = chEl.dataset.channel;
-        if (!faderHoldStates.get(chId)) {
-          const slider = chEl.querySelector('.fader-slider');
-          const valDisp = chEl.querySelector('.fader-val');
-          const ccInput = chEl.querySelector('.fader-cc');
-          slider.value = val;
-          valDisp.innerText = val;
-          sendRawMidiCC(parseInt(ccInput.value), val);
-        }
-      });
-    });
-
-    document.getElementById('btnResetAllFaders').addEventListener('click', () => {
-      masterSweep.value = 0;
-      masterSweepVal.innerText = 0;
-      faderChannels.forEach(chEl => {
-        const chId = chEl.dataset.channel;
-        if (!faderHoldStates.get(chId)) {
-          chEl.querySelector('.fader-slider').value = 0;
-          chEl.querySelector('.fader-val').innerText = 0;
-          sendRawMidiCC(parseInt(chEl.querySelector('.fader-cc').value), 0);
-        }
-      });
-    });
-
-    document.getElementById('btnMaxAllFaders').addEventListener('click', () => {
-      masterSweep.value = 127;
-      masterSweepVal.innerText = 127;
-      faderChannels.forEach(chEl => {
-        const chId = chEl.dataset.channel;
-        if (!faderHoldStates.get(chId)) {
-          chEl.querySelector('.fader-slider').value = 127;
-          chEl.querySelector('.fader-val').innerText = 127;
-          sendRawMidiCC(parseInt(chEl.querySelector('.fader-cc').value), 127);
-        }
-      });
-    });
-
-    // --- 5. LOGICA TOUCH PAD & GESTI WEBCAM (SCHEDA 1) ---
+    // --- 4. GESTIONE DEI 3 PUNTI TOUCH MULTIPLI ---
     function applyCurve(x, type) {
       x = Math.max(0, Math.min(1, x));
       switch(type) {
@@ -926,7 +914,8 @@
       return Math.round(minVal + v * (maxVal - minVal));
     }
 
-    ['LX', 'LY', 'RX', 'RY'].forEach(id => {
+    // Tasti Hold
+    ['LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'].forEach(id => {
       const btn = document.getElementById(`hold_${id}`);
       if (btn) {
         btn.addEventListener('click', () => {
@@ -953,42 +942,41 @@
       if (now - lastMidiTimes[axisId] < 16) return;
       lastMidiTimes[axisId] = now;
 
-      if (sel === 'pitchbend') {
-        const bendVal = Math.round(normVal * 16383);
-        const lsb = bendVal & 0x7F;
-        const msb = (bendVal >> 7) & 0x7F;
-        selectedMidiOut.send([0xE0 | ch, lsb, msb]);
+      const ccNum = parseInt(sel);
+      const finalVal = calculateMidiValue(normVal, axisId);
+      if (finalVal !== lastSentValues[axisId]) {
+        selectedMidiOut.send([0xB0 | ch, ccNum, finalVal]);
+        lastSentValues[axisId] = finalVal;
         const disp = document.getElementById(`dispVal_${axisId}`);
-        if (disp) disp.innerText = `BEND: ${bendVal - 8192}`;
-      } else {
-        const ccNum = parseInt(sel);
-        const finalVal = calculateMidiValue(normVal, axisId);
-        if (finalVal !== lastSentValues[axisId]) {
-          selectedMidiOut.send([0xB0 | ch, ccNum, finalVal]);
-          lastSentValues[axisId] = finalVal;
-          const disp = document.getElementById(`dispVal_${axisId}`);
-          if (disp) disp.innerText = `CC#${ccNum}: ${finalVal}`;
-        }
+        if (disp) disp.innerText = `CC#${ccNum}: ${finalVal}`;
       }
       flashLed(midiOutLed);
     }
 
-    let currentTouchTarget = 'dual';
+    // TARGET DITA (1, 2, 3 o TRIPLE MULTI-TOUCH)
+    let currentTouchTarget = 'triple';
     document.querySelectorAll('.touch-target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         currentTouchTarget = btn.dataset.target;
         document.querySelectorAll('.touch-target-btn').forEach(b => {
-          b.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-slate-400 hover:text-white transition-all";
+          b.className = "touch-target-btn px-2 py-1 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
         });
         if (currentTouchTarget === 'left') {
-          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-pink-400 bg-pink-950/80 border border-pink-700/60 shadow-[0_0_8px_rgba(236,72,153,0.4)] transition-all";
+          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-pink-400 bg-pink-950/80 border border-pink-700/60 transition-all";
         } else if (currentTouchTarget === 'right') {
-          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-cyan-300 bg-cyan-950/80 border border-cyan-700/60 shadow-[0_0_8px_rgba(6,182,212,0.4)] transition-all";
+          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-cyan-300 bg-cyan-950/80 border border-cyan-700/60 transition-all";
+        } else if (currentTouchTarget === 'point3') {
+          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-yellow-300 bg-yellow-950/80 border border-yellow-700/60 transition-all";
         } else {
-          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[11px] font-bold text-yellow-300 bg-yellow-950/80 border border-yellow-700/60 shadow-[0_0_8px_rgba(234,179,8,0.4)] transition-all";
+          btn.className = "touch-target-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-700/60 transition-all";
         }
       });
     });
+
+    // PUNTI COORDINATE PAD (3 Punti)
+    let p1 = { x: 0.25, y: 0.5, targetX: 0.25, targetY: 0.5 }; // SX (Rosa)
+    let p2 = { x: 0.50, y: 0.5, targetX: 0.50, targetY: 0.5 }; // DX (Cyan)
+    let p3 = { x: 0.75, y: 0.5, targetX: 0.75, targetY: 0.5 }; // 3° FX (Giallo)
 
     const padContainer = document.getElementById('camPadContainer');
     const touchPadBg = document.getElementById('touchPadBg');
@@ -998,13 +986,9 @@
     const btnCamToggle = document.getElementById('btnCamToggle');
     const camToggleText = document.getElementById('camToggleText');
 
-    let currentStream = null;
     let isCamActive = false;
     let isDemo = false;
     let animId = null;
-
-    let leftHand = { x: 0.35, y: 0.5, targetX: 0.35, targetY: 0.5 };
-    let rightHand = { x: 0.65, y: 0.5, targetX: 0.65, targetY: 0.5 };
 
     function resizeCanvas() {
       if (padContainer) {
@@ -1015,21 +999,13 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    let primaryPointerId = null;
-    let secondaryPointerId = null;
+    // Mappa per associare in modo stabile ciascun dito a un punto
+    let pointerSlotMap = new Map();
 
-    function updateFingerPosition(e, targetHand) {
+    function updatePointFromTouch(e, pt) {
       const rect = padContainer.getBoundingClientRect();
-      const normX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const normY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-
-      if (targetHand === 'left') {
-        leftHand.targetX = normX;
-        leftHand.targetY = normY;
-      } else if (targetHand === 'right') {
-        rightHand.targetX = normX;
-        rightHand.targetY = normY;
-      }
+      pt.targetX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      pt.targetY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
     }
 
     if (padContainer) {
@@ -1039,16 +1015,24 @@
         padContainer.setPointerCapture(e.pointerId);
 
         if (currentTouchTarget === 'left') {
-          updateFingerPosition(e, 'left');
+          updatePointFromTouch(e, p1);
         } else if (currentTouchTarget === 'right') {
-          updateFingerPosition(e, 'right');
-        } else if (currentTouchTarget === 'dual') {
-          if (primaryPointerId === null) {
-            primaryPointerId = e.pointerId;
-            updateFingerPosition(e, 'left');
-          } else if (secondaryPointerId === null && e.pointerId !== primaryPointerId) {
-            secondaryPointerId = e.pointerId;
-            updateFingerPosition(e, 'right');
+          updatePointFromTouch(e, p2);
+        } else if (currentTouchTarget === 'point3') {
+          updatePointFromTouch(e, p3);
+        } else if (currentTouchTarget === 'triple') {
+          // Assegna il dito a uno slot libero tra 1, 2 o 3
+          if (!pointerSlotMap.has(e.pointerId)) {
+            if (!Array.from(pointerSlotMap.values()).includes(1)) {
+              pointerSlotMap.set(e.pointerId, 1);
+              updatePointFromTouch(e, p1);
+            } else if (!Array.from(pointerSlotMap.values()).includes(2)) {
+              pointerSlotMap.set(e.pointerId, 2);
+              updatePointFromTouch(e, p2);
+            } else if (!Array.from(pointerSlotMap.values()).includes(3)) {
+              pointerSlotMap.set(e.pointerId, 3);
+              updatePointFromTouch(e, p3);
+            }
           }
         }
       });
@@ -1058,209 +1042,182 @@
         e.preventDefault();
 
         if (currentTouchTarget === 'left') {
-          updateFingerPosition(e, 'left');
+          updatePointFromTouch(e, p1);
         } else if (currentTouchTarget === 'right') {
-          updateFingerPosition(e, 'right');
-        } else if (currentTouchTarget === 'dual') {
-          if (e.pointerId === primaryPointerId) {
-            updateFingerPosition(e, 'left');
-          } else if (e.pointerId === secondaryPointerId) {
-            updateFingerPosition(e, 'right');
-          }
+          updatePointFromTouch(e, p2);
+        } else if (currentTouchTarget === 'point3') {
+          updatePointFromTouch(e, p3);
+        } else if (currentTouchTarget === 'triple') {
+          const slot = pointerSlotMap.get(e.pointerId);
+          if (slot === 1) updatePointFromTouch(e, p1);
+          else if (slot === 2) updatePointFromTouch(e, p2);
+          else if (slot === 3) updatePointFromTouch(e, p3);
         }
       });
 
       function handlePointerRelease(e) {
-        if (e.pointerId === primaryPointerId) primaryPointerId = null;
-        else if (e.pointerId === secondaryPointerId) secondaryPointerId = null;
+        pointerSlotMap.delete(e.pointerId);
       }
       padContainer.addEventListener('pointerup', handlePointerRelease);
       padContainer.addEventListener('pointercancel', handlePointerRelease);
     }
 
-    const procCanvas = document.createElement('canvas');
-    const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
-    procCanvas.width = 80;
-    procCanvas.height = 60;
-    let prevFrameData = null;
+    // --- 5. LOOP ESPRESSIONE & CALCOLO ---
+    function processParameters() {
+      p1.x += (p1.targetX - p1.x) * 0.8;
+      p1.y += (p1.targetY - p1.y) * 0.8;
+      p2.x += (p2.targetX - p2.x) * 0.8;
+      p2.y += (p2.targetY - p2.y) * 0.8;
+      p3.x += (p3.targetX - p3.x) * 0.8;
+      p3.y += (p3.targetY - p3.y) * 0.8;
 
-    async function toggleWebcam() {
-      if (isCamActive) {
-        if (currentStream) {
-          currentStream.getTracks().forEach(t => t.stop());
-          currentStream = null;
-        }
-        video.srcObject = null;
-        video.classList.add('hidden');
-        touchPadBg.classList.remove('opacity-20');
-        isCamActive = false;
-        camToggleText.innerText = "Accendi Cam";
-        btnCamToggle.className = "px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 active:scale-95 text-black font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_12px_rgba(6,182,212,0.4)] flex items-center gap-1.5";
-      } else {
-        const facing = document.getElementById('cameraFacing')?.value || 'user';
-        try {
-          currentStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: facing, width: { ideal: 640 }, height: { ideal: 480 } },
-            audio: false
-          });
-          video.srcObject = currentStream;
-          await video.play();
+      const nP1X = Math.max(0, Math.min(1, p1.x));
+      const nP1Y = Math.max(0, Math.min(1, 1 - p1.y)); // Invertito: 1 in alto
+      const nP2X = Math.max(0, Math.min(1, p2.x));
+      const nP2Y = Math.max(0, Math.min(1, 1 - p2.y));
+      const nP3X = Math.max(0, Math.min(1, p3.x));
+      const nP3Y = Math.max(0, Math.min(1, 1 - p3.y));
 
-          video.classList.remove('hidden');
-          touchPadBg.classList.add('opacity-20');
-          isCamActive = true;
-          camToggleText.innerText = "Spegni Cam";
-          btnCamToggle.className = "px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 active:scale-95 text-white font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_12px_rgba(239,68,68,0.4)] flex items-center gap-1.5";
+      sendMidiExpression('LX', nP1X);
+      sendMidiExpression('LY', nP1Y);
+      sendMidiExpression('RX', nP2X);
+      sendMidiExpression('RY', nP2Y);
+      sendMidiExpression('P3X', nP3X);
+      sendMidiExpression('P3Y', nP3Y);
 
-          resizeCanvas();
-        } catch(err) {
-          alert("Impossibile avviare fotocamera: " + err.message);
-        }
-      }
-    }
-    btnCamToggle.addEventListener('click', toggleWebcam);
-
-    function computeOpticalMotion() {
-      if (!isCamActive || video.readyState < 2) return;
-      pCtx.drawImage(video, 0, 0, procCanvas.width, procCanvas.height);
-      const frame = pCtx.getImageData(0, 0, procCanvas.width, procCanvas.height);
-      const data = frame.data;
-
-      if (prevFrameData) {
-        const mode = document.getElementById('modeSelect')?.value || 'both';
-        const midX = procCanvas.width / 2;
-        let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
-
-        for (let i = 0; i < data.length; i += 4) {
-          const diff = (Math.abs(data[i] - prevFrameData[i]) + Math.abs(data[i+1] - prevFrameData[i+1]) + Math.abs(data[i+2] - prevFrameData[i+2])) / 3;
-          if (diff > 25) {
-            const idx = i / 4;
-            const px = idx % procCanvas.width;
-            const py = Math.floor(idx / procCanvas.width);
-
-            if (px < midX) {
-              if (mode === 'both' || mode === 'rightOnly') { rX += px * diff; rY += py * diff; rW += diff; }
-            } else {
-              if (mode === 'both' || mode === 'leftOnly') { lX += px * diff; lY += py * diff; lW += diff; }
-            }
-          }
-        }
-
-        if (lW > 280) {
-          leftHand.targetX = 1 - (lX / lW) / procCanvas.width;
-          leftHand.targetY = (lY / lW) / procCanvas.height;
-        }
-        if (rW > 280) {
-          rightHand.targetX = 1 - (rX / rW) / procCanvas.width;
-          rightHand.targetY = (rY / rW) / procCanvas.height;
-        }
-      }
-      prevFrameData = frame.data.slice();
+      const mon1 = document.getElementById('monP1');
+      const mon2 = document.getElementById('monP2');
+      const mon3 = document.getElementById('monP3');
+      if (mon1) mon1.innerText = `X: ${Math.round(nP1X*127)} | Y: ${Math.round(nP1Y*127)}`;
+      if (mon2) mon2.innerText = `X: ${Math.round(nP2X*127)} | Y: ${Math.round(nP2Y*127)}`;
+      if (mon3) mon3.innerText = `X: ${Math.round(nP3X*127)} | Y: ${Math.round(nP3Y*127)}`;
     }
 
-    function processGestureParameters() {
-      const activeSmoothing = (isCamActive || isDemo) ? parseFloat(document.getElementById('smoothingInput')?.value || 0.22) : 0.75;
-
-      leftHand.x += (leftHand.targetX - leftHand.x) * activeSmoothing;
-      leftHand.y += (leftHand.targetY - leftHand.y) * activeSmoothing;
-      rightHand.x += (rightHand.targetX - rightHand.x) * activeSmoothing;
-      rightHand.y += (rightHand.targetY - rightHand.y) * activeSmoothing;
-
-      const nLX = Math.max(0, Math.min(1, leftHand.x));
-      const nLY = Math.max(0, Math.min(1, 1 - leftHand.y));
-      const nRX = Math.max(0, Math.min(1, rightHand.x));
-      const nRY = Math.max(0, Math.min(1, 1 - rightHand.y));
-
-      sendMidiExpression('LX', nLX);
-      sendMidiExpression('LY', nLY);
-      sendMidiExpression('RX', nRX);
-      sendMidiExpression('RY', nRY);
-
-      const monLX = document.getElementById('leftCcMonitor');
-      const monRX = document.getElementById('rightCcMonitor');
-      if (monLX) monLX.innerText = `X: ${Math.round(nLX*127)} | Y: ${Math.round(nLY*127)}`;
-      if (monRX) monRX.innerText = `X: ${Math.round(nRX*127)} | Y: ${Math.round(nRY*127)}`;
-    }
-
+    // Disegno dei 3 cursori luminosi sul pad
     function renderFeedbackCanvas() {
       if (!ctx || viewPad.classList.contains('hidden')) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const lx = leftHand.x * canvas.width;
-      const ly = leftHand.y * canvas.height;
+      // Cursore 1 (Rosa - SX)
+      const x1 = p1.x * canvas.width;
+      const y1 = p1.y * canvas.height;
       ctx.beginPath();
-      ctx.arc(lx, ly, 28, 0, Math.PI * 2);
+      ctx.arc(x1, y1, 26, 0, Math.PI * 2);
       ctx.strokeStyle = "#ec4899";
       ctx.lineWidth = 3.5;
       ctx.fillStyle = "rgba(236, 72, 153, 0.35)";
       ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 10px monospace";
+      ctx.fillText("1", x1 - 3, y1 + 3);
 
-      const rx = rightHand.x * canvas.width;
-      const ry = rightHand.y * canvas.height;
+      // Cursore 2 (Cyan - DX)
+      const x2 = p2.x * canvas.width;
+      const y2 = p2.y * canvas.height;
       ctx.beginPath();
-      ctx.arc(rx, ry, 28, 0, Math.PI * 2);
+      ctx.arc(x2, y2, 26, 0, Math.PI * 2);
       ctx.strokeStyle = "#00f3ff";
       ctx.lineWidth = 3.5;
       ctx.fillStyle = "rgba(0, 243, 255, 0.35)";
       ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 10px monospace";
+      ctx.fillText("2", x2 - 3, y2 + 3);
+
+      // Cursore 3 (Giallo - FX)
+      const x3 = p3.x * canvas.width;
+      const y3 = p3.y * canvas.height;
+      ctx.beginPath();
+      ctx.arc(x3, y3, 26, 0, Math.PI * 2);
+      ctx.strokeStyle = "#facc15";
+      ctx.lineWidth = 3.5;
+      ctx.fillStyle = "rgba(250, 204, 21, 0.35)";
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 10px monospace";
+      ctx.fillText("3", x3 - 3, y3 + 3);
     }
 
-    function engineLoop(now) {
-      if (!isDemo && isCamActive) {
-        computeOpticalMotion();
-      } else if (isDemo) {
-        const t = now * 0.002;
-        leftHand.targetX = 0.3 + Math.cos(t * 0.8) * 0.2;
-        leftHand.targetY = 0.5 + Math.sin(t * 1.2) * 0.35;
-        rightHand.targetX = 0.7 + Math.sin(t * 1.1) * 0.2;
-        rightHand.targetY = 0.5 + Math.cos(t * 1.4) * 0.35;
+    function mainEngineLoop() {
+      processParameters();
+      renderFeedbackCanvas();
+      requestAnimationFrame(mainEngineLoop);
+    }
+    requestAnimationFrame(mainEngineLoop);
+
+    // --- 6. FADER DESK MIXER (SECONDA SCHEDA) ---
+    const faderChannels = document.querySelectorAll('.fader-channel');
+    const faderHoldStates = new Map();
+
+    faderChannels.forEach((chEl) => {
+      const chId = chEl.dataset.channel;
+      const slider = chEl.querySelector('.fader-slider');
+      const valDisp = chEl.querySelector('.fader-val');
+      const ccInput = chEl.querySelector('.fader-cc');
+      const btnZero = chEl.querySelector('.fader-btn-zero');
+      const btnMax = chEl.querySelector('.fader-btn-max');
+      const btnHold = chEl.querySelector('.fader-btn-hold');
+
+      faderHoldStates.set(chId, false);
+
+      function updateFader(val) {
+        if (faderHoldStates.get(chId)) return;
+        slider.value = val;
+        valDisp.innerText = val;
+        sendRawMidiCC(parseInt(ccInput.value), parseInt(val));
       }
 
-      processGestureParameters();
-      renderFeedbackCanvas();
-      animId = requestAnimationFrame(engineLoop);
-    }
-    requestAnimationFrame(engineLoop);
+      slider.addEventListener('input', (e) => updateFader(e.target.value));
+      btnZero.addEventListener('click', () => updateFader(0));
+      btnMax.addEventListener('click', () => updateFader(127));
 
-    document.getElementById('btnDemo').addEventListener('click', () => {
-      isDemo = !isDemo;
-      document.getElementById('btnDemo').innerText = isDemo ? "⏹️ Ferma" : "🪄 Simula";
+      btnHold.addEventListener('click', () => {
+        const isHold = !faderHoldStates.get(chId);
+        faderHoldStates.set(chId, isHold);
+        if (isHold) {
+          btnHold.classList.add('bg-cyan-600', 'text-white', 'border-cyan-400');
+          btnHold.innerText = "LOCKED";
+        } else {
+          btnHold.classList.remove('bg-cyan-600', 'text-white', 'border-cyan-400');
+          btnHold.innerText = "HOLD";
+        }
+      });
     });
 
-    const smoothEl = document.getElementById('smoothingInput');
-    if (smoothEl) {
-      smoothEl.addEventListener('input', (e) => {
-        document.getElementById('smoothingVal').innerText = parseFloat(e.target.value).toFixed(2);
+    const masterSweep = document.getElementById('masterSweepSlider');
+    const masterSweepVal = document.getElementById('masterSweepVal');
+    masterSweep.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      masterSweepVal.innerText = val;
+      faderChannels.forEach(chEl => {
+        const chId = chEl.dataset.channel;
+        if (!faderHoldStates.get(chId)) {
+          chEl.querySelector('.fader-slider').value = val;
+          chEl.querySelector('.fader-val').innerText = val;
+          sendRawMidiCC(parseInt(chEl.querySelector('.fader-cc').value), val);
+        }
       });
-    }
+    });
 
-    // Preset Live
-    const PRESETS = {
-      1: { lx: '74', ly: '71', rx: '10', ry: '1', cLx: 'expo', cLy: 'linear', minLx: 10, maxLx: 120 },
-      2: { lx: '1', ly: '11', rx: '10', ry: 'pitchbend', cLx: 'linear', cLy: 'scurve', minLx: 0, maxLx: 127 },
-      3: { lx: '7', ly: '91', rx: '74', ry: '71', cLx: 'log', cLy: 'linear', minLx: 20, maxLx: 127 },
-      4: { lx: '74', ly: '1', rx: '10', ry: '11', cLx: 'linear', cLy: 'linear', minLx: 0, maxLx: 127 }
-    };
+    document.getElementById('btnResetAllFaders').addEventListener('click', () => {
+      masterSweep.value = 0; masterSweepVal.innerText = 0;
+      faderChannels.forEach(chEl => {
+        if (!faderHoldStates.get(chEl.dataset.channel)) {
+          chEl.querySelector('.fader-slider').value = 0;
+          chEl.querySelector('.fader-val').innerText = 0;
+          sendRawMidiCC(parseInt(chEl.querySelector('.fader-cc').value), 0);
+        }
+      });
+    });
 
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const slot = btn.dataset.slot;
-        const p = PRESETS[slot];
-        if (!p) return;
-
-        document.querySelectorAll('.preset-btn').forEach(b => {
-          b.className = "preset-btn py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs uppercase transition-all active:scale-95";
-        });
-        btn.className = "preset-btn py-2.5 rounded-xl bg-cyan-950 border-2 border-cyan-500 text-cyan-300 font-black text-xs uppercase transition-all active:scale-95 shadow-[0_0_12px_rgba(6,182,212,0.4)]";
-
-        document.getElementById('selCC_LX').value = p.lx;
-        document.getElementById('selCC_LY').value = p.ly;
-        document.getElementById('selCC_RX').value = p.rx;
-        document.getElementById('selCC_RY').value = p.ry;
-        document.getElementById('curve_LX').value = p.cLx;
-        document.getElementById('curve_LY').value = p.cLy;
-        document.getElementById('min_LX').value = p.minLx;
-        document.getElementById('max_LX').value = p.maxLx;
+    document.getElementById('btnMaxAllFaders').addEventListener('click', () => {
+      masterSweep.value = 127; masterSweepVal.innerText = 127;
+      faderChannels.forEach(chEl => {
+        if (!faderHoldStates.get(chEl.dataset.channel)) {
+          chEl.querySelector('.fader-slider').value = 127;
+          chEl.querySelector('.fader-val').innerText = 127;
+          sendRawMidiCC(parseInt(chEl.querySelector('.fader-cc').value), 127);
+        }
       });
     });
   </script>
