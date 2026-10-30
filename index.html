@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Offline Resilient Tracking</title>
+  <title>CyberPose MIDI - Korg NTS-1 & Universal Controller</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -104,7 +104,7 @@
       </div>
       <div>
         <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Offline Resilient • Split Camera 0-127 • Freeze Control</p>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 / MicroFreak / GM • Resilient Engine</p>
       </div>
     </div>
 
@@ -138,14 +138,14 @@
     </div>
   </header>
 
-  <!-- BARRA HARDWARE -->
+  <!-- BARRA HARDWARE & AUTO-MAP UNIVERSALE -->
   <section style="background: rgba(15,23,42,0.9); border: 1px solid #3b0764; border-radius: 12px; padding: 8px 12px; margin-bottom: 8px;">
     <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 8px;">
       <div class="flex items-center gap-1">
         <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 MIDI OUT:</span>
         <select id="midiOutSelect" style="min-width: 170px;"><option value="none">Seleziona synth...</option></select>
         <select id="midiOutChannel">
-          <option value="0">Ch 1</option><option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
+          <option value="0">Ch 1 (NTS-1 Def)</option><option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
         </select>
       </div>
 
@@ -157,9 +157,14 @@
         </span>
       </div>
 
-      <button id="btnAutoMapUniversal" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
-        ⚡ Auto-Map
-      </button>
+      <div class="flex items-center gap-1">
+        <button id="btnAutoMapUniversal" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
+          ⚡ Auto-Map Synth
+        </button>
+        <button id="btnMapNTS1" style="padding: 6px 12px; border-radius: 8px; background: #0369a1; border: 1px solid #38bdf8; color: #fff; font-weight: 900; font-size: 11px;">
+          Korg NTS-1
+        </button>
+      </div>
     </div>
   </section>
 
@@ -168,7 +173,6 @@
     <div class="flex flex-col gap-2">
       <div class="flex justify-between items-center" style="background: rgba(15,23,42,0.9); border: 1px solid #1e293b; border-radius: 10px; padding: 6px 10px; font-size: 11px; flex-wrap: wrap; gap: 6px;">
         
-        <!-- Controlli Dita (Cam spenta) -->
         <div id="touchTargetControls" class="flex items-center gap-1">
           <span style="color: #94a3b8; font-weight: bold; font-size: 10px;">DITA:</span>
           <button class="touch-target-btn" data-target="left" style="background: #831843; border: 1px solid #db2777; color: #f472b6; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">1° SX</button>
@@ -177,7 +181,6 @@
           <button class="touch-target-btn" data-target="triple" style="background: #020617; border: 1px solid #334155; color: #94a3b8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">3 Dita</button>
         </div>
 
-        <!-- Controlli Cam (Cam accesa) -->
         <div id="camModeControls" class="hidden items-center gap-1">
           <span style="color: #facc15; font-weight: bold; font-size: 10px;">MANI:</span>
           <select id="camTrackingTarget" style="color: #22d3ee; font-weight: bold;">
@@ -187,7 +190,6 @@
           </select>
         </div>
 
-        <!-- Trigger di Avvio/Freeze e Reset -->
         <div class="flex items-center gap-1" style="margin-left: auto;">
           <button id="btnTrackingTrigger" class="hidden" style="background: #451a03; border: 2px solid #f59e0b; color: #fde68a; font-weight: 900; font-size: 10px; padding: 4px 10px; border-radius: 6px;">
             ▶️ Avvia Tracking
@@ -242,7 +244,7 @@
     <div style="background: rgba(15,23,42,0.8); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
       <div class="flex justify-between items-center pb-1" style="border-bottom: 1px solid #1e293b;">
         <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura Assi (Range 0 - 127)</h2>
-        <span style="font-size: 10px; color: #facc15; font-family: monospace;">Cutoff = CC#23</span>
+        <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">NTS-1 / MicroFreak Ready</span>
       </div>
 
       <!-- SX X -->
@@ -250,10 +252,10 @@
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
             <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse X</span>
-            <span id="dispVal_LX" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#23: 0</span>
+            <span id="dispVal_LX" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#43: 0</span>
           </div>
           <div class="flex gap-1 items-center">
-            <select id="selCC_LX" class="cc-full-select" data-default="23" style="flex: 2;"></select>
+            <select id="selCC_LX" class="cc-full-select" data-default="43" style="flex: 2;"></select>
             <select id="curve_LX" style="flex: 1;"><option value="linear">Lineare</option><option value="expo">Expo</option><option value="log">Log</option></select>
             <label style="font-size: 10px; color: #f472b6; margin-left: 4px;"><input type="checkbox" id="inv_LX"> Inv</label>
           </div>
@@ -267,10 +269,10 @@
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
             <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse Y</span>
-            <span id="dispVal_LY" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#83: 0</span>
+            <span id="dispVal_LY" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#44: 0</span>
           </div>
           <div class="flex gap-1 items-center">
-            <select id="selCC_LY" class="cc-full-select" data-default="83" style="flex: 2;"></select>
+            <select id="selCC_LY" class="cc-full-select" data-default="44" style="flex: 2;"></select>
             <select id="curve_LY" style="flex: 1;"><option value="linear">Lineare</option><option value="expo">Expo</option></select>
             <label style="font-size: 10px; color: #f472b6; margin-left: 4px;"><input type="checkbox" id="inv_LY"> Inv</label>
           </div>
@@ -284,10 +286,10 @@
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
             <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse X</span>
-            <span id="dispVal_RX" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#9: 0</span>
+            <span id="dispVal_RX" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#54: 0</span>
           </div>
           <div class="flex gap-1 items-center">
-            <select id="selCC_RX" class="cc-full-select" data-default="9" style="flex: 2;"></select>
+            <select id="selCC_RX" class="cc-full-select" data-default="54" style="flex: 2;"></select>
             <select id="curve_RX" style="flex: 1;"><option value="linear">Lineare</option><option value="expo">Expo</option></select>
             <label style="font-size: 10px; color: #22d3ee; margin-left: 4px;"><input type="checkbox" id="inv_RX"> Inv</label>
           </div>
@@ -301,10 +303,10 @@
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
             <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse Y</span>
-            <span id="dispVal_RY" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#10: 0</span>
+            <span id="dispVal_RY" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#29: 0</span>
           </div>
           <div class="flex gap-1 items-center">
-            <select id="selCC_RY" class="cc-full-select" data-default="10" style="flex: 2;"></select>
+            <select id="selCC_RY" class="cc-full-select" data-default="29" style="flex: 2;"></select>
             <select id="curve_RY" style="flex: 1;"><option value="linear">Lineare</option><option value="expo">Expo</option></select>
             <label style="font-size: 10px; color: #22d3ee; margin-left: 4px;"><input type="checkbox" id="inv_RY"> Inv</label>
           </div>
@@ -318,10 +320,10 @@
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
             <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse X</span>
-            <span id="dispVal_P3X" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#12: 0</span>
+            <span id="dispVal_P3X" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#31: 0</span>
           </div>
           <div class="flex gap-1 items-center">
-            <select id="selCC_P3X" class="cc-full-select" data-default="12" style="flex: 2;"></select>
+            <select id="selCC_P3X" class="cc-full-select" data-default="31" style="flex: 2;"></select>
             <select id="curve_P3X" style="flex: 1;"><option value="linear">Lineare</option></select>
             <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3X"> Inv</label>
           </div>
@@ -335,10 +337,10 @@
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
             <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse Y</span>
-            <span id="dispVal_P3Y" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#13: 0</span>
+            <span id="dispVal_P3Y" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#35: 0</span>
           </div>
           <div class="flex gap-1 items-center">
-            <select id="selCC_P3Y" class="cc-full-select" data-default="13" style="flex: 2;"></select>
+            <select id="selCC_P3Y" class="cc-full-select" data-default="35" style="flex: 2;"></select>
             <select id="curve_P3Y" style="flex: 1;"><option value="linear">Lineare</option></select>
             <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3Y"> Inv</label>
           </div>
@@ -378,9 +380,17 @@
     const ALL_MIDI_CCS = [
       { cc: 1, name: "CC#1: ModWheel" }, { cc: 2, name: "CC#2: Spice" },
       { cc: 5, name: "CC#5: Glide" }, { cc: 7, name: "CC#7: Volume" },
-      { cc: 9, name: "CC#9: Type" }, { cc: 10, name: "CC#10: Wave/Pan" },
-      { cc: 11, name: "CC#11: Expression" }, { cc: 12, name: "CC#12: Timbre" },
-      { cc: 13, name: "CC#13: Shape" }, { cc: 23, name: "CC#23: Cutoff" },
+      { cc: 9, name: "CC#9: Type (MF)" }, { cc: 10, name: "CC#10: Wave/Pan" },
+      { cc: 11, name: "CC#11: Expression" }, { cc: 12, name: "CC#12: Timbre (MF)" },
+      { cc: 13, name: "CC#13: Shape (MF)" }, { cc: 23, name: "CC#23: Cutoff (MF)" },
+      { cc: 29, name: "CC#29: Mod Depth (NTS-1)" },
+      { cc: 31, name: "CC#31: Delay Depth (NTS-1)" },
+      { cc: 35, name: "CC#35: Reverb Depth (NTS-1)" },
+      { cc: 42, name: "CC#42: Filter Type (NTS-1)" },
+      { cc: 43, name: "CC#43: Cutoff (Korg NTS-1)" },
+      { cc: 44, name: "CC#44: Resonance (Korg NTS-1)" },
+      { cc: 53, name: "CC#53: OSC Type (NTS-1)" },
+      { cc: 54, name: "CC#54: OSC Shape (NTS-1)" },
       { cc: 71, name: "CC#71: Reson Std" }, { cc: 74, name: "CC#74: Cutoff Std" },
       { cc: 83, name: "CC#83: Reson MicroFreak" }, { cc: 102, name: "CC#102: Cyc Rise" }
     ];
@@ -480,7 +490,7 @@
       }
 
       if (midiOutputs.length > 0) {
-        let defIdx = midiOutputs.findIndex(o => o.name && o.name.toLowerCase().includes('microfreak'));
+        let defIdx = midiOutputs.findIndex(o => o.name && (o.name.toLowerCase().includes('nts') || o.name.toLowerCase().includes('microfreak') || o.name.toLowerCase().includes('korg')));
         if (defIdx === -1) defIdx = 0;
         outSelect.value = defIdx;
         selectedMidiOut = midiOutputs[defIdx];
@@ -524,22 +534,40 @@
       });
     });
 
+    // MAPPA RAPIDA KORG NTS-1
+    function applyNTS1Map() {
+      document.getElementById('selCC_LX').value = "43"; // Cutoff NTS-1
+      document.getElementById('selCC_LY').value = "44"; // Resonance NTS-1
+      document.getElementById('selCC_RX').value = "54"; // Shape NTS-1
+      document.getElementById('selCC_RY').value = "29"; // Mod Depth NTS-1
+      document.getElementById('selCC_P3X').value = "31"; // Delay Depth NTS-1
+      document.getElementById('selCC_P3Y').value = "35"; // Reverb Depth NTS-1
+
+      const ntsDefaults = [43, 44, 53, 54, 29, 31, 35, 42];
+      faderConfigs.forEach((f, idx) => {
+        if (idx < ntsDefaults.length) setFaderCC(idx, ntsDefaults[idx]);
+      });
+      document.getElementById('currentMappingLabel').innerText = "Mappato: Korg NTS-1 (Cutoff CC#43)";
+    }
+    document.getElementById('btnMapNTS1').addEventListener('click', applyNTS1Map);
+
     document.getElementById('btnAutoMapUniversal').addEventListener('click', () => {
       const outName = selectedMidiOut && selectedMidiOut.name ? selectedMidiOut.name.toLowerCase() : '';
-      const isMicroFreak = outName.includes('microfreak') || outName.includes('arturia');
 
-      if (isMicroFreak) {
+      if (outName.includes('nts') || outName.includes('korg')) {
+        applyNTS1Map();
+      } else if (outName.includes('microfreak') || outName.includes('arturia')) {
         document.getElementById('selCC_LX').value = "23";
         document.getElementById('selCC_LY').value = "83";
         document.getElementById('selCC_RX').value = "9";
         document.getElementById('selCC_RY').value = "10";
         document.getElementById('selCC_P3X').value = "12";
         document.getElementById('selCC_P3Y').value = "13";
-
         const mfDefaults = [23, 83, 9, 10, 12, 13, 102, 5];
         faderConfigs.forEach((f, idx) => {
           if (idx < mfDefaults.length) setFaderCC(idx, mfDefaults[idx]);
         });
+        document.getElementById('currentMappingLabel').innerText = "Mappato: MicroFreak (Cutoff CC#23)";
       } else {
         document.getElementById('selCC_LX').value = "74";
         document.getElementById('selCC_LY').value = "71";
@@ -547,16 +575,12 @@
         document.getElementById('selCC_RY').value = "11";
         document.getElementById('selCC_P3X').value = "7";
         document.getElementById('selCC_P3Y').value = "10";
-
         const gmDefaults = [74, 71, 1, 11, 7, 10, 91, 92];
         faderConfigs.forEach((f, idx) => {
           if (idx < gmDefaults.length) setFaderCC(idx, gmDefaults[idx]);
         });
+        document.getElementById('currentMappingLabel').innerText = "Mappato: General MIDI (Cutoff CC#74)";
       }
-
-      const btn = document.getElementById('btnAutoMapUniversal');
-      btn.innerText = isMicroFreak ? "✓ MicroFreak!" : "✓ Standard GM!";
-      setTimeout(() => { btn.innerText = "⚡ Auto-Map"; }, 1400);
     });
 
     function sendRawMidiCC(ccNum, val7bit) {
@@ -672,7 +696,7 @@
     const boxMonP3 = document.getElementById('boxMonP3');
 
     let isCamActive = false;
-    let isTrackingRunning = false; // Freeze assoluto all'avvio della cam
+    let isTrackingRunning = false;
     let currentStream = null;
 
     function resizeCanvas() {
@@ -767,7 +791,7 @@
           btnTrackingTrigger.classList.remove('hidden');
 
           isCamActive = true;
-          isTrackingRunning = false; // Freeze garantito al cambio modalità
+          isTrackingRunning = false;
 
           btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
           btnTrackingTrigger.style.background = "#451a03";
@@ -900,7 +924,6 @@
     });
 
     function processParameters() {
-      // Se il tracking è congelato in modalità cam, non aggiorna le coordinate ottiche
       if (!isCamActive || isTrackingRunning) {
         const smoothing = isCamActive ? 0.35 : 0.8;
         p1.x += (p1.targetX - p1.x) * smoothing;
@@ -996,10 +1019,10 @@
     const faderCountDisp = document.getElementById('faderCountDisp');
 
     let faderConfigs = [
-      { cc: 23, val: 64, hold: false }, { cc: 83, val: 30, hold: false },
-      { cc: 9,  val: 40, hold: false }, { cc: 10, val: 64, hold: false },
-      { cc: 12, val: 50, hold: false }, { cc: 13, val: 20, hold: false },
-      { cc: 102,val: 64, hold: false }, { cc: 5,  val: 0, hold: false }
+      { cc: 43, val: 64, hold: false }, { cc: 44, val: 30, hold: false },
+      { cc: 53, val: 40, hold: false }, { cc: 54, val: 64, hold: false },
+      { cc: 29, val: 50, hold: false }, { cc: 31, val: 20, hold: false },
+      { cc: 35, val: 64, hold: false }, { cc: 42, val: 0, hold: false }
     ];
 
     function setFaderCC(index, newCC) {
