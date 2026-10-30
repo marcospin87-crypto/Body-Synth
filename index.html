@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Korg NTS-1 & Universal Controller</title>
+  <title>CyberPose MIDI - Universal Synth Studio</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -103,11 +103,12 @@
         ⚡
       </div>
       <div>
-        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 / MicroFreak / GM • Resilient Engine</p>
+        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE UNIVERSAL MIDI</h1>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">All Synths Compatible • Korg NTS-1 / MicroFreak / Any Device</p>
       </div>
     </div>
 
+    <!-- Schede di visualizzazione -->
     <div class="flex gap-1" style="background: #020617; padding: 4px; border-radius: 10px; border: 1px solid #164e63;">
       <button id="tabBtnPad" style="padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 900; background: #06b6d4; color: #000; border: none;">
         🎛️ XY Pad & Cam
@@ -117,9 +118,14 @@
       </button>
     </div>
 
+    <!-- Azioni e Refresh PWA -->
     <div class="flex items-center gap-2">
+      <button id="btnForcePwaUpdate" style="padding: 6px 10px; border-radius: 8px; border: 1px solid #f59e0b; background: #451a03; color: #fde68a; font-weight: bold; font-size: 10px;" title="Forza il caricamento dell'ultimo codice e svuota la cache locale">
+        🔄 Aggiorna App
+      </button>
+
       <button id="btnConnectMidi" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #10b981; background: #064e3b; color: #6ee7b7; font-weight: bold; font-size: 11px;">
-        🔌 Inizializza MIDI
+        🔌 Cerca Dispositivi MIDI
       </button>
 
       <button id="btnCamToggle" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #06b6d4, #2563eb); color: #000; font-weight: 900; font-size: 11px; border: none;">
@@ -138,33 +144,46 @@
     </div>
   </header>
 
-  <!-- BARRA HARDWARE & AUTO-MAP UNIVERSALE -->
+  <!-- BARRA HARDWARE & CONFIGURATORE UNIVERSALE SYNTH -->
   <section style="background: rgba(15,23,42,0.9); border: 1px solid #3b0764; border-radius: 12px; padding: 8px 12px; margin-bottom: 8px;">
     <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 8px;">
+      
+      <!-- Selettore Porta MIDI OUT con Broadcast Fallback -->
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 MIDI OUT:</span>
-        <select id="midiOutSelect" style="min-width: 170px;"><option value="none">Seleziona synth...</option></select>
+        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 DESTINAZIONE:</span>
+        <select id="midiOutSelect" style="min-width: 190px;">
+          <option value="broadcast">📢 Tutte le porte connesse (Broadcast)</option>
+        </select>
         <select id="midiOutChannel">
-          <option value="0">Ch 1 (NTS-1 Def)</option><option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
+          <option value="0">Ch 1 (NTS-1 / MF)</option>
+          <option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
+          <option value="9">Ch 10</option><option value="15">Ch 16</option>
         </select>
       </div>
 
+      <!-- MIDI IN & Tester Monitor -->
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #facc15; font-size: 11px;">📥 MIDI IN:</span>
-        <select id="midiInSelect"><option value="all">Tutte le porte</option></select>
+        <span style="font-weight: bold; color: #facc15; font-size: 11px;">📥 IN:</span>
+        <select id="midiInSelect"><option value="all">Ascolta Tutte</option></select>
         <span id="midiInMonitor" style="background: #020617; border: 1px solid #1e293b; padding: 2px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399;">
           IN: In attesa...
         </span>
       </div>
 
+      <!-- PROFILI DI CONFIGURAZIONE ISTANTANEA SYNTH -->
       <div class="flex items-center gap-1">
-        <button id="btnAutoMapUniversal" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
-          ⚡ Auto-Map Synth
-        </button>
-        <button id="btnMapNTS1" style="padding: 6px 12px; border-radius: 8px; background: #0369a1; border: 1px solid #38bdf8; color: #fff; font-weight: 900; font-size: 11px;">
-          Korg NTS-1
+        <span style="font-size: 11px; font-weight: bold; color: #38bdf8;">PROFILO:</span>
+        <select id="synthProfileSelect" style="color: #facc15; font-weight: bold; border-color: #0284c7;">
+          <option value="nts1" selected>🎹 Korg NTS-1 (Cutoff 43, Res 44)</option>
+          <option value="microfreak">⚡ Arturia MicroFreak (Cutoff 23, Res 83)</option>
+          <option value="generalmidi">🌐 General MIDI Std (Cutoff 74, Res 71)</option>
+          <option value="custom">🛠️ Profilo Personalizzato</option>
+        </select>
+        <button id="btnApplyProfile" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #0284c7, #06b6d4); color: #fff; font-weight: 900; font-size: 11px; border: none;">
+          Carica
         </button>
       </div>
+
     </div>
   </section>
 
@@ -223,7 +242,6 @@
         <canvas id="overlayCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
       </div>
 
-      <!-- Monitor Valori a 3 Punti -->
       <div class="grid grid-cols-3 gap-2" style="font-family: monospace; font-size: 11px;">
         <div id="boxMonP1" style="background: rgba(15,23,42,0.9); border: 1px solid rgba(236,72,153,0.5); padding: 6px; border-radius: 8px; text-align: center;">
           <span style="color: #f472b6; font-size: 9px; display: block;">1° SX (ROSA)</span>
@@ -244,7 +262,7 @@
     <div style="background: rgba(15,23,42,0.8); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
       <div class="flex justify-between items-center pb-1" style="border-bottom: 1px solid #1e293b;">
         <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura Assi (Range 0 - 127)</h2>
-        <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">NTS-1 / MicroFreak Ready</span>
+        <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">Korg NTS-1 Attivo (Cutoff 43)</span>
       </div>
 
       <!-- SX X -->
@@ -411,12 +429,28 @@
       });
     });
 
+    // PWA Service Worker & Force Refresh
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      });
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
+    document.getElementById('btnForcePwaUpdate').addEventListener('click', async () => {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          await registration.unregister();
+        }
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        for (let key of keys) {
+          await caches.delete(key);
+        }
+      }
+      window.location.reload(true);
+    });
+
+    // Switcher Schede
     const tabBtnPad = document.getElementById('tabBtnPad');
     const tabBtnFaders = document.getElementById('tabBtnFaders');
     const viewPad = document.getElementById('viewPad');
@@ -437,9 +471,10 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
+    // --- HARDWARE MIDI ENGINE RESILIENTE (AUTO-RECONNECT & BROADCAST) ---
     let midiAccess = null;
     let midiOutputs = [];
-    let selectedMidiOut = null;
+    let selectedMidiOutId = 'broadcast';
     let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
     let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
     let lastSentValues = { LX: null, LY: null, RX: null, RY: null, P3X: null, P3Y: null };
@@ -454,9 +489,9 @@
       setTimeout(() => el.style.backgroundColor = '#475569', 80);
     }
 
-    async function connectMidiEngine() {
+    async function initMidi() {
       if (!navigator.requestMIDIAccess) {
-        midiInMonitor.innerText = "No Web MIDI";
+        midiInMonitor.innerText = "No Web MIDI support";
         return;
       }
       try {
@@ -465,45 +500,67 @@
         midiAccess = await navigator.requestMIDIAccess({ sysex: false });
       }
 
+      refreshMidiPorts();
+      // Ascolta il collegamento / scollegamento di qualsiasi cavo o synth al volo
+      midiAccess.onstatechange = (e) => {
+        refreshMidiPorts();
+      };
+    }
+
+    async function refreshMidiPorts() {
+      if (!midiAccess) return;
+
       const inSelect = document.getElementById('midiInSelect');
-      inSelect.innerHTML = '<option value="all">Tutte le porte</option>';
+      inSelect.innerHTML = '<option value="all">Ascolta Tutte le porte</option>';
       const inputs = Array.from(midiAccess.inputs.values());
 
       for (let inp of inputs) {
-        await inp.open();
+        try { await inp.open(); } catch(e){}
         inp.onmidimessage = handleMIDIInput;
         const opt = document.createElement('option');
-        opt.value = inp.id; opt.innerText = inp.name || "MIDI IN";
+        opt.value = inp.id;
+        opt.innerText = inp.name || "MIDI IN Generico";
         inSelect.appendChild(opt);
       }
 
       const outSelect = document.getElementById('midiOutSelect');
-      outSelect.innerHTML = '<option value="none">Seleziona uscita...</option>';
+      outSelect.innerHTML = '<option value="broadcast">📢 Tutte le porte connesse (Broadcast)</option>';
       midiOutputs = Array.from(midiAccess.outputs.values());
 
-      for (let i = 0; i < midiOutputs.length; i++) {
-        const out = midiOutputs[i];
-        await out.open();
+      let detectedSynthName = null;
+      for (let out of midiOutputs) {
+        try { await out.open(); } catch(e){}
         const opt = document.createElement('option');
-        opt.value = i; opt.innerText = out.name || `Porta ${i+1}`;
+        opt.value = out.id;
+        opt.innerText = out.name || "Porta MIDI OUT";
         outSelect.appendChild(opt);
+
+        const lower = (out.name || '').toLowerCase();
+        if (lower.includes('nts') || lower.includes('korg')) detectedSynthName = 'nts1';
+        else if (lower.includes('microfreak') || lower.includes('arturia')) detectedSynthName = 'microfreak';
       }
 
+      // Se non è selezionato niente o è rimasto broadcast
       if (midiOutputs.length > 0) {
-        let defIdx = midiOutputs.findIndex(o => o.name && (o.name.toLowerCase().includes('nts') || o.name.toLowerCase().includes('microfreak') || o.name.toLowerCase().includes('korg')));
-        if (defIdx === -1) defIdx = 0;
-        outSelect.value = defIdx;
-        selectedMidiOut = midiOutputs[defIdx];
-        midiInMonitor.innerText = `Pronto (${inputs.length} IN / ${midiOutputs.length} OUT)`;
-        document.getElementById('btnConnectMidi').innerText = "✓ MIDI Attivo";
+        midiInMonitor.innerText = `Attive (${inputs.length} IN / ${midiOutputs.length} OUT)`;
+        document.getElementById('btnConnectMidi').innerText = `✓ MIDI (${midiOutputs.length} OUT)`;
+        
+        // Auto-selezione intelligente del profilo se riconosciuto dal nome
+        if (detectedSynthName && document.getElementById('synthProfileSelect').value !== 'custom') {
+          document.getElementById('synthProfileSelect').value = detectedSynthName;
+          applySelectedProfile(detectedSynthName);
+        }
+      } else {
+        midiInMonitor.innerText = "Nessun cavo/synth rilevato";
+        document.getElementById('btnConnectMidi').innerText = "🔌 Cerca Dispositivi MIDI";
       }
     }
 
-    document.getElementById('btnConnectMidi').addEventListener('click', connectMidiEngine);
-    connectMidiEngine();
+    document.getElementById('btnConnectMidi').addEventListener('click', initMidi);
+    initMidi();
 
     document.getElementById('midiOutSelect').addEventListener('change', (e) => {
-      selectedMidiOut = e.target.value === 'none' ? null : midiOutputs[parseInt(e.target.value)];
+      selectedMidiOutId = e.target.value;
     });
 
     function handleMIDIInput(event) {
@@ -534,68 +591,85 @@
       });
     });
 
-    // MAPPA RAPIDA KORG NTS-1
-    function applyNTS1Map() {
-      document.getElementById('selCC_LX').value = "43"; // Cutoff NTS-1
-      document.getElementById('selCC_LY').value = "44"; // Resonance NTS-1
-      document.getElementById('selCC_RX').value = "54"; // Shape NTS-1
-      document.getElementById('selCC_RY').value = "29"; // Mod Depth NTS-1
-      document.getElementById('selCC_P3X').value = "31"; // Delay Depth NTS-1
-      document.getElementById('selCC_P3Y').value = "35"; // Reverb Depth NTS-1
+    // --- CONFIGURATORE PROFILI HARDWARE UNIVERSALE ---
+    const SYNTH_PROFILES = {
+      nts1: {
+        name: "Korg NTS-1",
+        label: "Korg NTS-1 Attivo (Cutoff CC#43)",
+        channel: "0", // Ch 1
+        pad: { LX: "43", LY: "44", RX: "54", RY: "29", P3X: "31", P3Y: "35" },
+        faders: [43, 44, 53, 54, 29, 31, 35, 42]
+      },
+      microfreak: {
+        name: "Arturia MicroFreak",
+        label: "MicroFreak Attivo (Cutoff CC#23)",
+        channel: "0", // Ch 1
+        pad: { LX: "23", LY: "83", RX: "9", RY: "10", P3X: "12", P3Y: "13" },
+        faders: [23, 83, 9, 10, 12, 13, 102, 5]
+      },
+      generalmidi: {
+        name: "General MIDI Std",
+        label: "General MIDI Attivo (Cutoff CC#74)",
+        channel: "0",
+        pad: { LX: "74", LY: "71", RX: "1", RY: "11", P3X: "7", P3Y: "10" },
+        faders: [74, 71, 1, 11, 7, 10, 91, 92]
+      }
+    };
 
-      const ntsDefaults = [43, 44, 53, 54, 29, 31, 35, 42];
-      faderConfigs.forEach((f, idx) => {
-        if (idx < ntsDefaults.length) setFaderCC(idx, ntsDefaults[idx]);
+    function applySelectedProfile(profKey) {
+      const p = SYNTH_PROFILES[profKey];
+      if (!p) return;
+
+      document.getElementById('midiOutChannel').value = p.channel;
+      document.getElementById('selCC_LX').value = p.pad.LX;
+      document.getElementById('selCC_LY').value = p.pad.LY;
+      document.getElementById('selCC_RX').value = p.pad.RX;
+      document.getElementById('selCC_RY').value = p.pad.RY;
+      document.getElementById('selCC_P3X').value = p.pad.P3X;
+      document.getElementById('selCC_P3Y').value = p.pad.P3Y;
+
+      p.faders.forEach((cc, idx) => {
+        if (idx < faderConfigs.length) setFaderCC(idx, cc);
       });
-      document.getElementById('currentMappingLabel').innerText = "Mappato: Korg NTS-1 (Cutoff CC#43)";
+
+      document.getElementById('currentMappingLabel').innerText = p.label;
     }
-    document.getElementById('btnMapNTS1').addEventListener('click', applyNTS1Map);
 
-    document.getElementById('btnAutoMapUniversal').addEventListener('click', () => {
-      const outName = selectedMidiOut && selectedMidiOut.name ? selectedMidiOut.name.toLowerCase() : '';
-
-      if (outName.includes('nts') || outName.includes('korg')) {
-        applyNTS1Map();
-      } else if (outName.includes('microfreak') || outName.includes('arturia')) {
-        document.getElementById('selCC_LX').value = "23";
-        document.getElementById('selCC_LY').value = "83";
-        document.getElementById('selCC_RX').value = "9";
-        document.getElementById('selCC_RY').value = "10";
-        document.getElementById('selCC_P3X').value = "12";
-        document.getElementById('selCC_P3Y').value = "13";
-        const mfDefaults = [23, 83, 9, 10, 12, 13, 102, 5];
-        faderConfigs.forEach((f, idx) => {
-          if (idx < mfDefaults.length) setFaderCC(idx, mfDefaults[idx]);
-        });
-        document.getElementById('currentMappingLabel').innerText = "Mappato: MicroFreak (Cutoff CC#23)";
-      } else {
-        document.getElementById('selCC_LX').value = "74";
-        document.getElementById('selCC_LY').value = "71";
-        document.getElementById('selCC_RX').value = "1";
-        document.getElementById('selCC_RY').value = "11";
-        document.getElementById('selCC_P3X').value = "7";
-        document.getElementById('selCC_P3Y').value = "10";
-        const gmDefaults = [74, 71, 1, 11, 7, 10, 91, 92];
-        faderConfigs.forEach((f, idx) => {
-          if (idx < gmDefaults.length) setFaderCC(idx, gmDefaults[idx]);
-        });
-        document.getElementById('currentMappingLabel').innerText = "Mappato: General MIDI (Cutoff CC#74)";
+    document.getElementById('btnApplyProfile').addEventListener('click', () => {
+      const selected = document.getElementById('synthProfileSelect').value;
+      if (selected !== 'custom') {
+        applySelectedProfile(selected);
       }
     });
 
+    // Invia i pacchetti MIDI OUT con supporto BROADCAST
     function sendRawMidiCC(ccNum, val7bit) {
-      if (!selectedMidiOut || ccNum === null || ccNum === undefined) return;
+      if (!midiOutputs || midiOutputs.length === 0 || ccNum === null || ccNum === undefined) return;
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      selectedMidiOut.send([0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))]);
+      const packet = [0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))];
+
+      if (selectedMidiOutId === 'broadcast') {
+        // Invia a TUTTE le porte MIDI collegate (nessun synth può essere saltato)
+        for (let out of midiOutputs) {
+          try { out.send(packet); } catch(e){}
+        }
+      } else {
+        const out = midiOutputs.find(o => o.id === selectedMidiOutId);
+        if (out) {
+          try { out.send(packet); } catch(e){}
+        }
+      }
       flashLed(midiOutLed);
     }
 
     document.getElementById('btnMidiPanic').addEventListener('click', () => {
-      if (!selectedMidiOut) return;
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      selectedMidiOut.send([0xB0 | ch, 123, 0]);
-      selectedMidiOut.send([0xB0 | ch, 120, 0]);
-      selectedMidiOut.send([0xB0 | ch, 121, 0]);
+      const packets = [[0xB0 | ch, 123, 0], [0xB0 | ch, 120, 0], [0xB0 | ch, 121, 0]];
+      for (let out of midiOutputs) {
+        for (let p of packets) {
+          try { out.send(p); } catch(e){}
+        }
+      }
       flashLed(midiOutLed, '#ef4444');
     });
 
@@ -633,11 +707,10 @@
     });
 
     function sendMidiExpression(axisId, normVal) {
-      if (!selectedMidiOut || holdStates[axisId]) return;
+      if (holdStates[axisId]) return;
       const sel = document.getElementById(`selCC_${axisId}`)?.value;
       if (!sel) return;
 
-      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
       const now = performance.now();
       if (now - lastMidiTimes[axisId] < 16) return;
       lastMidiTimes[axisId] = now;
@@ -645,12 +718,11 @@
       const ccNum = parseInt(sel);
       const finalVal = calculateMidiValue(normVal, axisId);
       if (finalVal !== lastSentValues[axisId]) {
-        selectedMidiOut.send([0xB0 | ch, ccNum, finalVal]);
+        sendRawMidiCC(ccNum, finalVal);
         lastSentValues[axisId] = finalVal;
         const disp = document.getElementById(`dispVal_${axisId}`);
         if (disp) disp.innerText = `CC#${ccNum}: ${finalVal}`;
       }
-      flashLed(midiOutLed);
     }
 
     let currentTouchTarget = 'triple';
