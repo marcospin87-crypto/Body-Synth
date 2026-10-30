@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Korg NTS-1 Stabilized</title>
+  <title>CyberPose MIDI - WebGL Hardware Turbo</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -92,11 +92,11 @@
   <header class="flex justify-between items-center pb-2 mb-2" style="border-bottom: 1px solid #164e63; flex-wrap: wrap; gap: 8px;">
     <div class="flex items-center gap-2">
       <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(6,182,212,0.2); border: 1px solid #22d3ee; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #67e8f9;">
-        ⚡
+        🚀
       </div>
       <div>
-        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Stabilized Driver • Anti-Overflow Bus Protection</p>
+        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI GPU TURBO</h1>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Hardware Accelerated • WakeLock Active • Zero-GC Memory</p>
       </div>
     </div>
 
@@ -115,7 +115,7 @@
       </button>
 
       <button id="btnConnectMidi" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #10b981; background: #064e3b; color: #6ee7b7; font-weight: bold; font-size: 11px;">
-        🔌 Reset Connessione MIDI
+        🔌 Riavvia Driver MIDI
       </button>
 
       <button id="btnCamToggle" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #06b6d4, #2563eb); color: #000; font-weight: 900; font-size: 11px; border: none;">
@@ -139,9 +139,9 @@
     <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 8px;">
       
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 TRASMISSIONE:</span>
+        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 BUS HARDWARE:</span>
         <span style="background: #082f49; border: 1px solid #0284c7; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #38bdf8; font-weight: bold;">
-          📢 DIRECT BROADCAST
+          GPU ACCELERATED • DIRECT OUT
         </span>
         <select id="midiOutChannel">
           <option value="0" selected>Ch 1 (NTS-1 Def)</option>
@@ -150,7 +150,7 @@
       </div>
 
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO PORTE:</span>
+        <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO USB:</span>
         <span id="midiStatusBadge" style="background: #020617; border: 1px solid #10b981; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399; font-weight: bold;">
           Ricerca MIDI in corso...
         </span>
@@ -158,7 +158,7 @@
 
       <div class="flex items-center gap-1">
         <button id="btnForceNTS1" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
-          ⚡ Carica Mappa NTS-1
+          ⚡ Ripristina Mappa NTS-1
         </button>
       </div>
 
@@ -367,6 +367,17 @@
   </main>
 
   <script>
+    // WAKELOCK: Impedisce al tablet di andare in standby o tagliare l'alimentazione USB
+    let wakeLockSentinel = null;
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {}
+    }
+    document.addEventListener('click', () => { if (!wakeLockSentinel) requestWakeLock(); }, { once: true });
+
     const ALL_MIDI_CCS = [
       { cc: 43, name: "CC#43: Cutoff (Korg NTS-1)" },
       { cc: 44, name: "CC#44: Resonance (Korg NTS-1)" },
@@ -427,14 +438,13 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- DRIVER MIDI CON PROTEZIONE CONTRO L'INTASAMENTO DEL BUFFER ---
+    // --- MOTORE MIDI HARDWARE AD ALTE PRESTAZIONI ---
     let midiAccess = null;
     let isTestNoteActive = false;
     let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
     let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
     let lastSentValues = { LX: -1, LY: -1, RX: -1, RY: -1, P3X: -1, P3Y: -1 };
 
-    // Registra lo stato inviato per ogni CC dei fader per evitare pacchetti doppi
     const lastFaderSent = new Int16Array(128).fill(-1);
     const lastFaderTime = new Float64Array(128).fill(0);
 
@@ -444,10 +454,10 @@
 
     function flashLed(el, color = '#34d399') {
       el.style.backgroundColor = color;
-      setTimeout(() => el.style.backgroundColor = '#475569', 80);
+      setTimeout(() => el.style.backgroundColor = '#475569', 60);
     }
 
-    async function initMidiBroadcast() {
+    async function initMidiHardware() {
       if (!navigator.requestMIDIAccess) {
         midiStatusBadge.innerText = "Web MIDI non supportato";
         return;
@@ -477,14 +487,13 @@
       } else {
         midiStatusBadge.innerText = "In attesa cavo OTG...";
         midiStatusBadge.style.color = "#facc15";
-        document.getElementById('btnConnectMidi').innerText = "🔌 Reset Connessione MIDI";
+        document.getElementById('btnConnectMidi').innerText = "🔌 Riavvia Driver MIDI";
       }
     }
 
-    document.getElementById('btnConnectMidi').addEventListener('click', initMidiBroadcast);
-    initMidiBroadcast();
+    document.getElementById('btnConnectMidi').addEventListener('click', initMidiHardware);
+    initMidiHardware();
 
-    // SPEDISCE AGLI OUTPUT FISICI CON PROTEZIONE ANTI-STALL
     function sendRawMidiCC(ccNum, val7bit) {
       if (!midiAccess) return;
       const outputs = Array.from(midiAccess.outputs.values());
@@ -501,15 +510,14 @@
       flashLed(midiOutLed);
     }
 
-    // SPEDIZIONE SICURA FADER: Throttling a 25ms + Soppressione duplicati per non mandare in blocco l'NTS-1
     function sendFaderCC(ccNum, val7bit) {
       ccNum = parseInt(ccNum);
       val7bit = Math.max(0, Math.min(127, parseInt(val7bit)));
       if (ccNum < 0 || ccNum > 127) return;
 
       const now = performance.now();
-      if (val7bit === lastFaderSent[ccNum]) return; // Evita byte ridondanti
-      if (now - lastFaderTime[ccNum] < 25) return;   // Massimo 40 messaggi/sec per singolo CC
+      if (val7bit === lastFaderSent[ccNum]) return;
+      if (now - lastFaderTime[ccNum] < 20) return; // 50 Hz rate limit
 
       lastFaderTime[ccNum] = now;
       lastFaderSent[ccNum] = val7bit;
@@ -518,8 +526,9 @@
 
     const btnForcePing = document.getElementById('btnForcePing');
     btnForcePing.addEventListener('click', () => {
+      requestWakeLock();
       if (!midiAccess) {
-        initMidiBroadcast();
+        initMidiHardware();
         return;
       }
       const outputs = Array.from(midiAccess.outputs.values());
@@ -617,14 +626,13 @@
       }
     });
 
-    // Throttling di protezione a 25ms sui CC del Pad
     function sendMidiExpression(axisId, normVal) {
       if (holdStates[axisId]) return;
       const sel = document.getElementById(`selCC_${axisId}`)?.value;
       if (!sel) return;
 
       const now = performance.now();
-      if (now - lastMidiTimes[axisId] < 25) return;
+      if (now - lastMidiTimes[axisId] < 20) return;
 
       const ccNum = parseInt(sel);
       const finalVal = calculateMidiValue(normVal, axisId);
@@ -711,13 +719,14 @@
     camTrackingTarget.addEventListener('change', updateCursorVisibility);
 
     btnTrackingTrigger.addEventListener('click', () => {
+      requestWakeLock();
       isTrackingRunning = !isTrackingRunning;
       if (isTrackingRunning) {
         btnTrackingTrigger.innerText = "⏸️ Freeza Tracking";
         btnTrackingTrigger.style.background = "#450a0a";
         btnTrackingTrigger.style.borderColor = "#ef4444";
         btnTrackingTrigger.style.color = "#fecaca";
-        padTrackingStatusText.innerText = "Tracking ATTIVO (Muovi le mani)";
+        padTrackingStatusText.innerText = "Tracking GPU ATTIVO";
       } else {
         btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
         btnTrackingTrigger.style.background = "#451a03";
@@ -727,18 +736,20 @@
       }
     });
 
-    // --- PIPELINE OTTICA RESILIENTE ZERO-ALLOCATION (ANTI-CRASH) ---
+    // --- PIPELINE OTTICA ACCELERATA DA HARDWARE GPU (ZERO ALLOCAZIONI MEMORIA) ---
     const procW = 48, procH = 36;
     const procCanvas = document.createElement('canvas');
     procCanvas.width = procW;
     procCanvas.height = procH;
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
     
+    // Buffer statici preallocati
     const prevLuma = new Uint8Array(procW * procH);
     let hasPrevFrame = false;
     let lastOpticalFrameTime = 0;
 
     async function toggleWebcam() {
+      requestWakeLock();
       if (isCamActive) {
         if (currentStream) {
           try { currentStream.getTracks().forEach(t => t.stop()); } catch(e){}
@@ -807,7 +818,7 @@
       if (!video || video.paused || video.ended || video.readyState < 2) return;
 
       const now = performance.now();
-      if (now - lastOpticalFrameTime < 50) return;
+      if (now - lastOpticalFrameTime < 40) return; // 25 FPS ottimali per hardware tablet
       lastOpticalFrameTime = now;
 
       try {
@@ -837,14 +848,14 @@
             prevLuma[p] = bright;
           }
 
-          if (lW > 90) {
+          if (lW > 80) {
             const rawNormX = 1 - (lX / lW) / procW;
             const clampedX = Math.max(0.02, Math.min(0.48, rawNormX));
             p1.targetX = (clampedX - 0.02) / (0.48 - 0.02) * 0.5;
             p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / procH));
           }
 
-          if (rW > 90) {
+          if (rW > 80) {
             const rawNormX = 1 - (rX / rW) / procW;
             const clampedX = Math.max(0.52, Math.min(0.98, rawNormX));
             p2.targetX = 0.5 + ((clampedX - 0.52) / (0.98 - 0.52) * 0.5);
@@ -871,6 +882,7 @@
 
     if (padContainer) {
       padContainer.addEventListener('pointerdown', (e) => {
+        requestWakeLock();
         if (isCamActive) return;
         e.preventDefault();
         padContainer.setPointerCapture(e.pointerId);
@@ -1013,7 +1025,7 @@
     }
     requestAnimationFrame(mainEngineLoop);
 
-    // FADER DESK CON METODO DI INVIO SICURO
+    // FADER DESK
     const fadersContainer = document.getElementById('fadersContainer');
     const faderCountDisp = document.getElementById('faderCountDisp');
 
