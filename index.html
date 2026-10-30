@@ -427,7 +427,7 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- DRIVER MIDI DIRETTO BROADCAST (COME PRIMA) ---
+    // --- DRIVER MIDI DIRETTO BROADCAST (ORIGINARIO E STABILE) ---
     let midiAccess = null;
     let isTestNoteActive = false;
     let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
@@ -480,7 +480,6 @@
     document.getElementById('btnConnectMidi').addEventListener('click', initMidiBroadcast);
     initMidiBroadcast();
 
-    // INVIA A TUTTE LE PORTE HARDWARE ATTIVE IN PARALLELO
     function sendRawMidiCC(ccNum, val7bit) {
       if (!midiAccess) return;
       const outputs = Array.from(midiAccess.outputs.values());
@@ -497,7 +496,6 @@
       flashLed(midiOutLed);
     }
 
-    // FORCE PING COMPLETO (SBLOCCO + NOTA TEST)
     const btnForcePing = document.getElementById('btnForcePing');
     btnForcePing.addEventListener('click', () => {
       if (!midiAccess) {
@@ -516,7 +514,6 @@
       for (let out of outputs) {
         try {
           if (isTestNoteActive) {
-            // Sblocca controlli, apre il filtro al massimo e suona Nota C3
             out.send([0xB0 | ch, 121, 0]);
             out.send([0xB0 | ch, 43, 127]);
             out.send([0xB0 | ch, 44, 40]);
@@ -708,14 +705,14 @@
       }
     });
 
-    // --- PIPELINE OTTICA LEGGERA ANTI-BLOCCO ---
+    // --- PIPELINE OTTICA ANTI-FREEZE CON THROTTLING A 20 FPS ---
     const procCanvas = document.createElement('canvas');
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
     procCanvas.width = 48;
     procCanvas.height = 36;
     const prevFrameData = new Uint8ClampedArray(48 * 36);
     let hasPrevFrame = false;
-    let lastVideoTime = -1;
+    let lastOpticalFrameTime = 0;
 
     async function toggleWebcam() {
       if (isCamActive) {
@@ -734,7 +731,6 @@
         isCamActive = false;
         isTrackingRunning = false;
         hasPrevFrame = false;
-        lastVideoTime = -1;
 
         camToggleText.innerText = "Accendi Cam";
         padStatusBadge.innerText = "PAD ATTIVO";
@@ -761,7 +757,7 @@
           isCamActive = true;
           isTrackingRunning = false;
           hasPrevFrame = false;
-          lastVideoTime = -1;
+          lastOpticalFrameTime = 0;
 
           btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
           btnTrackingTrigger.style.background = "#451a03";
@@ -786,8 +782,10 @@
       if (!isCamActive || !isTrackingRunning) return;
       if (!video || video.paused || video.ended || video.readyState < 2) return;
 
-      if (video.currentTime === lastVideoTime) return;
-      lastVideoTime = video.currentTime;
+      // BLOCCO SALVA-GPU: Esegue l'analisi al massimo ogni 50ms (~20 FPS)
+      const now = performance.now();
+      if (now - lastOpticalFrameTime < 50) return;
+      lastOpticalFrameTime = now;
 
       try {
         pCtx.drawImage(video, 0, 0, 48, 36);
