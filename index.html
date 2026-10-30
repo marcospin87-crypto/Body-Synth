@@ -96,7 +96,7 @@
       </div>
       <div>
         <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Direct Engine • Anti-Freeze Video • 0-127 Range</p>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Direct Engine • Zero-Leak Stable Camera</p>
       </div>
     </div>
 
@@ -110,7 +110,6 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <!-- FORCE PING / TEST AUDIO NTS-1 -->
       <button id="btnForcePing" style="padding: 6px 14px; border-radius: 8px; border: 2px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px; box-shadow: 0 0 12px rgba(56,189,248,0.5);">
         ⚡ FORCE PING NTS-1
       </button>
@@ -318,4 +317,849 @@
           <div class="flex gap-1 items-center">
             <select id="selCC_P3X" class="cc-full-select" data-default="31" style="flex: 2;"></select>
             <select id="curve_P3X" style="flex: 1;"><option value="linear">Lineare</option></select>
- 
+            <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3X"> Inv</label>
+          </div>
+        </div>
+        <button id="hold_P3X" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
+      </div>
+
+      <!-- FX Y -->
+      <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(234,179,8,0.25); border-radius: 8px; padding: 6px;">
+        <div style="flex: 1;">
+          <div class="flex justify-between items-center mb-1">
+            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse Y (NTS-1 Reverb Depth)</span>
+            <span id="dispVal_P3Y" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#35: 0</span>
+          </div>
+          <div class="flex gap-1 items-center">
+            <select id="selCC_P3Y" class="cc-full-select" data-default="35" style="flex: 2;"></select>
+            <select id="curve_P3Y" style="flex: 1;"><option value="linear">Lineare</option></select>
+            <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3Y"> Inv</label>
+          </div>
+        </div>
+        <button id="hold_P3Y" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
+      </div>
+    </div>
+  </main>
+
+  <!-- VISTA 2: FADER DESK -->
+  <main id="viewFaders" class="hidden flex-col gap-2" style="flex: 1;">
+    <div class="flex justify-between items-center p-2" style="background: rgba(15,23,42,0.9); border: 1px solid #1e293b; border-radius: 12px; flex-wrap: wrap; gap: 8px;">
+      <div class="flex items-center gap-1">
+        <span style="font-size: 11px; font-weight: bold; color: #94a3b8;">FADERS:</span>
+        <button id="btnRemoveFader" style="width: 24px; height: 24px; border-radius: 6px; background: #020617; border: 1px solid #334155; color: #f87171; font-weight: bold;">-</button>
+        <span id="faderCountDisp" style="background: #020617; border: 1px solid #06b6d4; color: #22d3ee; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-family: monospace;">8 Faders</span>
+        <button id="btnAddFader" style="width: 24px; height: 24px; border-radius: 6px; background: #020617; border: 1px solid #334155; color: #4ade80; font-weight: bold;">+</button>
+      </div>
+
+      <div class="flex items-center gap-2" style="flex: 1; min-width: 220px;">
+        <span style="font-size: 11px; font-weight: 900; color: #22d3ee; white-space: nowrap;">🖐️ Master Sweep:</span>
+        <input id="masterSweepSlider" type="range" min="0" max="127" value="64" style="flex: 1; height: 6px;">
+        <span id="masterSweepVal" style="font-family: monospace; color: #22d3ee; font-weight: bold; font-size: 12px; width: 26px;">64</span>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button id="btnResetAllFaders" style="background: #020617; border: 1px solid #334155; color: #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 10px;">Zero (0)</button>
+        <button id="btnMaxAllFaders" style="background: #082f49; border: 1px solid #0284c7; color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 10px;">Max (127)</button>
+      </div>
+    </div>
+
+    <div id="fadersContainer" style="display: flex; gap: 8px; overflow-x: auto; padding: 8px; background: #020617; border: 1px solid rgba(6,182,212,0.3); border-radius: 12px; flex: 1;"></div>
+  </main>
+
+  <script>
+    const ALL_MIDI_CCS = [
+      { cc: 43, name: "CC#43: Cutoff (Korg NTS-1)" },
+      { cc: 44, name: "CC#44: Resonance (Korg NTS-1)" },
+      { cc: 53, name: "CC#53: OSC Type (NTS-1)" },
+      { cc: 54, name: "CC#54: OSC Shape (NTS-1)" },
+      { cc: 29, name: "CC#29: Mod Depth (NTS-1)" },
+      { cc: 31, name: "CC#31: Delay Depth (NTS-1)" },
+      { cc: 35, name: "CC#35: Reverb Depth (NTS-1)" },
+      { cc: 42, name: "CC#42: Filter Type (NTS-1)" },
+      { cc: 23, name: "CC#23: Cutoff (MicroFreak)" },
+      { cc: 83, name: "CC#83: Resonance (MicroFreak)" },
+      { cc: 74, name: "CC#74: Cutoff (Standard GM)" },
+      { cc: 71, name: "CC#71: Reson (Standard GM)" },
+      { cc: 1,  name: "CC#1: ModWheel" },
+      { cc: 7,  name: "CC#7: Volume" },
+      { cc: 11, name: "CC#11: Expression" }
+    ];
+
+    const FULL_128_CC_MAP = [];
+    for (let i = 0; i <= 127; i++) {
+      const known = ALL_MIDI_CCS.find(k => k.cc === i);
+      FULL_128_CC_MAP.push({ cc: i, name: known ? known.name : `CC#${i}: Controllo Generico ${i}` });
+    }
+
+    document.querySelectorAll('.cc-full-select').forEach(sel => {
+      const def = parseInt(sel.dataset.default);
+      FULL_128_CC_MAP.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.cc; opt.innerText = item.name;
+        if (item.cc === def) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // Switcher Schede
+    const tabBtnPad = document.getElementById('tabBtnPad');
+    const tabBtnFaders = document.getElementById('tabBtnFaders');
+    const viewPad = document.getElementById('viewPad');
+    const viewFaders = document.getElementById('viewFaders');
+
+    tabBtnPad.addEventListener('click', () => {
+      viewPad.classList.remove('hidden'); viewPad.style.display = 'grid';
+      viewFaders.classList.add('hidden'); viewFaders.style.display = 'none';
+      tabBtnPad.style.background = '#06b6d4'; tabBtnPad.style.color = '#000';
+      tabBtnFaders.style.background = 'transparent'; tabBtnFaders.style.color = '#94a3b8';
+      resizeCanvas();
+    });
+
+    tabBtnFaders.addEventListener('click', () => {
+      viewPad.classList.add('hidden'); viewPad.style.display = 'none';
+      viewFaders.classList.remove('hidden'); viewFaders.style.display = 'flex';
+      tabBtnFaders.style.background = '#06b6d4'; tabBtnFaders.style.color = '#000';
+      tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
+    });
+
+    // --- HARDWARE MIDI DRIVER DIRETTO POTENZIATO ---
+    let midiAccess = null;
+    let midiOutputs = [];
+    let isTestNoteActive = false;
+    let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
+    let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
+    let lastSentValues = { LX: null, LY: null, RX: null, RY: null, P3X: null, P3Y: null };
+
+    const midiInLed = document.getElementById('midiInLed');
+    const midiOutLed = document.getElementById('midiOutLed');
+    const midiStatusBadge = document.getElementById('midiStatusBadge');
+
+    function flashLed(el, color = '#34d399') {
+      el.style.backgroundColor = color;
+      setTimeout(() => el.style.backgroundColor = '#475569', 80);
+    }
+
+    async function startMidiSystem() {
+      if (!navigator.requestMIDIAccess) {
+        midiStatusBadge.innerText = "Browser senza Web MIDI";
+        midiStatusBadge.style.color = "#f87171";
+        return;
+      }
+      try {
+        midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+        midiAccess.onstatechange = updateMidiDevices;
+        updateMidiDevices();
+      } catch (err) {
+        try {
+          midiAccess = await navigator.requestMIDIAccess();
+          midiAccess.onstatechange = updateMidiDevices;
+          updateMidiDevices();
+        } catch (e2) {
+          midiStatusBadge.innerText = "Errore Accesso MIDI: " + err.message;
+          midiStatusBadge.style.color = "#f87171";
+        }
+      }
+    }
+
+    function updateMidiDevices() {
+      if (!midiAccess) return;
+
+      const outSelect = document.getElementById('midiOutSelect');
+      outSelect.innerHTML = '<option value="all">📢 Tutte le porte connesse (Auto-Broadcast)</option>';
+      midiOutputs = Array.from(midiAccess.outputs.values());
+
+      let portCount = 0;
+      for (let out of midiOutputs) {
+        portCount++;
+        const opt = document.createElement('option');
+        opt.value = out.id;
+        opt.innerText = out.name || `Dispositivo USB MIDI #${portCount}`;
+        outSelect.appendChild(opt);
+      }
+
+      if (midiOutputs.length > 0) {
+        midiStatusBadge.innerText = `✓ Connesso (${midiOutputs.length} Dispositivi MIDI OUT)`;
+        midiStatusBadge.style.color = "#34d399";
+        midiStatusBadge.style.borderColor = "#10b981";
+      } else {
+        midiStatusBadge.innerText = "In attesa di cavo OTG / Synth...";
+        midiStatusBadge.style.color = "#facc15";
+        midiStatusBadge.style.borderColor = "#ca8a04";
+      }
+    }
+
+    document.getElementById('btnConnectMidi').addEventListener('click', startMidiSystem);
+    startMidiSystem();
+
+    function sendRawMidiCC(ccNum, val7bit) {
+      if (!midiOutputs || midiOutputs.length === 0 || ccNum === null || ccNum === undefined) return;
+      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
+      const targetId = document.getElementById('midiOutSelect')?.value || 'all';
+      const packet = [0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))];
+
+      for (let out of midiOutputs) {
+        if (targetId === 'all' || out.id === targetId) {
+          try { out.send(packet); } catch(e){}
+        }
+      }
+      flashLed(midiOutLed);
+    }
+
+    // FORCE PING & TEST AUDIO NTS-1
+    const btnForcePing = document.getElementById('btnForcePing');
+    btnForcePing.addEventListener('click', () => {
+      if (!midiOutputs || midiOutputs.length === 0) {
+        startMidiSystem();
+      }
+      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
+      isTestNoteActive = !isTestNoteActive;
+
+      if (isTestNoteActive) {
+        for (let out of midiOutputs) {
+          try {
+            out.send([0xB0 | ch, 43, 120]); // Apri Cutoff NTS-1
+            out.send([0xB0 | ch, 44, 40]);  // Resonanza NTS-1
+            out.send([0x90 | ch, 60, 100]); // Note On C3
+          } catch(e){}
+        }
+        btnForcePing.innerText = "⏹️ STOP AUDIO NTS-1";
+        btnForcePing.style.background = "#dc2626";
+        btnForcePing.style.borderColor = "#f87171";
+      } else {
+        for (let out of midiOutputs) {
+          try {
+            out.send([0x80 | ch, 60, 0]); // Note Off C3
+          } catch(e){}
+        }
+        btnForcePing.innerText = "⚡ FORCE PING NTS-1";
+        btnForcePing.style.background = "#0284c7";
+        btnForcePing.style.borderColor = "#38bdf8";
+      }
+      flashLed(midiOutLed);
+    });
+
+    document.getElementById('btnMidiPanic').addEventListener('click', () => {
+      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
+      for (let out of midiOutputs) {
+        try {
+          out.send([0xB0 | ch, 123, 0]);
+          out.send([0xB0 | ch, 120, 0]);
+          out.send([0x80 | ch, 60, 0]);
+        } catch(e){}
+      }
+      isTestNoteActive = false;
+      btnForcePing.innerText = "⚡ FORCE PING NTS-1";
+      btnForcePing.style.background = "#0284c7";
+      flashLed(midiOutLed, '#ef4444');
+    });
+
+    function applyNTS1Mapping() {
+      document.getElementById('selCC_LX').value = "43";
+      document.getElementById('selCC_LY').value = "44";
+      document.getElementById('selCC_RX').value = "54";
+      document.getElementById('selCC_RY').value = "29";
+      document.getElementById('selCC_P3X').value = "31";
+      document.getElementById('selCC_P3Y').value = "35";
+      document.getElementById('midiOutChannel').value = "0";
+
+      const ntsDefaults = [43, 44, 53, 54, 29, 31, 35, 42];
+      faderConfigs.forEach((f, idx) => {
+        if (idx < ntsDefaults.length) setFaderCC(idx, ntsDefaults[idx]);
+      });
+      document.getElementById('currentMappingLabel').innerText = "✓ Mappa Korg NTS-1 Attiva (Cutoff CC#43)";
+    }
+    document.getElementById('btnForceNTS1').addEventListener('click', applyNTS1Mapping);
+
+    function applyCurve(x, type) {
+      x = Math.max(0, Math.min(1, x));
+      switch(type) {
+        case 'expo': return Math.pow(x, 2.2);
+        case 'log': return Math.pow(x, 0.45);
+        default: return x;
+      }
+    }
+
+    function calculateMidiValue(normVal, axisId) {
+      let v = normVal;
+      if (document.getElementById(`inv_${axisId}`)?.checked) v = 1 - v;
+      v = applyCurve(v, document.getElementById(`curve_${axisId}`)?.value || 'linear');
+      return Math.round(v * 127);
+    }
+
+    ['LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'].forEach(id => {
+      const btn = document.getElementById(`hold_${id}`);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          holdStates[id] = !holdStates[id];
+          const subText = btn.querySelector('span:last-child');
+          if (holdStates[id]) {
+            btn.classList.add('btn-hold-active');
+            if (subText) subText.innerText = "LOCKED";
+          } else {
+            btn.classList.remove('btn-hold-active');
+            if (subText) subText.innerText = "OFF";
+          }
+        });
+      }
+    });
+
+    function sendMidiExpression(axisId, normVal) {
+      if (holdStates[axisId]) return;
+      const sel = document.getElementById(`selCC_${axisId}`)?.value;
+      if (!sel) return;
+
+      const now = performance.now();
+      if (now - lastMidiTimes[axisId] < 16) return;
+      lastMidiTimes[axisId] = now;
+
+      const ccNum = parseInt(sel);
+      const finalVal = calculateMidiValue(normVal, axisId);
+      if (finalVal !== lastSentValues[axisId]) {
+        sendRawMidiCC(ccNum, finalVal);
+        lastSentValues[axisId] = finalVal;
+        const disp = document.getElementById(`dispVal_${axisId}`);
+        if (disp) disp.innerText = `CC#${ccNum}: ${finalVal}`;
+      }
+    }
+
+    let currentTouchTarget = 'triple';
+    document.querySelectorAll('.touch-target-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentTouchTarget = btn.dataset.target;
+        document.querySelectorAll('.touch-target-btn').forEach(b => {
+          b.style.background = '#020617'; b.style.borderColor = '#334155'; b.style.color = '#94a3b8';
+        });
+        if (currentTouchTarget === 'left') {
+          btn.style.background = '#831843'; btn.style.borderColor = '#db2777'; btn.style.color = '#f472b6';
+        } else if (currentTouchTarget === 'right') {
+          btn.style.background = '#082f49'; btn.style.borderColor = '#0284c7'; btn.style.color = '#38bdf8';
+        } else if (currentTouchTarget === 'point3') {
+          btn.style.background = '#713f12'; btn.style.borderColor = '#ca8a04'; btn.style.color = '#fde047';
+        } else {
+          btn.style.background = '#064e3b'; btn.style.borderColor = '#059669'; btn.style.color = '#6ee7b7';
+        }
+      });
+    });
+
+    let p1 = { x: 0.25, y: 0.5, targetX: 0.25, targetY: 0.5 };
+    let p2 = { x: 0.75, y: 0.5, targetX: 0.75, targetY: 0.5 };
+    let p3 = { x: 0.5, y: 0.5, targetX: 0.5, targetY: 0.5 };
+
+    const padContainer = document.getElementById('camPadContainer');
+    const touchPadBg = document.getElementById('touchPadBg');
+    const video = document.getElementById('videoElement');
+    const canvas = document.getElementById('overlayCanvas');
+    const ctx = canvas.getContext('2d');
+    const btnCamToggle = document.getElementById('btnCamToggle');
+    const camToggleText = document.getElementById('camToggleText');
+    const padModeTitle = document.getElementById('padModeTitle');
+    const padStatusBadge = document.getElementById('padStatusBadge');
+    const padTrackingStatusText = document.getElementById('padTrackingStatusText');
+    const camSplitIndicator = document.getElementById('camSplitIndicator');
+    const touchTargetControls = document.getElementById('touchTargetControls');
+    const camModeControls = document.getElementById('camModeControls');
+    const btnTrackingTrigger = document.getElementById('btnTrackingTrigger');
+    const camTrackingTarget = document.getElementById('camTrackingTarget');
+    const boxMonP1 = document.getElementById('boxMonP1');
+    const boxMonP2 = document.getElementById('boxMonP2');
+    const boxMonP3 = document.getElementById('boxMonP3');
+
+    let isCamActive = false;
+    let isTrackingRunning = false;
+    let currentStream = null;
+
+    function resizeCanvas() {
+      if (padContainer) {
+        canvas.width = padContainer.clientWidth || 640;
+        canvas.height = padContainer.clientHeight || 400;
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function updateCursorVisibility() {
+      if (!isCamActive) {
+        boxMonP1.classList.remove('hidden'); boxMonP2.classList.remove('hidden'); boxMonP3.classList.remove('hidden');
+        return;
+      }
+      boxMonP3.classList.add('hidden');
+      const target = camTrackingTarget.value;
+      if (target === 'leftOnly') {
+        boxMonP1.classList.remove('hidden'); boxMonP2.classList.add('hidden');
+      } else if (target === 'rightOnly') {
+        boxMonP1.classList.add('hidden'); boxMonP2.classList.remove('hidden');
+      } else {
+        boxMonP1.classList.remove('hidden'); boxMonP2.classList.remove('hidden');
+      }
+    }
+    camTrackingTarget.addEventListener('change', updateCursorVisibility);
+
+    btnTrackingTrigger.addEventListener('click', () => {
+      isTrackingRunning = !isTrackingRunning;
+      if (isTrackingRunning) {
+        btnTrackingTrigger.innerText = "⏸️ Freeza Tracking";
+        btnTrackingTrigger.style.background = "#450a0a";
+        btnTrackingTrigger.style.borderColor = "#ef4444";
+        btnTrackingTrigger.style.color = "#fecaca";
+        padTrackingStatusText.innerText = "Tracking ATTIVO (Muovi le mani)";
+      } else {
+        btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
+        btnTrackingTrigger.style.background = "#451a03";
+        btnTrackingTrigger.style.borderColor = "#f59e0b";
+        btnTrackingTrigger.style.color = "#fde68a";
+        padTrackingStatusText.innerText = "Parametri CONGELATI";
+      }
+    });
+
+    // --- PIPELINE OTTICA AD ALTA RESILIENZA ANTI-FREEZE ---
+    const procCanvas = document.createElement('canvas');
+    const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
+    procCanvas.width = 48; procCanvas.height = 36;
+    const prevFrameData = new Uint8ClampedArray(48 * 36);
+    let hasPrevFrame = false;
+    let isOpticalProcessing = false;
+    let opticalTimerId = null;
+
+    async function toggleWebcam() {
+      if (isCamActive) {
+        if (opticalTimerId) {
+          clearInterval(opticalTimerId);
+          opticalTimerId = null;
+        }
+        if (currentStream) {
+          try { currentStream.getTracks().forEach(t => t.stop()); } catch(e){}
+          currentStream = null;
+        }
+        video.srcObject = null;
+        video.classList.add('hidden');
+        touchPadBg.style.opacity = '1';
+        camSplitIndicator.classList.add('hidden');
+        touchTargetControls.classList.remove('hidden');
+        camModeControls.classList.add('hidden');
+        btnTrackingTrigger.classList.add('hidden');
+
+        isCamActive = false;
+        isTrackingRunning = false;
+        hasPrevFrame = false;
+        isOpticalProcessing = false;
+
+        camToggleText.innerText = "Accendi Cam";
+        padStatusBadge.innerText = "PAD ATTIVO";
+        padModeTitle.innerText = "TOUCH SURFACE";
+        padTrackingStatusText.innerText = "Basso: 0 ➔ Alto: 127";
+        updateCursorVisibility();
+      } else {
+        const facing = document.getElementById('cameraFacing')?.value || 'user';
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 } },
+            audio: false
+          });
+          video.srcObject = currentStream;
+          await video.play();
+
+          video.classList.remove('hidden');
+          touchPadBg.style.opacity = '0.2';
+          camSplitIndicator.classList.remove('hidden');
+          touchTargetControls.classList.add('hidden');
+          camModeControls.classList.remove('hidden');
+          btnTrackingTrigger.classList.remove('hidden');
+
+          isCamActive = true;
+          isTrackingRunning = false;
+          hasPrevFrame = false;
+          isOpticalProcessing = false;
+
+          // Ciclo ottico separato e protetto con cadenza 30ms (~33 FPS) per isolare la GPU di Android
+          opticalTimerId = setInterval(runOpticalFrame, 30);
+
+          btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
+          btnTrackingTrigger.style.background = "#451a03";
+          btnTrackingTrigger.style.borderColor = "#f59e0b";
+          btnTrackingTrigger.style.color = "#fde68a";
+
+          camToggleText.innerText = "Spegni Cam";
+          padStatusBadge.innerText = "CAM CONGELATA";
+          padModeTitle.innerText = "WEBCAM TRACKING";
+          padTrackingStatusText.innerText = "Parametri CONGELATI (Premi Avvia)";
+
+          updateCursorVisibility();
+          resizeCanvas();
+        } catch(err) {
+          alert("Errore fotocamera: " + err.message);
+        }
+      }
+    }
+    btnCamToggle.addEventListener('click', toggleWebcam);
+
+    function runOpticalFrame() {
+      if (!isCamActive || !isTrackingRunning || isOpticalProcessing) return;
+      if (!video || video.paused || video.ended || video.readyState < 2) return;
+
+      isOpticalProcessing = true;
+      try {
+        pCtx.drawImage(video, 0, 0, 48, 36);
+        const imgData = pCtx.getImageData(0, 0, 48, 36);
+        const d = imgData.data;
+
+        const midX = 24;
+        let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
+        const targetMode = camTrackingTarget.value;
+
+        if (hasPrevFrame) {
+          for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+            // Luminanza rapida
+            const bright = (d[i] + d[i+1] + d[i+2]) * 0.333;
+            const diff = Math.abs(bright - prevFrameData[p]);
+
+            if (diff > 16) {
+              const px = p % 48;
+              const py = (p / 48) | 0;
+
+              if (px >= midX && (targetMode === 'both' || targetMode === 'leftOnly')) {
+                lX += px * diff; lY += py * diff; lW += diff;
+              } else if (px < midX && (targetMode === 'both' || targetMode === 'rightOnly')) {
+                rX += px * diff; rY += py * diff; rW += diff;
+              }
+            }
+            prevFrameData[p] = bright;
+          }
+
+          if (lW > 110) {
+            const rawNormX = 1 - (lX / lW) / 48;
+            const clampedX = Math.max(0.02, Math.min(0.48, rawNormX));
+            p1.targetX = (clampedX - 0.02) / (0.48 - 0.02) * 0.5;
+            p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / 36));
+          }
+
+          if (rW > 110) {
+            const rawNormX = 1 - (rX / rW) / 48;
+            const clampedX = Math.max(0.52, Math.min(0.98, rawNormX));
+            p2.targetX = 0.5 + ((clampedX - 0.52) / (0.98 - 0.52) * 0.5);
+            p2.targetY = Math.max(0.02, Math.min(0.98, (rY / rW) / 36));
+          }
+        } else {
+          for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+            prevFrameData[p] = (d[i] + d[i+1] + d[i+2]) * 0.333;
+          }
+          hasPrevFrame = true;
+        }
+      } catch (err) {
+        // Ripristino immediato dello stato per prevenire blocchi permanenti
+        hasPrevFrame = false;
+      } finally {
+        isOpticalProcessing = false;
+      }
+    }
+
+    let pointerSlotMap = new Map();
+
+    function updatePointFromTouch(e, pt) {
+      const rect = padContainer.getBoundingClientRect();
+      pt.targetX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      pt.targetY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    }
+
+    if (padContainer) {
+      padContainer.addEventListener('pointerdown', (e) => {
+        if (isCamActive) return;
+        e.preventDefault();
+        padContainer.setPointerCapture(e.pointerId);
+
+        if (currentTouchTarget === 'left') {
+          updatePointFromTouch(e, p1);
+        } else if (currentTouchTarget === 'right') {
+          updatePointFromTouch(e, p2);
+        } else if (currentTouchTarget === 'point3') {
+          updatePointFromTouch(e, p3);
+        } else if (currentTouchTarget === 'triple') {
+          if (!pointerSlotMap.has(e.pointerId)) {
+            if (!Array.from(pointerSlotMap.values()).includes(1)) {
+              pointerSlotMap.set(e.pointerId, 1); updatePointFromTouch(e, p1);
+            } else if (!Array.from(pointerSlotMap.values()).includes(2)) {
+              pointerSlotMap.set(e.pointerId, 2); updatePointFromTouch(e, p2);
+            } else if (!Array.from(pointerSlotMap.values()).includes(3)) {
+              pointerSlotMap.set(e.pointerId, 3); updatePointFromTouch(e, p3);
+            }
+          }
+        }
+      });
+
+      padContainer.addEventListener('pointermove', (e) => {
+        if (isCamActive) return;
+        e.preventDefault();
+        if (currentTouchTarget === 'left') {
+          updatePointFromTouch(e, p1);
+        } else if (currentTouchTarget === 'right') {
+          updatePointFromTouch(e, p2);
+        } else if (currentTouchTarget === 'point3') {
+          updatePointFromTouch(e, p3);
+        } else if (currentTouchTarget === 'triple') {
+          const slot = pointerSlotMap.get(e.pointerId);
+          if (slot === 1) updatePointFromTouch(e, p1);
+          else if (slot === 2) updatePointFromTouch(e, p2);
+          else if (slot === 3) updatePointFromTouch(e, p3);
+        }
+      });
+
+      function handlePointerRelease(e) { pointerSlotMap.delete(e.pointerId); }
+      padContainer.addEventListener('pointerup', handlePointerRelease);
+      padContainer.addEventListener('pointercancel', handlePointerRelease);
+    }
+
+    document.getElementById('btnCenterPad').addEventListener('click', () => {
+      p1.targetX = 0.25; p1.targetY = 0.5;
+      p2.targetX = 0.75; p2.targetY = 0.5;
+      p3.targetX = 0.5; p3.targetY = 0.5;
+    });
+
+    function processParameters() {
+      if (!isCamActive || isTrackingRunning) {
+        const smoothing = isCamActive ? 0.35 : 0.8;
+        p1.x += (p1.targetX - p1.x) * smoothing;
+        p1.y += (p1.targetY - p1.y) * smoothing;
+        p2.x += (p2.targetX - p2.x) * smoothing;
+        p2.y += (p2.targetY - p2.y) * smoothing;
+        p3.x += (p3.targetX - p3.x) * smoothing;
+        p3.y += (p3.targetY - p3.y) * smoothing;
+      }
+
+      let nP1X, nP2X;
+      if (isCamActive) {
+        nP1X = Math.max(0, Math.min(1, p1.x / 0.5));
+        nP2X = Math.max(0, Math.min(1, (p2.x - 0.5) / 0.5));
+      } else {
+        nP1X = Math.max(0, Math.min(1, p1.x));
+        nP2X = Math.max(0, Math.min(1, p2.x));
+      }
+
+      const nP1Y = Math.max(0, Math.min(1, 1 - p1.y));
+      const nP2Y = Math.max(0, Math.min(1, 1 - p2.y));
+      const nP3X = Math.max(0, Math.min(1, p3.x));
+      const nP3Y = Math.max(0, Math.min(1, 1 - p3.y));
+
+      const camTarget = camTrackingTarget.value;
+
+      if (!isCamActive || isTrackingRunning) {
+        if (!isCamActive || camTarget === 'both' || camTarget === 'leftOnly') {
+          sendMidiExpression('LX', nP1X);
+          sendMidiExpression('LY', nP1Y);
+        }
+        if (!isCamActive || camTarget === 'both' || camTarget === 'rightOnly') {
+          sendMidiExpression('RX', nP2X);
+          sendMidiExpression('RY', nP2Y);
+        }
+        if (!isCamActive) {
+          sendMidiExpression('P3X', nP3X);
+          sendMidiExpression('P3Y', nP3Y);
+        }
+      }
+
+      document.getElementById('monP1').innerText = `X: ${Math.round(nP1X*127)} | Y: ${Math.round(nP1Y*127)}`;
+      document.getElementById('monP2').innerText = `X: ${Math.round(nP2X*127)} | Y: ${Math.round(nP2Y*127)}`;
+      document.getElementById('monP3').innerText = `X: ${Math.round(nP3X*127)} | Y: ${Math.round(nP3Y*127)}`;
+    }
+
+    function renderFeedbackCanvas() {
+      if (!ctx || viewPad.classList.contains('hidden')) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const camTarget = camTrackingTarget.value;
+
+      if (!isCamActive || camTarget === 'both' || camTarget === 'leftOnly') {
+        const x1 = p1.x * canvas.width;
+        const y1 = p1.y * canvas.height;
+        ctx.beginPath(); ctx.arc(x1, y1, 24, 0, Math.PI * 2);
+        ctx.strokeStyle = "#ec4899"; ctx.lineWidth = 3.5;
+        ctx.fillStyle = "rgba(236, 72, 153, 0.35)"; ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px monospace"; ctx.fillText("SX", x1 - 6, y1 + 3);
+      }
+
+      if (!isCamActive || camTarget === 'both' || camTarget === 'rightOnly') {
+        const x2 = p2.x * canvas.width;
+        const y2 = p2.y * canvas.height;
+        ctx.beginPath(); ctx.arc(x2, y2, 24, 0, Math.PI * 2);
+        ctx.strokeStyle = "#00f3ff"; ctx.lineWidth = 3.5;
+        ctx.fillStyle = "rgba(0, 243, 255, 0.35)"; ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px monospace"; ctx.fillText("DX", x2 - 6, y2 + 3);
+      }
+
+      if (!isCamActive) {
+        const x3 = p3.x * canvas.width;
+        const y3 = p3.y * canvas.height;
+        ctx.beginPath(); ctx.arc(x3, y3, 24, 0, Math.PI * 2);
+        ctx.strokeStyle = "#facc15"; ctx.lineWidth = 3.5;
+        ctx.fillStyle = "rgba(250, 204, 21, 0.35)"; ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#000000"; ctx.font = "bold 10px monospace"; ctx.fillText("3", x3 - 3, y3 + 3);
+      }
+    }
+
+    // Loop a 60 FPS dedicato esclusivamente al rendering e all'invio MIDI
+    function mainEngineLoop() {
+      try {
+        processParameters();
+        renderFeedbackCanvas();
+      } catch (e) {}
+      requestAnimationFrame(mainEngineLoop);
+    }
+    requestAnimationFrame(mainEngineLoop);
+
+    // FADER DESK
+    const fadersContainer = document.getElementById('fadersContainer');
+    const faderCountDisp = document.getElementById('faderCountDisp');
+
+    let faderConfigs = [
+      { cc: 43, val: 64, hold: false }, { cc: 44, val: 30, hold: false },
+      { cc: 53, val: 40, hold: false }, { cc: 54, val: 64, hold: false },
+      { cc: 29, val: 50, hold: false }, { cc: 31, val: 20, hold: false },
+      { cc: 35, val: 64, hold: false }, { cc: 42, val: 0, hold: false }
+    ];
+
+    function setFaderCC(index, newCC) {
+      newCC = Math.max(0, Math.min(127, parseInt(newCC) || 0));
+      faderConfigs[index].cc = newCC;
+      renderFaders();
+    }
+
+    function renderFaders() {
+      fadersContainer.innerHTML = '';
+      faderCountDisp.innerText = `${faderConfigs.length} Faders`;
+
+      faderConfigs.forEach((cfg, idx) => {
+        const chDiv = document.createElement('div');
+        chDiv.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:8px; border-radius:10px; background:#0f172a; border:1px solid #1e293b; min-width:90px; flex:1;";
+
+        chDiv.innerHTML = `
+          <div style="width:100%; text-align:center;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:4px;">
+              <span style="font-size:9px; color:#64748b; font-family:monospace;">CC:</span>
+              <input type="number" min="0" max="127" class="fader-cc-input" style="width:44px; text-align:center; font-weight:bold; color:#22d3ee; font-family:monospace;" value="${cfg.cc}">
+            </div>
+            <select class="fader-cc-select" style="width:100%; font-size:9px;">
+              ${FULL_128_CC_MAP.map(item => `
+                <option value="${item.cc}" ${item.cc === cfg.cc ? 'selected' : ''}>
+                  ${item.name}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+
+          <div style="padding: 10px 0;">
+            <input type="range" min="0" max="127" value="${cfg.val}" class="fader-slider vertical-slider">
+          </div>
+
+          <div style="width:100%; text-align:center;">
+            <span class="fader-val-disp" style="font-family:monospace; font-weight:900; font-size:13px; color:#22d3ee; display:block; margin-bottom:4px;">${cfg.val}</span>
+            <div style="display:flex; gap:4px; margin-bottom:4px;">
+              <button class="fader-btn-zero" style="flex:1; background:#020617; border:1px solid #334155; color:#94a3b8; font-size:9px; border-radius:4px; padding:2px 0;">0</button>
+              <button class="fader-btn-max" style="flex:1; background:#020617; border:1px solid #334155; color:#94a3b8; font-size:9px; border-radius:4px; padding:2px 0;">127</button>
+            </div>
+            <button class="fader-btn-hold" style="width:100%; font-size:9px; font-weight:bold; border-radius:4px; padding:3px 0; border:1px solid ${cfg.hold ? '#06b6d4' : '#334155'}; background:${cfg.hold ? '#0284c7' : '#020617'}; color:${cfg.hold ? '#fff' : '#94a3b8'};">
+              ${cfg.hold ? 'LOCKED' : 'HOLD'}
+            </button>
+          </div>
+        `;
+
+        const slider = chDiv.querySelector('.fader-slider');
+        const valDisp = chDiv.querySelector('.fader-val-disp');
+        const ccInput = chDiv.querySelector('.fader-cc-input');
+        const ccSelect = chDiv.querySelector('.fader-cc-select');
+        const btnZero = chDiv.querySelector('.fader-btn-zero');
+        const btnMax = chDiv.querySelector('.fader-btn-max');
+        const btnHold = chDiv.querySelector('.fader-btn-hold');
+
+        function updateVal(newVal) {
+          if (cfg.hold) return;
+          cfg.val = parseInt(newVal);
+          slider.value = cfg.val;
+          valDisp.innerText = cfg.val;
+          sendRawMidiCC(cfg.cc, cfg.val);
+        }
+
+        slider.addEventListener('input', (e) => updateVal(e.target.value));
+        btnZero.addEventListener('click', () => updateVal(0));
+        btnMax.addEventListener('click', () => updateVal(127));
+
+        btnHold.addEventListener('click', () => {
+          cfg.hold = !cfg.hold;
+          renderFaders();
+        });
+
+        ccInput.addEventListener('change', (e) => setFaderCC(idx, e.target.value));
+        ccSelect.addEventListener('change', (e) => setFaderCC(idx, e.target.value));
+
+        fadersContainer.appendChild(chDiv);
+      });
+    }
+    renderFaders();
+
+    document.getElementById('btnAddFader').addEventListener('click', () => {
+      if (faderConfigs.length >= 16) return;
+      const nextCC = (faderConfigs[faderConfigs.length - 1]?.cc + 1) % 128 || 1;
+      faderConfigs.push({ cc: nextCC, val: 64, hold: false });
+      renderFaders();
+    });
+
+    document.getElementById('btnRemoveFader').addEventListener('click', () => {
+      if (faderConfigs.length <= 1) return;
+      faderConfigs.pop();
+      renderFaders();
+    });
+
+    const masterSweep = document.getElementById('masterSweepSlider');
+    const masterSweepVal = document.getElementById('masterSweepVal');
+
+    masterSweep.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      masterSweepVal.innerText = val;
+      faderConfigs.forEach((cfg, idx) => {
+        if (!cfg.hold) {
+          cfg.val = val;
+          const chEl = fadersContainer.children[idx];
+          if (chEl) {
+            chEl.querySelector('.fader-slider').value = val;
+            chEl.querySelector('.fader-val-disp').innerText = val;
+          }
+          sendRawMidiCC(cfg.cc, val);
+        }
+      });
+    });
+
+    document.getElementById('btnResetAllFaders').addEventListener('click', () => {
+      masterSweep.value = 0; masterSweepVal.innerText = 0;
+      faderConfigs.forEach((cfg, idx) => {
+        if (!cfg.hold) {
+          cfg.val = 0;
+          const chEl = fadersContainer.children[idx];
+          if (chEl) {
+            chEl.querySelector('.fader-slider').value = 0;
+            chEl.querySelector('.fader-val-disp').innerText = 0;
+          }
+          sendRawMidiCC(cfg.cc, 0);
+        }
+      });
+    });
+
+    document.getElementById('btnMaxAllFaders').addEventListener('click', () => {
+      masterSweep.value = 127; masterSweepVal.innerText = 127;
+      faderConfigs.forEach((cfg, idx) => {
+        if (!cfg.hold) {
+          cfg.val = 127;
+          const chEl = fadersContainer.children[idx];
+          if (chEl) {
+            chEl.querySelector('.fader-slider').value = 127;
+            chEl.querySelector('.fader-val-disp').innerText = 127;
+          }
+          sendRawMidiCC(cfg.cc, 127);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
