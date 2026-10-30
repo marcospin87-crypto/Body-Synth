@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Universal Synth Studio</title>
+  <title>CyberPose MIDI - Korg NTS-1 Resilient Controller</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -95,8 +95,8 @@
         ⚡
       </div>
       <div>
-        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE PRO CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Universal USB/BT MIDI Stack • Anti-Freeze Vision Engine</p>
+        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Direct Engine • Anti-Freeze Video • 0-127 Range</p>
       </div>
     </div>
 
@@ -110,12 +110,13 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <button id="btnTestSound" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px;">
-        🔊 Test Nota (C3)
+      <!-- FORCE PING / TEST AUDIO NTS-1 -->
+      <button id="btnForcePing" style="padding: 6px 14px; border-radius: 8px; border: 2px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px; box-shadow: 0 0 12px rgba(56,189,248,0.5);">
+        ⚡ FORCE PING NTS-1
       </button>
 
-      <button id="btnForceScan" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #10b981; background: #064e3b; color: #6ee7b7; font-weight: bold; font-size: 11px;">
-        ⚡ Scansiona USB
+      <button id="btnConnectMidi" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #10b981; background: #064e3b; color: #6ee7b7; font-weight: bold; font-size: 11px;">
+        🔌 Ricollega MIDI
       </button>
 
       <button id="btnCamToggle" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #06b6d4, #2563eb); color: #000; font-weight: 900; font-size: 11px; border: none;">
@@ -134,38 +135,31 @@
     </div>
   </header>
 
-  <!-- BARRA HARDWARE & CONFIGURAZIONE -->
+  <!-- Barra Hardware & Stato Porte -->
   <section style="background: rgba(15,23,42,0.9); border: 1px solid #3b0764; border-radius: 12px; padding: 8px 12px; margin-bottom: 8px;">
     <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 8px;">
       
       <div class="flex items-center gap-1">
         <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 DESTINAZIONE:</span>
-        <select id="midiOutSelect" style="min-width: 200px;">
-          <option value="all">📢 Tutte le uscite MIDI (Broadcast Forzato)</option>
+        <select id="midiOutSelect" style="min-width: 220px;">
+          <option value="all">📢 Tutte le porte connesse (Auto-Broadcast)</option>
         </select>
         <select id="midiOutChannel">
-          <option value="0" selected>Ch 1 (NTS-1 / Synth)</option>
+          <option value="0" selected>Ch 1 (NTS-1 Default)</option>
           <option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
-          <option value="9">Ch 10</option><option value="15">Ch 16</option>
         </select>
       </div>
 
       <div class="flex items-center gap-1">
         <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO:</span>
         <span id="midiStatusBadge" style="background: #020617; border: 1px solid #10b981; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399; font-weight: bold;">
-          Inizializzazione MIDI...
+          Ricerca MIDI in corso...
         </span>
       </div>
 
       <div class="flex items-center gap-1">
-        <span style="font-size: 11px; font-weight: bold; color: #38bdf8;">SYNTH:</span>
-        <select id="synthPresetSelect" style="color: #facc15; font-weight: bold; border-color: #0284c7;">
-          <option value="nts1" selected>🎹 Korg NTS-1 (Cutoff 43, Res 44)</option>
-          <option value="microfreak">⚡ Arturia MicroFreak (Cutoff 23, Res 83)</option>
-          <option value="gm">🌐 Standard GM (Cutoff 74, Res 71)</option>
-        </select>
-        <button id="btnApplyPreset" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #0284c7, #06b6d4); color: #fff; font-weight: 900; font-size: 11px; border: none;">
-          Imposta
+        <button id="btnForceNTS1" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
+          ⚡ Ripristina Mappa NTS-1
         </button>
       </div>
 
@@ -246,15 +240,15 @@
     <!-- Matrice Assi -->
     <div style="background: rgba(15,23,42,0.8); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
       <div class="flex justify-between items-center pb-1" style="border-bottom: 1px solid #1e293b;">
-        <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura Parametri MIDI (0 - 127)</h2>
-        <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">NTS-1: Cutoff 43 | Reson 44</span>
+        <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura NTS-1 / MIDI CC (Range 0 - 127)</h2>
+        <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">Cutoff: CC#43 | Reson: CC#44</span>
       </div>
 
       <!-- SX X -->
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(236,72,153,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse X (Cutoff)</span>
+            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse X (NTS-1 Cutoff)</span>
             <span id="dispVal_LX" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#43: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -270,7 +264,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(236,72,153,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse Y (Resonance)</span>
+            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse Y (NTS-1 Resonance)</span>
             <span id="dispVal_LY" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#44: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -286,7 +280,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(6,182,212,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse X (Shape / Wave)</span>
+            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse X (NTS-1 Shape)</span>
             <span id="dispVal_RX" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#54: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -302,7 +296,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(6,182,212,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse Y (Mod Depth)</span>
+            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse Y (NTS-1 Mod Depth)</span>
             <span id="dispVal_RY" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#29: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -318,594 +312,10 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(234,179,8,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse X (Delay Depth)</span>
+            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse X (NTS-1 Delay Depth)</span>
             <span id="dispVal_P3X" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#31: 0</span>
           </div>
           <div class="flex gap-1 items-center">
             <select id="selCC_P3X" class="cc-full-select" data-default="31" style="flex: 2;"></select>
             <select id="curve_P3X" style="flex: 1;"><option value="linear">Lineare</option></select>
-            <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3X"> Inv</label>
-          </div>
-        </div>
-        <button id="hold_P3X" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
-      </div>
-
-      <!-- FX Y -->
-      <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(234,179,8,0.25); border-radius: 8px; padding: 6px;">
-        <div style="flex: 1;">
-          <div class="flex justify-between items-center mb-1">
-            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse Y (Reverb Depth)</span>
-            <span id="dispVal_P3Y" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#35: 0</span>
-          </div>
-          <div class="flex gap-1 items-center">
-            <select id="selCC_P3Y" class="cc-full-select" data-default="35" style="flex: 2;"></select>
-            <select id="curve_P3Y" style="flex: 1;"><option value="linear">Lineare</option></select>
-            <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3Y"> Inv</label>
-          </div>
-        </div>
-        <button id="hold_P3Y" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
-      </div>
-    </div>
-  </main>
-
-  <!-- VISTA 2: FADER DESK -->
-  <main id="viewFaders" class="hidden flex-col gap-2" style="flex: 1;">
-    <div class="flex justify-between items-center p-2" style="background: rgba(15,23,42,0.9); border: 1px solid #1e293b; border-radius: 12px; flex-wrap: wrap; gap: 8px;">
-      <div class="flex items-center gap-1">
-        <span style="font-size: 11px; font-weight: bold; color: #94a3b8;">FADERS:</span>
-        <button id="btnRemoveFader" style="width: 24px; height: 24px; border-radius: 6px; background: #020617; border: 1px solid #334155; color: #f87171; font-weight: bold;">-</button>
-        <span id="faderCountDisp" style="background: #020617; border: 1px solid #06b6d4; color: #22d3ee; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-family: monospace;">8 Faders</span>
-        <button id="btnAddFader" style="width: 24px; height: 24px; border-radius: 6px; background: #020617; border: 1px solid #334155; color: #4ade80; font-weight: bold;">+</button>
-      </div>
-
-      <div class="flex items-center gap-2" style="flex: 1; min-width: 220px;">
-        <span style="font-size: 11px; font-weight: 900; color: #22d3ee; white-space: nowrap;">🖐️ Master Sweep:</span>
-        <input id="masterSweepSlider" type="range" min="0" max="127" value="64" style="flex: 1; height: 6px;">
-        <span id="masterSweepVal" style="font-family: monospace; color: #22d3ee; font-weight: bold; font-size: 12px; width: 26px;">64</span>
-      </div>
-
-      <div class="flex items-center gap-1">
-        <button id="btnResetAllFaders" style="background: #020617; border: 1px solid #334155; color: #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 10px;">Zero (0)</button>
-        <button id="btnMaxAllFaders" style="background: #082f49; border: 1px solid #0284c7; color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 10px;">Max (127)</button>
-      </div>
-    </div>
-
-    <div id="fadersContainer" style="display: flex; gap: 8px; overflow-x: auto; padding: 8px; background: #020617; border: 1px solid rgba(6,182,212,0.3); border-radius: 12px; flex: 1;"></div>
-  </main>
-
-  <script>
-    const ALL_MIDI_CCS = [
-      { cc: 43, name: "CC#43: Cutoff (Korg NTS-1)" },
-      { cc: 44, name: "CC#44: Resonance (Korg NTS-1)" },
-      { cc: 53, name: "CC#53: OSC Type (NTS-1)" },
-      { cc: 54, name: "CC#54: OSC Shape (NTS-1)" },
-      { cc: 29, name: "CC#29: Mod Depth (NTS-1)" },
-      { cc: 31, name: "CC#31: Delay Depth (NTS-1)" },
-      { cc: 35, name: "CC#35: Reverb Depth (NTS-1)" },
-      { cc: 42, name: "CC#42: Filter Type (NTS-1)" },
-      { cc: 23, name: "CC#23: Cutoff (MicroFreak)" },
-      { cc: 83, name: "CC#83: Resonance (MicroFreak)" },
-      { cc: 74, name: "CC#74: Cutoff (Standard GM)" },
-      { cc: 71, name: "CC#71: Reson (Standard GM)" },
-      { cc: 1,  name: "CC#1: ModWheel" },
-      { cc: 7,  name: "CC#7: Volume" },
-      { cc: 11, name: "CC#11: Expression" }
-    ];
-
-    const FULL_128_CC_MAP = [];
-    for (let i = 0; i <= 127; i++) {
-      const known = ALL_MIDI_CCS.find(k => k.cc === i);
-      FULL_128_CC_MAP.push({ cc: i, name: known ? known.name : `CC#${i}: Controllo Generico ${i}` });
-    }
-
-    document.querySelectorAll('.cc-full-select').forEach(sel => {
-      const def = parseInt(sel.dataset.default);
-      FULL_128_CC_MAP.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item.cc; opt.innerText = item.name;
-        if (item.cc === def) opt.selected = true;
-        sel.appendChild(opt);
-      });
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      });
-    }
-
-    const tabBtnPad = document.getElementById('tabBtnPad');
-    const tabBtnFaders = document.getElementById('tabBtnFaders');
-    const viewPad = document.getElementById('viewPad');
-    const viewFaders = document.getElementById('viewFaders');
-
-    tabBtnPad.addEventListener('click', () => {
-      viewPad.classList.remove('hidden'); viewPad.style.display = 'grid';
-      viewFaders.classList.add('hidden'); viewFaders.style.display = 'none';
-      tabBtnPad.style.background = '#06b6d4'; tabBtnPad.style.color = '#000';
-      tabBtnFaders.style.background = 'transparent'; tabBtnFaders.style.color = '#94a3b8';
-      resizeCanvas();
-    });
-
-    tabBtnFaders.addEventListener('click', () => {
-      viewPad.classList.add('hidden'); viewPad.style.display = 'none';
-      viewFaders.classList.remove('hidden'); viewFaders.style.display = 'flex';
-      tabBtnFaders.style.background = '#06b6d4'; tabBtnFaders.style.color = '#000';
-      tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
-    });
-
-    // --- HARDWARE MIDI CONTROLLER RESILIENTE ---
-    let midiAccess = null;
-    let midiOutputs = [];
-    let isTestNoteActive = false;
-    let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
-    let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
-    let lastSentValues = { LX: null, LY: null, RX: null, RY: null, P3X: null, P3Y: null };
-
-    const midiInLed = document.getElementById('midiInLed');
-    const midiOutLed = document.getElementById('midiOutLed');
-    const midiStatusBadge = document.getElementById('midiStatusBadge');
-
-    function flashLed(el, color = '#34d399') {
-      el.style.backgroundColor = color;
-      setTimeout(() => el.style.backgroundColor = '#475569', 80);
-    }
-
-    async function initMidiEngine() {
-      if (!navigator.requestMIDIAccess) {
-        midiStatusBadge.innerText = "Web MIDI non supportato";
-        midiStatusBadge.style.color = "#f87171";
-        return;
-      }
-      try {
-        midiAccess = await navigator.requestMIDIAccess({ sysex: false });
-      } catch (err) {
-        try {
-          midiAccess = await navigator.requestMIDIAccess();
-        } catch (e2) {
-          midiStatusBadge.innerText = "Errore Accesso MIDI";
-          midiStatusBadge.style.color = "#f87171";
-          return;
-        }
-      }
-
-      midiAccess.onstatechange = scanPorts;
-      scanPorts();
-    }
-
-    function scanPorts() {
-      if (!midiAccess) return;
-
-      const outSelect = document.getElementById('midiOutSelect');
-      outSelect.innerHTML = '<option value="all">📢 Tutte le uscite MIDI (Broadcast Forzato)</option>';
-      midiOutputs = Array.from(midiAccess.outputs.values());
-
-      let portCount = 0;
-      for (let out of midiOutputs) {
-        portCount++;
-        const opt = document.createElement('option');
-        opt.value = out.id;
-        opt.innerText = out.name || `Dispositivo USB #${portCount}`;
-        outSelect.appendChild(opt);
-      }
-
-      if (midiOutputs.length > 0) {
-        midiStatusBadge.innerText = `✓ Connesso (${midiOutputs.length} Output Rilevati)`;
-        midiStatusBadge.style.color = "#34d399";
-        midiStatusBadge.style.borderColor = "#10b981";
-      } else {
-        midiStatusBadge.innerText = "In attesa di cavo OTG / USB...";
-        midiStatusBadge.style.color = "#facc15";
-        midiStatusBadge.style.borderColor = "#ca8a04";
-      }
-    }
-
-    document.getElementById('btnForceScan').addEventListener('click', scanPorts);
-    initMidiEngine();
-
-    function sendRawMidiCC(ccNum, val7bit) {
-      if (!midiOutputs || midiOutputs.length === 0 || ccNum === null || ccNum === undefined) return;
-      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      const targetId = document.getElementById('midiOutSelect')?.value || 'all';
-      const packet = [0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))];
-
-      for (let out of midiOutputs) {
-        if (targetId === 'all' || out.id === targetId) {
-          try { out.send(packet); } catch(e){}
-        }
-      }
-      flashLed(midiOutLed);
-    }
-
-    // Trigger Test Suono per eccitare l'inviluppo dell'NTS-1
-    const btnTestSound = document.getElementById('btnTestSound');
-    btnTestSound.addEventListener('click', () => {
-      if (!midiOutputs || midiOutputs.length === 0) {
-        alert("Nessun dispositivo MIDI connesso sul tablet. Controlla il cavo OTG.");
-        return;
-      }
-      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      isTestNoteActive = !isTestNoteActive;
-
-      if (isTestNoteActive) {
-        for (let out of midiOutputs) {
-          try { out.send([0x90 | ch, 60, 100]); } catch(e){} // C3 Note On
-        }
-        btnTestSound.innerText = "⏹️ Stop Nota";
-        btnTestSound.style.background = "#dc2626";
-      } else {
-        for (let out of midiOutputs) {
-          try { out.send([0x80 | ch, 60, 0]); } catch(e){} // Note Off
-        }
-        btnTestSound.innerText = "🔊 Test Nota (C3)";
-        btnTestSound.style.background = "#0284c7";
-      }
-      flashLed(midiOutLed);
-    });
-
-    document.getElementById('btnMidiPanic').addEventListener('click', () => {
-      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      for (let out of midiOutputs) {
-        try {
-          out.send([0xB0 | ch, 123, 0]);
-          out.send([0xB0 | ch, 120, 0]);
-          out.send([0x80 | ch, 60, 0]);
-        } catch(e){}
-      }
-      isTestNoteActive = false;
-      btnTestSound.innerText = "🔊 Test Nota (C3)";
-      btnTestSound.style.background = "#0284c7";
-      flashLed(midiOutLed, '#ef4444');
-    });
-
-    // Preset Hardware
-    const PRESETS = {
-      nts1: {
-        label: "NTS-1: Cutoff 43 | Reson 44",
-        pad: { LX: "43", LY: "44", RX: "54", RY: "29", P3X: "31", P3Y: "35" },
-        faders: [43, 44, 53, 54, 29, 31, 35, 42]
-      },
-      microfreak: {
-        label: "MicroFreak: Cutoff 23 | Reson 83",
-        pad: { LX: "23", LY: "83", RX: "9", RY: "10", P3X: "12", P3Y: "13" },
-        faders: [23, 83, 9, 10, 12, 13, 102, 5]
-      },
-      gm: {
-        label: "General MIDI: Cutoff 74 | Reson 71",
-        pad: { LX: "74", LY: "71", RX: "1", RY: "11", P3X: "7", P3Y: "10" },
-        faders: [74, 71, 1, 11, 7, 10, 91, 92]
-      }
-    };
-
-    function applyPreset(key) {
-      const p = PRESETS[key];
-      if (!p) return;
-      document.getElementById('selCC_LX').value = p.pad.LX;
-      document.getElementById('selCC_LY').value = p.pad.LY;
-      document.getElementById('selCC_RX').value = p.pad.RX;
-      document.getElementById('selCC_RY').value = p.pad.RY;
-      document.getElementById('selCC_P3X').value = p.pad.P3X;
-      document.getElementById('selCC_P3Y').value = p.pad.P3Y;
-      p.faders.forEach((cc, idx) => {
-        if (idx < faderConfigs.length) setFaderCC(idx, cc);
-      });
-      document.getElementById('currentMappingLabel').innerText = p.label;
-    }
-
-    document.getElementById('btnApplyPreset').addEventListener('click', () => {
-      applyPreset(document.getElementById('synthPresetSelect').value);
-    });
-
-    function applyCurve(x, type) {
-      x = Math.max(0, Math.min(1, x));
-      switch(type) {
-        case 'expo': return Math.pow(x, 2.2);
-        case 'log': return Math.pow(x, 0.45);
-        default: return x;
-      }
-    }
-
-    function calculateMidiValue(normVal, axisId) {
-      let v = normVal;
-      if (document.getElementById(`inv_${axisId}`)?.checked) v = 1 - v;
-      v = applyCurve(v, document.getElementById(`curve_${axisId}`)?.value || 'linear');
-      return Math.round(v * 127);
-    }
-
-    ['LX', 'LY', 'RX', 'RY', 'P3X', 'P3Y'].forEach(id => {
-      const btn = document.getElementById(`hold_${id}`);
-      if (btn) {
-        btn.addEventListener('click', () => {
-          holdStates[id] = !holdStates[id];
-          const subText = btn.querySelector('span:last-child');
-          if (holdStates[id]) {
-            btn.classList.add('btn-hold-active');
-            if (subText) subText.innerText = "LOCKED";
-          } else {
-            btn.classList.remove('btn-hold-active');
-            if (subText) subText.innerText = "OFF";
-          }
-        });
-      }
-    });
-
-    function sendMidiExpression(axisId, normVal) {
-      if (holdStates[axisId]) return;
-      const sel = document.getElementById(`selCC_${axisId}`)?.value;
-      if (!sel) return;
-
-      const now = performance.now();
-      if (now - lastMidiTimes[axisId] < 16) return;
-      lastMidiTimes[axisId] = now;
-
-      const ccNum = parseInt(sel);
-      const finalVal = calculateMidiValue(normVal, axisId);
-      if (finalVal !== lastSentValues[axisId]) {
-        sendRawMidiCC(ccNum, finalVal);
-        lastSentValues[axisId] = finalVal;
-        const disp = document.getElementById(`dispVal_${axisId}`);
-        if (disp) disp.innerText = `CC#${ccNum}: ${finalVal}`;
-      }
-    }
-
-    let currentTouchTarget = 'triple';
-    document.querySelectorAll('.touch-target-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentTouchTarget = btn.dataset.target;
-        document.querySelectorAll('.touch-target-btn').forEach(b => {
-          b.style.background = '#020617'; b.style.borderColor = '#334155'; b.style.color = '#94a3b8';
-        });
-        if (currentTouchTarget === 'left') {
-          btn.style.background = '#831843'; btn.style.borderColor = '#db2777'; btn.style.color = '#f472b6';
-        } else if (currentTouchTarget === 'right') {
-          btn.style.background = '#082f49'; btn.style.borderColor = '#0284c7'; btn.style.color = '#38bdf8';
-        } else if (currentTouchTarget === 'point3') {
-          btn.style.background = '#713f12'; btn.style.borderColor = '#ca8a04'; btn.style.color = '#fde047';
-        } else {
-          btn.style.background = '#064e3b'; btn.style.borderColor = '#059669'; btn.style.color = '#6ee7b7';
-        }
-      });
-    });
-
-    let p1 = { x: 0.25, y: 0.5, targetX: 0.25, targetY: 0.5 };
-    let p2 = { x: 0.75, y: 0.5, targetX: 0.75, targetY: 0.5 };
-    let p3 = { x: 0.5, y: 0.5, targetX: 0.5, targetY: 0.5 };
-
-    const padContainer = document.getElementById('camPadContainer');
-    const touchPadBg = document.getElementById('touchPadBg');
-    const video = document.getElementById('videoElement');
-    const canvas = document.getElementById('overlayCanvas');
-    const ctx = canvas.getContext('2d');
-    const btnCamToggle = document.getElementById('btnCamToggle');
-    const camToggleText = document.getElementById('camToggleText');
-    const padModeTitle = document.getElementById('padModeTitle');
-    const padStatusBadge = document.getElementById('padStatusBadge');
-    const padTrackingStatusText = document.getElementById('padTrackingStatusText');
-    const camSplitIndicator = document.getElementById('camSplitIndicator');
-    const touchTargetControls = document.getElementById('touchTargetControls');
-    const camModeControls = document.getElementById('camModeControls');
-    const btnTrackingTrigger = document.getElementById('btnTrackingTrigger');
-    const camTrackingTarget = document.getElementById('camTrackingTarget');
-    const boxMonP1 = document.getElementById('boxMonP1');
-    const boxMonP2 = document.getElementById('boxMonP2');
-    const boxMonP3 = document.getElementById('boxMonP3');
-
-    let isCamActive = false;
-    let isTrackingRunning = false;
-    let currentStream = null;
-
-    function resizeCanvas() {
-      if (padContainer) {
-        canvas.width = padContainer.clientWidth || 640;
-        canvas.height = padContainer.clientHeight || 400;
-      }
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function updateCursorVisibility() {
-      if (!isCamActive) {
-        boxMonP1.classList.remove('hidden'); boxMonP2.classList.remove('hidden'); boxMonP3.classList.remove('hidden');
-        return;
-      }
-      boxMonP3.classList.add('hidden');
-      const target = camTrackingTarget.value;
-      if (target === 'leftOnly') {
-        boxMonP1.classList.remove('hidden'); boxMonP2.classList.add('hidden');
-      } else if (target === 'rightOnly') {
-        boxMonP1.classList.add('hidden'); boxMonP2.classList.remove('hidden');
-      } else {
-        boxMonP1.classList.remove('hidden'); boxMonP2.classList.remove('hidden');
-      }
-    }
-    camTrackingTarget.addEventListener('change', updateCursorVisibility);
-
-    btnTrackingTrigger.addEventListener('click', () => {
-      isTrackingRunning = !isTrackingRunning;
-      if (isTrackingRunning) {
-        btnTrackingTrigger.innerText = "⏸️ Freeza Tracking";
-        btnTrackingTrigger.style.background = "#450a0a";
-        btnTrackingTrigger.style.borderColor = "#ef4444";
-        btnTrackingTrigger.style.color = "#fecaca";
-        padTrackingStatusText.innerText = "Tracking ATTIVO";
-      } else {
-        btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
-        btnTrackingTrigger.style.background = "#451a03";
-        btnTrackingTrigger.style.borderColor = "#f59e0b";
-        btnTrackingTrigger.style.color = "#fde68a";
-        padTrackingStatusText.innerText = "Parametri CONGELATI";
-      }
-    });
-
-    // MOTORE VISION ANTI-FREEZE SGANCIO FRAME
-    const procCanvas = document.createElement('canvas');
-    const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
-    procCanvas.width = 48;
-    procCanvas.height = 36;
-    let prevFrameData = new Uint8ClampedArray(48 * 36);
-    let hasPrevFrame = false;
-    let lastOpticalProcessTime = 0;
-
-    async function toggleWebcam() {
-      if (isCamActive) {
-        if (currentStream) {
-          try { currentStream.getTracks().forEach(t => t.stop()); } catch(e){}
-          currentStream = null;
-        }
-        video.srcObject = null;
-        video.classList.add('hidden');
-        touchPadBg.style.opacity = '1';
-        camSplitIndicator.classList.add('hidden');
-        touchTargetControls.classList.remove('hidden');
-        camModeControls.classList.add('hidden');
-        btnTrackingTrigger.classList.add('hidden');
-
-        isCamActive = false;
-        isTrackingRunning = false;
-        hasPrevFrame = false;
-
-        camToggleText.innerText = "Accendi Cam";
-        padStatusBadge.innerText = "PAD ATTIVO";
-        padModeTitle.innerText = "TOUCH SURFACE";
-        padTrackingStatusText.innerText = "Basso: 0 ➔ Alto: 127";
-        updateCursorVisibility();
-      } else {
-        const facing = document.getElementById('cameraFacing')?.value || 'user';
-        try {
-          currentStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 } },
-            audio: false
-          });
-          video.srcObject = currentStream;
-          await video.play();
-
-          video.classList.remove('hidden');
-          touchPadBg.style.opacity = '0.2';
-          camSplitIndicator.classList.remove('hidden');
-          touchTargetControls.classList.add('hidden');
-          camModeControls.classList.remove('hidden');
-          btnTrackingTrigger.classList.remove('hidden');
-
-          isCamActive = true;
-          isTrackingRunning = false; // Freeze protetto all'apertura
-
-          btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
-          btnTrackingTrigger.style.background = "#451a03";
-          btnTrackingTrigger.style.borderColor = "#f59e0b";
-          btnTrackingTrigger.style.color = "#fde68a";
-
-          camToggleText.innerText = "Spegni Cam";
-          padStatusBadge.innerText = "CAM CONGELATA";
-          padModeTitle.innerText = "WEBCAM TRACKING";
-          padTrackingStatusText.innerText = "Parametri CONGELATI (Premi Avvia)";
-
-          updateCursorVisibility();
-          resizeCanvas();
-        } catch(err) {
-          alert("Impossibile accedere alla cam: " + err.message);
-        }
-      }
-    }
-    btnCamToggle.addEventListener('click', toggleWebcam);
-
-    function computeOpticalMotion() {
-      const now = performance.now();
-      // Throttle fisso a 30 FPS massimi per evitare micro-blocchi su Android
-      if (now - lastOpticalProcessTime < 33) return;
-      lastOpticalProcessTime = now;
-
-      if (!isCamActive || !isTrackingRunning || !video.videoWidth) return;
-
-      try {
-        pCtx.drawImage(video, 0, 0, 48, 36);
-        const imgData = pCtx.getImageData(0, 0, 48, 36);
-        const data = imgData.data;
-
-        const midX = 24;
-        let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
-        const targetMode = camTrackingTarget.value;
-
-        if (hasPrevFrame) {
-          for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-            const br = (data[i] + data[i+1] + data[i+2]) / 3;
-            const diff = Math.abs(br - prevFrameData[p]);
-
-            if (diff > 16) {
-              const px = p % 48;
-              const py = (p / 48) | 0;
-
-              if (px >= midX && (targetMode === 'both' || targetMode === 'leftOnly')) {
-                lX += px * diff; lY += py * diff; lW += diff;
-              } else if (px < midX && (targetMode === 'both' || targetMode === 'rightOnly')) {
-                rX += px * diff; rY += py * diff; rW += diff;
-              }
-            }
-            prevFrameData[p] = br;
-          }
-
-          if (lW > 120) {
-            const rawNormX = 1 - (lX / lW) / 48;
-            const clampedX = Math.max(0.02, Math.min(0.48, rawNormX));
-            p1.targetX = (clampedX - 0.02) / (0.48 - 0.02) * 0.5;
-            p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / 36));
-          }
-
-          if (rW > 120) {
-            const rawNormX = 1 - (rX / rW) / 48;
-            const clampedX = Math.max(0.52, Math.min(0.98, rawNormX));
-            p2.targetX = 0.5 + ((clampedX - 0.52) / (0.98 - 0.52) * 0.5);
-            p2.targetY = Math.max(0.02, Math.min(0.98, (rY / rW) / 36));
-          }
-        } else {
-          for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-            prevFrameData[p] = (data[i] + data[i+1] + data[i+2]) / 3;
-          }
-          hasPrevFrame = true;
-        }
-      } catch (err) {}
-    }
-
-    let pointerSlotMap = new Map();
-
-    function updatePointFromTouch(e, pt) {
-      const rect = padContainer.getBoundingClientRect();
-      pt.targetX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      pt.targetY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-    }
-
-    if (padContainer) {
-      padContainer.addEventListener('pointerdown', (e) => {
-        if (isCamActive) return;
-        e.preventDefault();
-        padContainer.setPointerCapture(e.pointerId);
-
-        if (currentTouchTarget === 'left') {
-          updatePointFromTouch(e, p1);
-        } else if (currentTouchTarget === 'right') {
-          updatePointFromTouch(e, p2);
-        } else if (currentTouchTarget === 'point3') {
-          updatePointFromTouch(e, p3);
-        } else if (currentTouchTarget === 'triple') {
-          if (!pointerSlotMap.has(e.pointerId)) {
-            if (!Array.from(pointerSlotMap.values()).includes(1)) {
-              pointerSlotMap.set(e.pointerId, 1); updatePointFromTouch(e, p1);
-            } else if (!Array.from(pointerSlotMap.values()).includes(2)) {
-              pointerSlotMap.set(e.pointerId, 2); updatePointFromTouch(e, p2);
-            } else if (!Array.from(pointerSlotMap.values()).includes(3)) {
-              pointerSlotMap.set(e.pointerId, 3); updatePointFromTouch(e, p3);
-            }
-          }
-        }
-      });
-
-      padContainer.addEventListener('pointermove', (e) => {
-        if (isCamActive) return;
-        e.preventDefault();
-        if (currentTouchTarget === 'left') {
-          updatePointFromTouch(e, p1);
-        } else if (currentTouchTarget === 'right') {
-          updatePointFromTouch(e, p2);
-        } else if (currentTouchTarget === 'point3') {
-          updatePointFromTouch(e, p3);
-        } else if (currentTouchTarget === 'triple') {
-          const
+ 
