@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Korg NTS-1 Controller</title>
+  <title>CyberPose MIDI - Korg NTS-1 Direct Broadcast</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -88,7 +88,7 @@
 </head>
 <body>
 
-  <!-- Header Principale -->
+  <!-- Header -->
   <header class="flex justify-between items-center pb-2 mb-2" style="border-bottom: 1px solid #164e63; flex-wrap: wrap; gap: 8px;">
     <div class="flex items-center gap-2">
       <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(6,182,212,0.2); border: 1px solid #22d3ee; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #67e8f9;">
@@ -96,7 +96,7 @@
       </div>
       <div>
         <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Direct Engine • Low-Load Stable Cam</p>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Direct Hardware Broadcast Engine • Korg NTS-1 Ready</p>
       </div>
     </div>
 
@@ -110,12 +110,12 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <button id="btnTestSound" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px;">
-        🔊 Suona Nota Test
+      <button id="btnForcePing" style="padding: 6px 14px; border-radius: 8px; border: 2px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px; box-shadow: 0 0 12px rgba(56,189,248,0.5);">
+        ⚡ FORCE PING NTS-1
       </button>
 
       <button id="btnConnectMidi" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #10b981; background: #064e3b; color: #6ee7b7; font-weight: bold; font-size: 11px;">
-        🔌 Inizializza MIDI
+        🔌 Reset Connessione MIDI
       </button>
 
       <button id="btnCamToggle" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #06b6d4, #2563eb); color: #000; font-weight: 900; font-size: 11px; border: none;">
@@ -134,15 +134,15 @@
     </div>
   </header>
 
-  <!-- Barra Hardware & Selezione Porte -->
+  <!-- Barra Hardware & Stato Porte -->
   <section style="background: rgba(15,23,42,0.9); border: 1px solid #3b0764; border-radius: 12px; padding: 8px 12px; margin-bottom: 8px;">
     <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 8px;">
       
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 MIDI OUT:</span>
-        <select id="midiOutSelect" style="min-width: 200px;">
-          <option value="none">Seleziona synth...</option>
-        </select>
+        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 TRASMISSIONE:</span>
+        <span style="background: #082f49; border: 1px solid #0284c7; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #38bdf8; font-weight: bold;">
+          📢 DIRECT BROADCAST (Tutte le uscite)
+        </span>
         <select id="midiOutChannel">
           <option value="0" selected>Ch 1 (NTS-1 Def)</option>
           <option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
@@ -150,15 +150,15 @@
       </div>
 
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO:</span>
-        <span id="midiStatusBadge" style="background: #020617; border: 1px solid #1e293b; padding: 2px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399;">
-          In attesa...
+        <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO PORTE:</span>
+        <span id="midiStatusBadge" style="background: #020617; border: 1px solid #10b981; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399; font-weight: bold;">
+          Ricerca MIDI in corso...
         </span>
       </div>
 
       <div class="flex items-center gap-1">
-        <button id="btnMapNTS1" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
-          ⚡ Auto-Map Korg NTS-1
+        <button id="btnForceNTS1" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
+          ⚡ Carica Mappa NTS-1
         </button>
       </div>
 
@@ -407,7 +407,6 @@
       });
     }
 
-    // Switcher Schede
     const tabBtnPad = document.getElementById('tabBtnPad');
     const tabBtnFaders = document.getElementById('tabBtnFaders');
     const viewPad = document.getElementById('viewPad');
@@ -428,10 +427,8 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- MOTORE MIDI ORIGINARIO PULITO (SENZA ASYNC-LOOP BLOCCANTI) ---
+    // --- DRIVER MIDI DIRETTO BROADCAST (COME PRIMA) ---
     let midiAccess = null;
-    let midiOutputs = [];
-    let selectedMidiOut = null;
     let isTestNoteActive = false;
     let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
     let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
@@ -446,109 +443,110 @@
       setTimeout(() => el.style.backgroundColor = '#475569', 80);
     }
 
-    async function connectMidiEngine() {
+    async function initMidiBroadcast() {
       if (!navigator.requestMIDIAccess) {
         midiStatusBadge.innerText = "Web MIDI non supportato";
         return;
       }
       try {
         midiAccess = await navigator.requestMIDIAccess({ sysex: false });
-      } catch (e) {
+        midiAccess.onstatechange = checkPorts;
+        checkPorts();
+      } catch (err) {
         try {
           midiAccess = await navigator.requestMIDIAccess();
-        } catch(e2) {
-          midiStatusBadge.innerText = "Errore MIDI: " + e2.message;
-          return;
+          midiAccess.onstatechange = checkPorts;
+          checkPorts();
+        } catch(e) {
+          midiStatusBadge.innerText = "Errore MIDI: " + e.message;
         }
       }
-
-      midiAccess.onstatechange = updateMidiPorts;
-      updateMidiPorts();
     }
 
-    function updateMidiPorts() {
+    function checkPorts() {
       if (!midiAccess) return;
-
-      const outSelect = document.getElementById('midiOutSelect');
-      outSelect.innerHTML = '<option value="none">Seleziona synth...</option>';
-      midiOutputs = Array.from(midiAccess.outputs.values());
-
-      for (let i = 0; i < midiOutputs.length; i++) {
-        const out = midiOutputs[i];
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.innerText = out.name || `Porta USB MIDI #${i+1}`;
-        outSelect.appendChild(opt);
-      }
-
-      if (midiOutputs.length > 0) {
-        // Auto-selezione primo output disponibile
-        outSelect.value = "0";
-        selectedMidiOut = midiOutputs[0];
-        midiStatusBadge.innerText = `Pronto (${midiOutputs.length} OUT)`;
+      const outputs = Array.from(midiAccess.outputs.values());
+      if (outputs.length > 0) {
+        midiStatusBadge.innerText = `✓ Connesso (${outputs.length} Dispositivi OUT)`;
         midiStatusBadge.style.color = "#34d399";
-        document.getElementById('btnConnectMidi').innerText = "✓ MIDI Connesso";
+        document.getElementById('btnConnectMidi').innerText = "✓ MIDI Attivo";
       } else {
-        selectedMidiOut = null;
         midiStatusBadge.innerText = "In attesa cavo OTG...";
         midiStatusBadge.style.color = "#facc15";
-        document.getElementById('btnConnectMidi').innerText = "🔌 Inizializza MIDI";
+        document.getElementById('btnConnectMidi').innerText = "🔌 Reset Connessione MIDI";
       }
     }
 
-    document.getElementById('btnConnectMidi').addEventListener('click', connectMidiEngine);
-    connectMidiEngine();
+    document.getElementById('btnConnectMidi').addEventListener('click', initMidiBroadcast);
+    initMidiBroadcast();
 
-    document.getElementById('midiOutSelect').addEventListener('change', (e) => {
-      selectedMidiOut = e.target.value === 'none' ? null : midiOutputs[parseInt(e.target.value)];
-    });
-
-    // Invio diretto pulito
+    // INVIA A TUTTE LE PORTE HARDWARE ATTIVE IN PARALLELO
     function sendRawMidiCC(ccNum, val7bit) {
-      if (!selectedMidiOut || ccNum === null || ccNum === undefined) return;
+      if (!midiAccess) return;
+      const outputs = Array.from(midiAccess.outputs.values());
+      if (outputs.length === 0 || ccNum === null || ccNum === undefined) return;
+
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      try {
-        selectedMidiOut.send([0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))]);
-        flashLed(midiOutLed);
-      } catch(e) {}
+      const packet = [0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))];
+
+      for (let out of outputs) {
+        try {
+          out.send(packet);
+        } catch (e) {}
+      }
+      flashLed(midiOutLed);
     }
 
-    // Suona / Ferma Nota Test
-    const btnTestSound = document.getElementById('btnTestSound');
-    btnTestSound.addEventListener('click', () => {
-      if (!selectedMidiOut) {
-        alert("Seleziona una porta MIDI OUT nella barra.");
+    // FORCE PING COMPLETO (SBLOCCO + NOTA TEST)
+    const btnForcePing = document.getElementById('btnForcePing');
+    btnForcePing.addEventListener('click', () => {
+      if (!midiAccess) {
+        initMidiBroadcast();
         return;
       }
+      const outputs = Array.from(midiAccess.outputs.values());
+      if (outputs.length === 0) {
+        alert("Nessun dispositivo MIDI rilevato da Android. Ricollega il cavo OTG.");
+        return;
+      }
+
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
       isTestNoteActive = !isTestNoteActive;
 
-      try {
-        if (isTestNoteActive) {
-          selectedMidiOut.send([0xB0 | ch, 43, 127]); // Cutoff aperto
-          selectedMidiOut.send([0x90 | ch, 60, 100]); // Note On C3
-          btnTestSound.innerText = "⏹️ Ferma Nota";
-          btnTestSound.style.background = "#dc2626";
-        } else {
-          selectedMidiOut.send([0x80 | ch, 60, 0]);   // Note Off C3
-          btnTestSound.innerText = "🔊 Suona Nota Test";
-          btnTestSound.style.background = "#0284c7";
-        }
-        flashLed(midiOutLed);
-      } catch(e) {}
+      for (let out of outputs) {
+        try {
+          if (isTestNoteActive) {
+            // Sblocca controlli, apre il filtro al massimo e suona Nota C3
+            out.send([0xB0 | ch, 121, 0]);
+            out.send([0xB0 | ch, 43, 127]);
+            out.send([0xB0 | ch, 44, 40]);
+            out.send([0x90 | ch, 60, 100]);
+            btnForcePing.innerText = "⏹️ STOP AUDIO NTS-1";
+            btnForcePing.style.background = "#dc2626";
+          } else {
+            out.send([0x80 | ch, 60, 0]);
+            btnForcePing.innerText = "⚡ FORCE PING NTS-1";
+            btnForcePing.style.background = "#0284c7";
+          }
+        } catch (e) {}
+      }
+      flashLed(midiOutLed);
     });
 
     document.getElementById('btnMidiPanic').addEventListener('click', () => {
-      if (!selectedMidiOut) return;
+      if (!midiAccess) return;
+      const outputs = Array.from(midiAccess.outputs.values());
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      try {
-        selectedMidiOut.send([0xB0 | ch, 123, 0]);
-        selectedMidiOut.send([0xB0 | ch, 120, 0]);
-        selectedMidiOut.send([0x80 | ch, 60, 0]);
-      } catch(e) {}
+      for (let out of outputs) {
+        try {
+          out.send([0xB0 | ch, 123, 0]);
+          out.send([0xB0 | ch, 120, 0]);
+          out.send([0x80 | ch, 60, 0]);
+        } catch(e){}
+      }
       isTestNoteActive = false;
-      btnTestSound.innerText = "🔊 Suona Nota Test";
-      btnTestSound.style.background = "#0284c7";
+      btnForcePing.innerText = "⚡ FORCE PING NTS-1";
+      btnForcePing.style.background = "#0284c7";
       flashLed(midiOutLed, '#ef4444');
     });
 
@@ -567,7 +565,7 @@
       });
       document.getElementById('currentMappingLabel').innerText = "Mappato: Korg NTS-1 (Cutoff CC#43)";
     }
-    document.getElementById('btnMapNTS1').addEventListener('click', applyNTS1Mapping);
+    document.getElementById('btnForceNTS1').addEventListener('click', applyNTS1Mapping);
 
     function applyCurve(x, type) {
       x = Math.max(0, Math.min(1, x));
@@ -603,12 +601,12 @@
     });
 
     function sendMidiExpression(axisId, normVal) {
-      if (!selectedMidiOut || holdStates[axisId]) return;
+      if (holdStates[axisId]) return;
       const sel = document.getElementById(`selCC_${axisId}`)?.value;
       if (!sel) return;
 
       const now = performance.now();
-      if (now - lastMidiTimes[axisId] < 16) return;
+      if (now - lastMidiTimes[axisId] < 20) return;
       lastMidiTimes[axisId] = now;
 
       const ccNum = parseInt(sel);
@@ -710,7 +708,7 @@
       }
     });
 
-    // --- PIPELINE OTTICA PULITA E ULTRA-LEGGERA (ZERO ALLOCAZIONI NEL LOOP) ---
+    // --- PIPELINE OTTICA LEGGERA ANTI-BLOCCO ---
     const procCanvas = document.createElement('canvas');
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
     procCanvas.width = 48;
@@ -788,7 +786,6 @@
       if (!isCamActive || !isTrackingRunning) return;
       if (!video || video.paused || video.ended || video.readyState < 2) return;
 
-      // Se il video non ha ancora generato un nuovo frame hardware, salta l'elaborazione
       if (video.currentTime === lastVideoTime) return;
       lastVideoTime = video.currentTime;
 
@@ -984,7 +981,6 @@
       }
     }
 
-    // Unico loop sincrono nativo senza timer concorrenti
     function mainEngineLoop() {
       try {
         if (isCamActive) computeOpticalMotion();
