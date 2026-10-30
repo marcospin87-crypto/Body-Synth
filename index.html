@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - WebGL Hardware Turbo</title>
+  <title>CyberPose MIDI - Korg NTS-1 Anti-Overflow</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -92,11 +92,11 @@
   <header class="flex justify-between items-center pb-2 mb-2" style="border-bottom: 1px solid #164e63; flex-wrap: wrap; gap: 8px;">
     <div class="flex items-center gap-2">
       <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(6,182,212,0.2); border: 1px solid #22d3ee; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #67e8f9;">
-        🚀
+        ⚡
       </div>
       <div>
-        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI GPU TURBO</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Hardware Accelerated • WakeLock Active • Zero-GC Memory</p>
+        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Serial Paced Engine • Buffer Overflow Protected • Korg NTS-1</p>
       </div>
     </div>
 
@@ -139,10 +139,10 @@
     <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 8px;">
       
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 BUS HARDWARE:</span>
-        <span style="background: #082f49; border: 1px solid #0284c7; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #38bdf8; font-weight: bold;">
-          GPU ACCELERATED • DIRECT OUT
-        </span>
+        <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 PORTE OUT:</span>
+        <select id="midiOutSelect" style="min-width: 180px;">
+          <option value="broadcast">📢 Tutte le porte (Broadcast)</option>
+        </select>
         <select id="midiOutChannel">
           <option value="0" selected>Ch 1 (NTS-1 Def)</option>
           <option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
@@ -150,7 +150,7 @@
       </div>
 
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO USB:</span>
+        <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO:</span>
         <span id="midiStatusBadge" style="background: #020617; border: 1px solid #10b981; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399; font-weight: bold;">
           Ricerca MIDI in corso...
         </span>
@@ -367,7 +367,7 @@
   </main>
 
   <script>
-    // WAKELOCK: Impedisce al tablet di andare in standby o tagliare l'alimentazione USB
+    // WAKELOCK: Impedisce lo standby hardware e lo sleep USB
     let wakeLockSentinel = null;
     async function requestWakeLock() {
       try {
@@ -376,7 +376,7 @@
         }
       } catch (err) {}
     }
-    document.addEventListener('click', () => { if (!wakeLockSentinel) requestWakeLock(); }, { once: true });
+    document.addEventListener('pointerdown', () => { if (!wakeLockSentinel) requestWakeLock(); }, { once: true });
 
     const ALL_MIDI_CCS = [
       { cc: 43, name: "CC#43: Cutoff (Korg NTS-1)" },
@@ -438,15 +438,16 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- MOTORE MIDI HARDWARE AD ALTE PRESTAZIONI ---
+    // --- ARCHITETTURA DI TRASMISSIONE SERIALIZZATA ANTI-OVERFLOW NTS-1 ---
     let midiAccess = null;
     let isTestNoteActive = false;
-    let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
     let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
-    let lastSentValues = { LX: -1, LY: -1, RX: -1, RY: -1, P3X: -1, P3Y: -1 };
 
-    const lastFaderSent = new Int16Array(128).fill(-1);
-    const lastFaderTime = new Float64Array(128).fill(0);
+    // Array di stato: memorizza l'ultimo valore INVIATO al synth per ciascuno dei 128 CC
+    const midiSentMap = new Int16Array(128).fill(-1);
+    // Tabella delle modifiche in attesa: se arrivano nuovi valori mentre il cavo trasmette,
+    // sovrascrive il dato pendente (Drop dei pacchetti intermedi)
+    const midiPendingMap = new Int16Array(128).fill(-1);
 
     const midiInLed = document.getElementById('midiInLed');
     const midiOutLed = document.getElementById('midiOutLed');
@@ -454,10 +455,10 @@
 
     function flashLed(el, color = '#34d399') {
       el.style.backgroundColor = color;
-      setTimeout(() => el.style.backgroundColor = '#475569', 60);
+      setTimeout(() => el.style.backgroundColor = '#475569', 50);
     }
 
-    async function initMidiHardware() {
+    async function initMidiBroadcast() {
       if (!navigator.requestMIDIAccess) {
         midiStatusBadge.innerText = "Web MIDI non supportato";
         return;
@@ -480,6 +481,16 @@
     function checkPorts() {
       if (!midiAccess) return;
       const outputs = Array.from(midiAccess.outputs.values());
+      const select = document.getElementById('midiOutSelect');
+      select.innerHTML = '<option value="broadcast">📢 Tutte le porte (Broadcast)</option>';
+
+      outputs.forEach(out => {
+        const opt = document.createElement('option');
+        opt.value = out.id;
+        opt.innerText = out.name || "USB MIDI Device";
+        select.appendChild(opt);
+      });
+
       if (outputs.length > 0) {
         midiStatusBadge.innerText = `✓ Connesso (${outputs.length} Dispositivi OUT)`;
         midiStatusBadge.style.color = "#34d399";
@@ -491,44 +502,78 @@
       }
     }
 
-    document.getElementById('btnConnectMidi').addEventListener('click', initMidiHardware);
-    initMidiHardware();
+    document.getElementById('btnConnectMidi').addEventListener('click', initMidiBroadcast);
+    initMidiBroadcast();
 
-    function sendRawMidiCC(ccNum, val7bit) {
-      if (!midiAccess) return;
-      const outputs = Array.from(midiAccess.outputs.values());
-      if (outputs.length === 0 || ccNum === null || ccNum === undefined) return;
+    // SPEDIZIONE CON INTERVALLO SERIATO FISSO: UN SOLO PACCHETTO OGNI 8ms
+    // Questo garantisce che l'NTS-1 non riceva mai più di ~120 byte/sec, prevenendo il crash del buffer interno.
+    let isPacerRunning = false;
 
-      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      const packet = [0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))];
-
-      for (let out of outputs) {
-        try {
-          out.send(packet);
-        } catch (e) {}
-      }
-      flashLed(midiOutLed);
-    }
-
-    function sendFaderCC(ccNum, val7bit) {
+    function queueMidiCC(ccNum, val7bit) {
       ccNum = parseInt(ccNum);
       val7bit = Math.max(0, Math.min(127, parseInt(val7bit)));
       if (ccNum < 0 || ccNum > 127) return;
 
-      const now = performance.now();
-      if (val7bit === lastFaderSent[ccNum]) return;
-      if (now - lastFaderTime[ccNum] < 20) return; // 50 Hz rate limit
+      // Se il valore è identico all'ultimo spedito con successo, ignoralo (Zero spam)
+      if (val7bit === midiSentMap[ccNum] && midiPendingMap[ccNum] === -1) return;
 
-      lastFaderTime[ccNum] = now;
-      lastFaderSent[ccNum] = val7bit;
-      sendRawMidiCC(ccNum, val7bit);
+      // Salva nel buffer pendente (sovrascrive se c'era una variazione intermedia)
+      midiPendingMap[ccNum] = val7bit;
+
+      if (!isPacerRunning) {
+        isPacerRunning = true;
+        processMidiQueue();
+      }
     }
 
+    function processMidiQueue() {
+      if (!midiAccess) {
+        isPacerRunning = false;
+        return;
+      }
+
+      // Cerca il primo CC pendente da spedire
+      let targetCC = -1;
+      for (let i = 0; i < 128; i++) {
+        if (midiPendingMap[i] !== -1) {
+          targetCC = i;
+          break;
+        }
+      }
+
+      if (targetCC === -1) {
+        isPacerRunning = false;
+        return;
+      }
+
+      const valToSend = midiPendingMap[targetCC];
+      midiPendingMap[targetCC] = -1; // Rimosso dalla coda
+      midiSentMap[targetCC] = valToSend;
+
+      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
+      const packet = [0xB0 | ch, targetCC, valToSend];
+      const targetMode = document.getElementById('midiOutSelect')?.value || 'broadcast';
+
+      const outputs = Array.from(midiAccess.outputs.values());
+      for (let out of outputs) {
+        if (targetMode === 'broadcast' || out.id === targetMode) {
+          try {
+            out.send(packet);
+          } catch (e) {}
+        }
+      }
+      flashLed(midiOutLed);
+
+      // Ritardo seriale garantito di 8 millisecondi per proteggere la UART dell'NTS-1
+      setTimeout(processMidiQueue, 8);
+    }
+
+    // FORCE PING NTS-1
     const btnForcePing = document.getElementById('btnForcePing');
     btnForcePing.addEventListener('click', () => {
       requestWakeLock();
       if (!midiAccess) {
-        initMidiHardware();
+        initMidiBroadcast();
         return;
       }
       const outputs = Array.from(midiAccess.outputs.values());
@@ -571,6 +616,7 @@
         } catch(e){}
       }
       isTestNoteActive = false;
+      midiPendingMap.fill(-1);
       btnForcePing.innerText = "⚡ FORCE PING NTS-1";
       btnForcePing.style.background = "#0284c7";
       flashLed(midiOutLed, '#ef4444');
@@ -631,19 +677,13 @@
       const sel = document.getElementById(`selCC_${axisId}`)?.value;
       if (!sel) return;
 
-      const now = performance.now();
-      if (now - lastMidiTimes[axisId] < 20) return;
-
       const ccNum = parseInt(sel);
       const finalVal = calculateMidiValue(normVal, axisId);
 
-      if (finalVal !== lastSentValues[axisId]) {
-        lastMidiTimes[axisId] = now;
-        lastSentValues[axisId] = finalVal;
-        sendRawMidiCC(ccNum, finalVal);
-        const disp = document.getElementById(`dispVal_${axisId}`);
-        if (disp) disp.innerText = `CC#${ccNum}: ${finalVal}`;
-      }
+      queueMidiCC(ccNum, finalVal);
+
+      const disp = document.getElementById(`dispVal_${axisId}`);
+      if (disp) disp.innerText = `CC#${ccNum}: ${finalVal}`;
     }
 
     let currentTouchTarget = 'triple';
@@ -726,7 +766,7 @@
         btnTrackingTrigger.style.background = "#450a0a";
         btnTrackingTrigger.style.borderColor = "#ef4444";
         btnTrackingTrigger.style.color = "#fecaca";
-        padTrackingStatusText.innerText = "Tracking GPU ATTIVO";
+        padTrackingStatusText.innerText = "Tracking ATTIVO";
       } else {
         btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
         btnTrackingTrigger.style.background = "#451a03";
@@ -736,14 +776,13 @@
       }
     });
 
-    // --- PIPELINE OTTICA ACCELERATA DA HARDWARE GPU (ZERO ALLOCAZIONI MEMORIA) ---
+    // --- PIPELINE OTTICA A ZERO ALLOCAZIONI (ANTI-FREEZE) ---
     const procW = 48, procH = 36;
     const procCanvas = document.createElement('canvas');
     procCanvas.width = procW;
     procCanvas.height = procH;
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
     
-    // Buffer statici preallocati
     const prevLuma = new Uint8Array(procW * procH);
     let hasPrevFrame = false;
     let lastOpticalFrameTime = 0;
@@ -1094,7 +1133,7 @@
           cfg.val = parseInt(newVal);
           slider.value = cfg.val;
           valDisp.innerText = cfg.val;
-          sendFaderCC(cfg.cc, cfg.val);
+          queueMidiCC(cfg.cc, cfg.val);
         }
 
         slider.addEventListener('input', (e) => updateVal(e.target.value));
@@ -1141,7 +1180,7 @@
             chEl.querySelector('.fader-slider').value = val;
             chEl.querySelector('.fader-val-disp').innerText = val;
           }
-          sendFaderCC(cfg.cc, val);
+          queueMidiCC(cfg.cc, val);
         }
       });
     });
@@ -1156,7 +1195,7 @@
             chEl.querySelector('.fader-slider').value = 0;
             chEl.querySelector('.fader-val-disp').innerText = 0;
           }
-          sendFaderCC(cfg.cc, 0);
+          queueMidiCC(cfg.cc, 0);
         }
       });
     });
@@ -1171,7 +1210,7 @@
             chEl.querySelector('.fader-slider').value = 127;
             chEl.querySelector('.fader-val-disp').innerText = 127;
           }
-          sendFaderCC(cfg.cc, 127);
+          queueMidiCC(cfg.cc, 127);
         }
       });
     });
