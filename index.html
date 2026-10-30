@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Korg NTS-1 Resilient Controller</title>
+  <title>CyberPose MIDI - Korg NTS-1 Bulletproof Engine</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -96,7 +96,7 @@
       </div>
       <div>
         <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Direct Engine • Zero-Leak Stable Camera</p>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Bulletproof • Auto-Reopen Driver • Anti-Freeze Camera</p>
       </div>
     </div>
 
@@ -110,6 +110,7 @@
     </div>
 
     <div class="flex items-center gap-2">
+      <!-- FORCE PING AUDIO NTS-1 -->
       <button id="btnForcePing" style="padding: 6px 14px; border-radius: 8px; border: 2px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px; box-shadow: 0 0 12px rgba(56,189,248,0.5);">
         ⚡ FORCE PING NTS-1
       </button>
@@ -428,7 +429,7 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- HARDWARE MIDI DRIVER DIRETTO POTENZIATO ---
+    // --- HARDWARE MIDI DRIVER BULLETPROOF (AUTO-REOPEN & ANTI-LOCK) ---
     let midiAccess = null;
     let midiOutputs = [];
     let isTestNoteActive = false;
@@ -454,12 +455,12 @@
       try {
         midiAccess = await navigator.requestMIDIAccess({ sysex: false });
         midiAccess.onstatechange = updateMidiDevices;
-        updateMidiDevices();
+        await updateMidiDevices();
       } catch (err) {
         try {
           midiAccess = await navigator.requestMIDIAccess();
           midiAccess.onstatechange = updateMidiDevices;
-          updateMidiDevices();
+          await updateMidiDevices();
         } catch (e2) {
           midiStatusBadge.innerText = "Errore Accesso MIDI: " + err.message;
           midiStatusBadge.style.color = "#f87171";
@@ -467,7 +468,7 @@
       }
     }
 
-    function updateMidiDevices() {
+    async function updateMidiDevices() {
       if (!midiAccess) return;
 
       const outSelect = document.getElementById('midiOutSelect');
@@ -477,6 +478,10 @@
       let portCount = 0;
       for (let out of midiOutputs) {
         portCount++;
+        try {
+          // Forza la riapertura esplicita dell'endpoint USB bloccato
+          await out.open();
+        } catch(e){}
         const opt = document.createElement('option');
         opt.value = out.id;
         opt.innerText = out.name || `Dispositivo USB MIDI #${portCount}`;
@@ -497,6 +502,7 @@
     document.getElementById('btnConnectMidi').addEventListener('click', startMidiSystem);
     startMidiSystem();
 
+    // Invio Diretto a tutti gli endpoint fisici con controllo anti-errore
     function sendRawMidiCC(ccNum, val7bit) {
       if (!midiOutputs || midiOutputs.length === 0 || ccNum === null || ccNum === undefined) return;
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
@@ -505,17 +511,24 @@
 
       for (let out of midiOutputs) {
         if (targetId === 'all' || out.id === targetId) {
-          try { out.send(packet); } catch(e){}
+          try {
+            out.send(packet);
+          } catch(e) {
+            // Se la porta si è disconnessa, tenta il re-open rapido
+            out.open().then(() => out.send(packet)).catch(() => {});
+          }
         }
       }
       flashLed(midiOutLed);
     }
 
-    // FORCE PING & TEST AUDIO NTS-1
+    // FORCE PING & TEST AUDIO NTS-1 CON FLUSH DEI CONTROLLER
     const btnForcePing = document.getElementById('btnForcePing');
-    btnForcePing.addEventListener('click', () => {
+    btnForcePing.addEventListener('click', async () => {
+      await updateMidiDevices();
       if (!midiOutputs || midiOutputs.length === 0) {
-        startMidiSystem();
+        alert("Nessuna porta MIDI rilevata. Ricollega il cavetto USB/OTG al tablet.");
+        return;
       }
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
       isTestNoteActive = !isTestNoteActive;
@@ -523,9 +536,13 @@
       if (isTestNoteActive) {
         for (let out of midiOutputs) {
           try {
-            out.send([0xB0 | ch, 43, 120]); // Apri Cutoff NTS-1
-            out.send([0xB0 | ch, 44, 40]);  // Resonanza NTS-1
-            out.send([0x90 | ch, 60, 100]); // Note On C3
+            // 1. Reset controller per sbloccare l'NTS-1
+            out.send([0xB0 | ch, 121, 0]); 
+            // 2. Apri Cutoff (CC#43 = 127) e imposta Resonance (CC#44 = 40)
+            out.send([0xB0 | ch, 43, 127]);
+            out.send([0xB0 | ch, 44, 40]);
+            // 3. Suona Nota C3 (60)
+            out.send([0x90 | ch, 60, 100]);
           } catch(e){}
         }
         btnForcePing.innerText = "⏹️ STOP AUDIO NTS-1";
@@ -548,8 +565,8 @@
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
       for (let out of midiOutputs) {
         try {
-          out.send([0xB0 | ch, 123, 0]);
-          out.send([0xB0 | ch, 120, 0]);
+          out.send([0xB0 | ch, 123, 0]); // All Notes Off
+          out.send([0xB0 | ch, 120, 0]); // All Sound Off
           out.send([0x80 | ch, 60, 0]);
         } catch(e){}
       }
@@ -609,13 +626,14 @@
       }
     });
 
+    // Throttling di 20ms specifico per proteggere il buffer dell'NTS-1
     function sendMidiExpression(axisId, normVal) {
       if (holdStates[axisId]) return;
       const sel = document.getElementById(`selCC_${axisId}`)?.value;
       if (!sel) return;
 
       const now = performance.now();
-      if (now - lastMidiTimes[axisId] < 16) return;
+      if (now - lastMidiTimes[axisId] < 20) return;
       lastMidiTimes[axisId] = now;
 
       const ccNum = parseInt(sel);
@@ -717,7 +735,7 @@
       }
     });
 
-    // --- PIPELINE OTTICA AD ALTA RESILIENZA ANTI-FREEZE ---
+    // --- PIPELINE OTTICA AD ALTA RESILIENZA (ANTI-FREEZE SU ANDROID) ---
     const procCanvas = document.createElement('canvas');
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
     procCanvas.width = 48; procCanvas.height = 36;
@@ -776,7 +794,7 @@
           hasPrevFrame = false;
           isOpticalProcessing = false;
 
-          // Ciclo ottico separato e protetto con cadenza 30ms (~33 FPS) per isolare la GPU di Android
+          // Ciclo ottico isolato a 33 FPS per evitare saturazione GPU
           opticalTimerId = setInterval(runOpticalFrame, 30);
 
           btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
@@ -814,7 +832,6 @@
 
         if (hasPrevFrame) {
           for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-            // Luminanza rapida
             const bright = (d[i] + d[i+1] + d[i+2]) * 0.333;
             const diff = Math.abs(bright - prevFrameData[p]);
 
@@ -851,7 +868,6 @@
           hasPrevFrame = true;
         }
       } catch (err) {
-        // Ripristino immediato dello stato per prevenire blocchi permanenti
         hasPrevFrame = false;
       } finally {
         isOpticalProcessing = false;
@@ -1000,7 +1016,6 @@
       }
     }
 
-    // Loop a 60 FPS dedicato esclusivamente al rendering e all'invio MIDI
     function mainEngineLoop() {
       try {
         processParameters();
