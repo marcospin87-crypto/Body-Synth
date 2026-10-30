@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Universal Synth Studio</title>
+  <title>CyberPose MIDI - Korg NTS-1 Direct Engine</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -38,14 +38,6 @@
       background-color: #0284c7 !important; border-color: #38bdf8 !important;
       color: #ffffff !important; box-shadow: 0 0 16px rgba(56, 189, 248, 0.7);
       transform: scale(0.96);
-    }
-    .midi-learning-active {
-      animation: pulseLearn 0.5s infinite alternate;
-      border-color: #facc15 !important; background-color: #a16207 !important; color: #ffffff !important;
-    }
-    @keyframes pulseLearn {
-      0% { box-shadow: 0 0 4px #facc15; }
-      100% { box-shadow: 0 0 18px #facc15; }
     }
     .pad-grid {
       background-image: 
@@ -96,19 +88,18 @@
 </head>
 <body>
 
-  <!-- Header Principale -->
+  <!-- Header -->
   <header class="flex justify-between items-center pb-2 mb-2" style="border-bottom: 1px solid #164e63; flex-wrap: wrap; gap: 8px;">
     <div class="flex items-center gap-2">
       <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(6,182,212,0.2); border: 1px solid #22d3ee; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #67e8f9;">
         ⚡
       </div>
       <div>
-        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE UNIVERSAL MIDI</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">All Synths Compatible • Korg NTS-1 / MicroFreak / Any Device</p>
+        <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Korg NTS-1 Direct Driver • Note Trigger & Raw Output</p>
       </div>
     </div>
 
-    <!-- Schede di visualizzazione -->
     <div class="flex gap-1" style="background: #020617; padding: 4px; border-radius: 10px; border: 1px solid #164e63;">
       <button id="tabBtnPad" style="padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 900; background: #06b6d4; color: #000; border: none;">
         🎛️ XY Pad & Cam
@@ -118,14 +109,14 @@
       </button>
     </div>
 
-    <!-- Azioni e Refresh PWA -->
     <div class="flex items-center gap-2">
-      <button id="btnForcePwaUpdate" style="padding: 6px 10px; border-radius: 8px; border: 1px solid #f59e0b; background: #451a03; color: #fde68a; font-weight: bold; font-size: 10px;" title="Forza il caricamento dell'ultimo codice e svuota la cache locale">
-        🔄 Aggiorna App
+      <!-- Pulsante Test Suono: attiva il synth -->
+      <button id="btnTestSound" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px; box-shadow: 0 0 10px rgba(56,189,248,0.4);">
+        🔊 Suona Nota (Test NTS-1)
       </button>
 
       <button id="btnConnectMidi" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #10b981; background: #064e3b; color: #6ee7b7; font-weight: bold; font-size: 11px;">
-        🔌 Cerca Dispositivi MIDI
+        🔌 Ricollega MIDI
       </button>
 
       <button id="btnCamToggle" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #06b6d4, #2563eb); color: #000; font-weight: 900; font-size: 11px; border: none;">
@@ -144,43 +135,31 @@
     </div>
   </header>
 
-  <!-- BARRA HARDWARE & CONFIGURATORE UNIVERSALE SYNTH -->
+  <!-- Barra Hardware & Stato Porte -->
   <section style="background: rgba(15,23,42,0.9); border: 1px solid #3b0764; border-radius: 12px; padding: 8px 12px; margin-bottom: 8px;">
     <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 8px;">
       
-      <!-- Selettore Porta MIDI OUT con Broadcast Fallback -->
       <div class="flex items-center gap-1">
         <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 DESTINAZIONE:</span>
-        <select id="midiOutSelect" style="min-width: 190px;">
-          <option value="broadcast">📢 Tutte le porte connesse (Broadcast)</option>
+        <select id="midiOutSelect" style="min-width: 220px;">
+          <option value="all">📢 Tutte le porte connesse (Auto-Direct)</option>
         </select>
         <select id="midiOutChannel">
-          <option value="0">Ch 1 (NTS-1 / MF)</option>
+          <option value="0" selected>Ch 1 (Default NTS-1)</option>
           <option value="1">Ch 2</option><option value="2">Ch 3</option><option value="3">Ch 4</option>
-          <option value="9">Ch 10</option><option value="15">Ch 16</option>
         </select>
       </div>
 
-      <!-- MIDI IN & Tester Monitor -->
       <div class="flex items-center gap-1">
-        <span style="font-weight: bold; color: #facc15; font-size: 11px;">📥 IN:</span>
-        <select id="midiInSelect"><option value="all">Ascolta Tutte</option></select>
-        <span id="midiInMonitor" style="background: #020617; border: 1px solid #1e293b; padding: 2px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399;">
-          IN: In attesa...
+        <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO:</span>
+        <span id="midiStatusBadge" style="background: #020617; border: 1px solid #10b981; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399; font-weight: bold;">
+          Ricerca MIDI in corso...
         </span>
       </div>
 
-      <!-- PROFILI DI CONFIGURAZIONE ISTANTANEA SYNTH -->
       <div class="flex items-center gap-1">
-        <span style="font-size: 11px; font-weight: bold; color: #38bdf8;">PROFILO:</span>
-        <select id="synthProfileSelect" style="color: #facc15; font-weight: bold; border-color: #0284c7;">
-          <option value="nts1" selected>🎹 Korg NTS-1 (Cutoff 43, Res 44)</option>
-          <option value="microfreak">⚡ Arturia MicroFreak (Cutoff 23, Res 83)</option>
-          <option value="generalmidi">🌐 General MIDI Std (Cutoff 74, Res 71)</option>
-          <option value="custom">🛠️ Profilo Personalizzato</option>
-        </select>
-        <button id="btnApplyProfile" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #0284c7, #06b6d4); color: #fff; font-weight: 900; font-size: 11px; border: none;">
-          Carica
+        <button id="btnForceNTS1" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
+          ⚡ Carica Mappa NTS-1
         </button>
       </div>
 
@@ -225,7 +204,7 @@
         <div id="touchPadBg" class="pad-grid pad-subgrid flex flex-col justify-between" style="position: absolute; inset: 0; padding: 12px; pointer-events: none;">
           <div class="flex justify-between items-center" style="font-family: monospace; font-size: 10px; font-weight: bold;">
             <span id="padStatusBadge" style="background: rgba(8,47,73,0.8); border: 1px solid rgba(6,182,212,0.4); color: #22d3ee; padding: 2px 6px; border-radius: 4px;">PAD ATTIVO</span>
-            <span id="padTrackingStatusText" style="color: #94a3b8;">Basso: 0 ➔ Alto: 127</span>
+            <span id="padTrackingStatusText" style="color: #94a3b8;">Basso: 0 (Chiuso) ➔ Alto: 127 (Aperto)</span>
           </div>
 
           <div id="camSplitIndicator" class="hidden" style="position: absolute; top:0; bottom:0; left:50%; width:1px; border-right: 1px dashed rgba(6,182,212,0.6);"></div>
@@ -244,15 +223,15 @@
 
       <div class="grid grid-cols-3 gap-2" style="font-family: monospace; font-size: 11px;">
         <div id="boxMonP1" style="background: rgba(15,23,42,0.9); border: 1px solid rgba(236,72,153,0.5); padding: 6px; border-radius: 8px; text-align: center;">
-          <span style="color: #f472b6; font-size: 9px; display: block;">1° SX (ROSA)</span>
+          <span style="color: #f472b6; font-size: 9px; display: block;">1° SX (Cutoff CC#43)</span>
           <span id="monP1" style="font-weight: 900;">X: 0 | Y: 0</span>
         </div>
         <div id="boxMonP2" style="background: rgba(15,23,42,0.9); border: 1px solid rgba(6,182,212,0.5); padding: 6px; border-radius: 8px; text-align: center;">
-          <span style="color: #22d3ee; font-size: 9px; display: block;">2° DX (CYAN)</span>
+          <span style="color: #22d3ee; font-size: 9px; display: block;">2° DX (Shape CC#54)</span>
           <span id="monP2" style="font-weight: 900;">X: 0 | Y: 0</span>
         </div>
         <div id="boxMonP3" style="background: rgba(15,23,42,0.9); border: 1px solid rgba(234,179,8,0.5); padding: 6px; border-radius: 8px; text-align: center;">
-          <span style="color: #facc15; font-size: 9px; display: block;">3° FX (GIALLO)</span>
+          <span style="color: #facc15; font-size: 9px; display: block;">3° FX (Delay CC#31)</span>
           <span id="monP3" style="font-weight: 900;">X: 0 | Y: 0</span>
         </div>
       </div>
@@ -261,15 +240,15 @@
     <!-- Matrice Assi -->
     <div style="background: rgba(15,23,42,0.8); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
       <div class="flex justify-between items-center pb-1" style="border-bottom: 1px solid #1e293b;">
-        <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura Assi (Range 0 - 127)</h2>
-        <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">Korg NTS-1 Attivo (Cutoff 43)</span>
+        <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura NTS-1 / MIDI CC (Range 0 - 127)</h2>
+        <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">Cutoff: CC#43 | Reson: CC#44</span>
       </div>
 
       <!-- SX X -->
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(236,72,153,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse X</span>
+            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse X (NTS-1 Cutoff)</span>
             <span id="dispVal_LX" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#43: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -278,7 +257,6 @@
             <label style="font-size: 10px; color: #f472b6; margin-left: 4px;"><input type="checkbox" id="inv_LX"> Inv</label>
           </div>
         </div>
-        <button class="learn-axis-btn" data-axis="LX" style="background: #451a03; border: 1px solid #ca8a04; color: #fde047; padding: 8px 6px; border-radius: 6px; font-size: 9px; font-weight: bold;">LEARN</button>
         <button id="hold_LX" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
       </div>
 
@@ -286,7 +264,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(236,72,153,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse Y</span>
+            <span style="color: #f472b6; font-weight: bold; font-size: 11px;">1° SX - Asse Y (NTS-1 Resonance)</span>
             <span id="dispVal_LY" style="background: #831843; border: 1px solid #db2777; color: #fbcfe8; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#44: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -295,7 +273,6 @@
             <label style="font-size: 10px; color: #f472b6; margin-left: 4px;"><input type="checkbox" id="inv_LY"> Inv</label>
           </div>
         </div>
-        <button class="learn-axis-btn" data-axis="LY" style="background: #451a03; border: 1px solid #ca8a04; color: #fde047; padding: 8px 6px; border-radius: 6px; font-size: 9px; font-weight: bold;">LEARN</button>
         <button id="hold_LY" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
       </div>
 
@@ -303,7 +280,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(6,182,212,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse X</span>
+            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse X (NTS-1 Shape)</span>
             <span id="dispVal_RX" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#54: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -312,7 +289,6 @@
             <label style="font-size: 10px; color: #22d3ee; margin-left: 4px;"><input type="checkbox" id="inv_RX"> Inv</label>
           </div>
         </div>
-        <button class="learn-axis-btn" data-axis="RX" style="background: #451a03; border: 1px solid #ca8a04; color: #fde047; padding: 8px 6px; border-radius: 6px; font-size: 9px; font-weight: bold;">LEARN</button>
         <button id="hold_RX" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
       </div>
 
@@ -320,7 +296,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(6,182,212,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse Y</span>
+            <span style="color: #22d3ee; font-weight: bold; font-size: 11px;">2° DX - Asse Y (NTS-1 Mod Depth)</span>
             <span id="dispVal_RY" style="background: #082f49; border: 1px solid #0284c7; color: #bae6fd; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#29: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -329,7 +305,6 @@
             <label style="font-size: 10px; color: #22d3ee; margin-left: 4px;"><input type="checkbox" id="inv_RY"> Inv</label>
           </div>
         </div>
-        <button class="learn-axis-btn" data-axis="RY" style="background: #451a03; border: 1px solid #ca8a04; color: #fde047; padding: 8px 6px; border-radius: 6px; font-size: 9px; font-weight: bold;">LEARN</button>
         <button id="hold_RY" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
       </div>
 
@@ -337,7 +312,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(234,179,8,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse X</span>
+            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse X (NTS-1 Delay Depth)</span>
             <span id="dispVal_P3X" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#31: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -346,7 +321,6 @@
             <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3X"> Inv</label>
           </div>
         </div>
-        <button class="learn-axis-btn" data-axis="P3X" style="background: #451a03; border: 1px solid #ca8a04; color: #fde047; padding: 8px 6px; border-radius: 6px; font-size: 9px; font-weight: bold;">LEARN</button>
         <button id="hold_P3X" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
       </div>
 
@@ -354,7 +328,7 @@
       <div class="flex items-center gap-2" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(234,179,8,0.25); border-radius: 8px; padding: 6px;">
         <div style="flex: 1;">
           <div class="flex justify-between items-center mb-1">
-            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse Y</span>
+            <span style="color: #facc15; font-weight: bold; font-size: 11px;">3° FX - Asse Y (NTS-1 Reverb Depth)</span>
             <span id="dispVal_P3Y" style="background: #713f12; border: 1px solid #ca8a04; color: #fef08a; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: bold;">CC#35: 0</span>
           </div>
           <div class="flex gap-1 items-center">
@@ -363,7 +337,6 @@
             <label style="font-size: 10px; color: #facc15; margin-left: 4px;"><input type="checkbox" id="inv_P3Y"> Inv</label>
           </div>
         </div>
-        <button class="learn-axis-btn" data-axis="P3Y" style="background: #451a03; border: 1px solid #ca8a04; color: #fde047; padding: 8px 6px; border-radius: 6px; font-size: 9px; font-weight: bold;">LEARN</button>
         <button id="hold_P3Y" class="btn-hold-square"><span>HOLD</span><span style="font-size: 8px; color: #64748b;">OFF</span></button>
       </div>
     </div>
@@ -396,27 +369,27 @@
 
   <script>
     const ALL_MIDI_CCS = [
-      { cc: 1, name: "CC#1: ModWheel" }, { cc: 2, name: "CC#2: Spice" },
-      { cc: 5, name: "CC#5: Glide" }, { cc: 7, name: "CC#7: Volume" },
-      { cc: 9, name: "CC#9: Type (MF)" }, { cc: 10, name: "CC#10: Wave/Pan" },
-      { cc: 11, name: "CC#11: Expression" }, { cc: 12, name: "CC#12: Timbre (MF)" },
-      { cc: 13, name: "CC#13: Shape (MF)" }, { cc: 23, name: "CC#23: Cutoff (MF)" },
-      { cc: 29, name: "CC#29: Mod Depth (NTS-1)" },
-      { cc: 31, name: "CC#31: Delay Depth (NTS-1)" },
-      { cc: 35, name: "CC#35: Reverb Depth (NTS-1)" },
-      { cc: 42, name: "CC#42: Filter Type (NTS-1)" },
       { cc: 43, name: "CC#43: Cutoff (Korg NTS-1)" },
       { cc: 44, name: "CC#44: Resonance (Korg NTS-1)" },
       { cc: 53, name: "CC#53: OSC Type (NTS-1)" },
       { cc: 54, name: "CC#54: OSC Shape (NTS-1)" },
-      { cc: 71, name: "CC#71: Reson Std" }, { cc: 74, name: "CC#74: Cutoff Std" },
-      { cc: 83, name: "CC#83: Reson MicroFreak" }, { cc: 102, name: "CC#102: Cyc Rise" }
+      { cc: 29, name: "CC#29: Mod Depth (NTS-1)" },
+      { cc: 31, name: "CC#31: Delay Depth (NTS-1)" },
+      { cc: 35, name: "CC#35: Reverb Depth (NTS-1)" },
+      { cc: 42, name: "CC#42: Filter Type (NTS-1)" },
+      { cc: 23, name: "CC#23: Cutoff (MicroFreak)" },
+      { cc: 83, name: "CC#83: Resonance (MicroFreak)" },
+      { cc: 74, name: "CC#74: Cutoff (Standard GM)" },
+      { cc: 71, name: "CC#71: Reson (Standard GM)" },
+      { cc: 1,  name: "CC#1: ModWheel" },
+      { cc: 7,  name: "CC#7: Volume" },
+      { cc: 11, name: "CC#11: Expression" }
     ];
 
     const FULL_128_CC_MAP = [];
     for (let i = 0; i <= 127; i++) {
       const known = ALL_MIDI_CCS.find(k => k.cc === i);
-      FULL_128_CC_MAP.push({ cc: i, name: known ? known.name : `CC#${i}: Controllo ${i}` });
+      FULL_128_CC_MAP.push({ cc: i, name: known ? known.name : `CC#${i}: Controllo Generico ${i}` });
     }
 
     document.querySelectorAll('.cc-full-select').forEach(sel => {
@@ -429,26 +402,12 @@
       });
     });
 
-    // PWA Service Worker & Force Refresh
+    // PWA Service Worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
     }
-
-    document.getElementById('btnForcePwaUpdate').addEventListener('click', async () => {
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-          await registration.unregister();
-        }
-      }
-      if ('caches' in window) {
-        const keys = await caches.keys();
-        for (let key of keys) {
-          await caches.delete(key);
-        }
-      }
-      window.location.reload(true);
-    });
 
     // Switcher Schede
     const tabBtnPad = document.getElementById('tabBtnPad');
@@ -471,207 +430,153 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- HARDWARE MIDI ENGINE RESILIENTE (AUTO-RECONNECT & BROADCAST) ---
+    // --- HARDWARE MIDI DRIVER DIRETTO (SEQUENCER ENGINE) ---
     let midiAccess = null;
     let midiOutputs = [];
-    let selectedMidiOutId = 'broadcast';
+    let isTestNoteActive = false;
     let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
     let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
     let lastSentValues = { LX: null, LY: null, RX: null, RY: null, P3X: null, P3Y: null };
-    let activeLearnAxis = null;
 
     const midiInLed = document.getElementById('midiInLed');
     const midiOutLed = document.getElementById('midiOutLed');
-    const midiInMonitor = document.getElementById('midiInMonitor');
+    const midiStatusBadge = document.getElementById('midiStatusBadge');
 
     function flashLed(el, color = '#34d399') {
       el.style.backgroundColor = color;
       setTimeout(() => el.style.backgroundColor = '#475569', 80);
     }
 
-    async function initMidi() {
+    // Inizializzazione pulita senza SysEx (standard sequencer)
+    async function startMidiSystem() {
       if (!navigator.requestMIDIAccess) {
-        midiInMonitor.innerText = "No Web MIDI support";
+        midiStatusBadge.innerText = "Browser senza Web MIDI";
+        midiStatusBadge.style.color = "#f87171";
         return;
       }
       try {
-        midiAccess = await navigator.requestMIDIAccess({ sysex: true });
-      } catch (e) {
         midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+        midiAccess.onstatechange = updateMidiDevices;
+        updateMidiDevices();
+      } catch (err) {
+        try {
+          midiAccess = await navigator.requestMIDIAccess();
+          midiAccess.onstatechange = updateMidiDevices;
+          updateMidiDevices();
+        } catch (e2) {
+          midiStatusBadge.innerText = "Errore Accesso MIDI: " + err.message;
+          midiStatusBadge.style.color = "#f87171";
+        }
       }
-
-      refreshMidiPorts();
-      // Ascolta il collegamento / scollegamento di qualsiasi cavo o synth al volo
-      midiAccess.onstatechange = (e) => {
-        refreshMidiPorts();
-      };
     }
 
-    async function refreshMidiPorts() {
+    function updateMidiDevices() {
       if (!midiAccess) return;
 
-      const inSelect = document.getElementById('midiInSelect');
-      inSelect.innerHTML = '<option value="all">Ascolta Tutte le porte</option>';
-      const inputs = Array.from(midiAccess.inputs.values());
-
-      for (let inp of inputs) {
-        try { await inp.open(); } catch(e){}
-        inp.onmidimessage = handleMIDIInput;
-        const opt = document.createElement('option');
-        opt.value = inp.id;
-        opt.innerText = inp.name || "MIDI IN Generico";
-        inSelect.appendChild(opt);
-      }
-
       const outSelect = document.getElementById('midiOutSelect');
-      outSelect.innerHTML = '<option value="broadcast">📢 Tutte le porte connesse (Broadcast)</option>';
+      outSelect.innerHTML = '<option value="all">📢 Tutte le porte connesse (Auto-Direct)</option>';
       midiOutputs = Array.from(midiAccess.outputs.values());
 
-      let detectedSynthName = null;
+      let portCount = 0;
       for (let out of midiOutputs) {
-        try { await out.open(); } catch(e){}
+        portCount++;
         const opt = document.createElement('option');
         opt.value = out.id;
-        opt.innerText = out.name || "Porta MIDI OUT";
+        opt.innerText = out.name || `Dispositivo USB MIDI #${portCount}`;
         outSelect.appendChild(opt);
-
-        const lower = (out.name || '').toLowerCase();
-        if (lower.includes('nts') || lower.includes('korg')) detectedSynthName = 'nts1';
-        else if (lower.includes('microfreak') || lower.includes('arturia')) detectedSynthName = 'microfreak';
       }
 
-      // Se non è selezionato niente o è rimasto broadcast
       if (midiOutputs.length > 0) {
-        midiInMonitor.innerText = `Attive (${inputs.length} IN / ${midiOutputs.length} OUT)`;
-        document.getElementById('btnConnectMidi').innerText = `✓ MIDI (${midiOutputs.length} OUT)`;
-        
-        // Auto-selezione intelligente del profilo se riconosciuto dal nome
-        if (detectedSynthName && document.getElementById('synthProfileSelect').value !== 'custom') {
-          document.getElementById('synthProfileSelect').value = detectedSynthName;
-          applySelectedProfile(detectedSynthName);
-        }
+        midiStatusBadge.innerText = `✓ Connesso (${midiOutputs.length} Dispositivi MIDI OUT)`;
+        midiStatusBadge.style.color = "#34d399";
+        midiStatusBadge.style.borderColor = "#10b981";
       } else {
-        midiInMonitor.innerText = "Nessun cavo/synth rilevato";
-        document.getElementById('btnConnectMidi').innerText = "🔌 Cerca Dispositivi MIDI";
+        midiStatusBadge.innerText = "In attesa di cavo OTG / Synth...";
+        midiStatusBadge.style.color = "#facc15";
+        midiStatusBadge.style.borderColor = "#ca8a04";
       }
     }
 
-    document.getElementById('btnConnectMidi').addEventListener('click', initMidi);
-    initMidi();
+    document.getElementById('btnConnectMidi').addEventListener('click', startMidiSystem);
+    startMidiSystem();
 
-    document.getElementById('midiOutSelect').addEventListener('change', (e) => {
-      selectedMidiOutId = e.target.value;
-    });
-
-    function handleMIDIInput(event) {
-      flashLed(midiInLed);
-      const [status, data1, data2] = event.data;
-      if ((status >> 4) === 11) {
-        midiInMonitor.innerText = `CC#${data1}: ${data2}`;
-        if (activeLearnAxis) {
-          const select = document.getElementById(`selCC_${activeLearnAxis}`);
-          if (select) select.value = data1;
-          document.querySelectorAll('.learn-axis-btn').forEach(b => b.classList.remove('midi-learning-active'));
-          activeLearnAxis = null;
-        }
-      }
-    }
-
-    document.querySelectorAll('.learn-axis-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const axis = btn.dataset.axis;
-        if (activeLearnAxis === axis) {
-          activeLearnAxis = null;
-          btn.classList.remove('midi-learning-active');
-        } else {
-          document.querySelectorAll('.learn-axis-btn').forEach(b => b.classList.remove('midi-learning-active'));
-          activeLearnAxis = axis;
-          btn.classList.add('midi-learning-active');
-        }
-      });
-    });
-
-    // --- CONFIGURATORE PROFILI HARDWARE UNIVERSALE ---
-    const SYNTH_PROFILES = {
-      nts1: {
-        name: "Korg NTS-1",
-        label: "Korg NTS-1 Attivo (Cutoff CC#43)",
-        channel: "0", // Ch 1
-        pad: { LX: "43", LY: "44", RX: "54", RY: "29", P3X: "31", P3Y: "35" },
-        faders: [43, 44, 53, 54, 29, 31, 35, 42]
-      },
-      microfreak: {
-        name: "Arturia MicroFreak",
-        label: "MicroFreak Attivo (Cutoff CC#23)",
-        channel: "0", // Ch 1
-        pad: { LX: "23", LY: "83", RX: "9", RY: "10", P3X: "12", P3Y: "13" },
-        faders: [23, 83, 9, 10, 12, 13, 102, 5]
-      },
-      generalmidi: {
-        name: "General MIDI Std",
-        label: "General MIDI Attivo (Cutoff CC#74)",
-        channel: "0",
-        pad: { LX: "74", LY: "71", RX: "1", RY: "11", P3X: "7", P3Y: "10" },
-        faders: [74, 71, 1, 11, 7, 10, 91, 92]
-      }
-    };
-
-    function applySelectedProfile(profKey) {
-      const p = SYNTH_PROFILES[profKey];
-      if (!p) return;
-
-      document.getElementById('midiOutChannel').value = p.channel;
-      document.getElementById('selCC_LX').value = p.pad.LX;
-      document.getElementById('selCC_LY').value = p.pad.LY;
-      document.getElementById('selCC_RX').value = p.pad.RX;
-      document.getElementById('selCC_RY').value = p.pad.RY;
-      document.getElementById('selCC_P3X').value = p.pad.P3X;
-      document.getElementById('selCC_P3Y').value = p.pad.P3Y;
-
-      p.faders.forEach((cc, idx) => {
-        if (idx < faderConfigs.length) setFaderCC(idx, cc);
-      });
-
-      document.getElementById('currentMappingLabel').innerText = p.label;
-    }
-
-    document.getElementById('btnApplyProfile').addEventListener('click', () => {
-      const selected = document.getElementById('synthProfileSelect').value;
-      if (selected !== 'custom') {
-        applySelectedProfile(selected);
-      }
-    });
-
-    // Invia i pacchetti MIDI OUT con supporto BROADCAST
+    // Invio Diretto a tutti gli endpoint fisici
     function sendRawMidiCC(ccNum, val7bit) {
       if (!midiOutputs || midiOutputs.length === 0 || ccNum === null || ccNum === undefined) return;
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
+      const targetId = document.getElementById('midiOutSelect')?.value || 'all';
       const packet = [0xB0 | ch, parseInt(ccNum), Math.max(0, Math.min(127, val7bit))];
 
-      if (selectedMidiOutId === 'broadcast') {
-        // Invia a TUTTE le porte MIDI collegate (nessun synth può essere saltato)
-        for (let out of midiOutputs) {
-          try { out.send(packet); } catch(e){}
-        }
-      } else {
-        const out = midiOutputs.find(o => o.id === selectedMidiOutId);
-        if (out) {
+      for (let out of midiOutputs) {
+        if (targetId === 'all' || out.id === targetId) {
           try { out.send(packet); } catch(e){}
         }
       }
       flashLed(midiOutLed);
     }
 
+    // Trigger Test Suono per sentire l'audio dell'NTS-1
+    const btnTestSound = document.getElementById('btnTestSound');
+    btnTestSound.addEventListener('click', () => {
+      if (!midiOutputs || midiOutputs.length === 0) {
+        alert("Nessun dispositivo MIDI collegato. Verifica il cavo OTG.");
+        return;
+      }
+      const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
+      isTestNoteActive = !isTestNoteActive;
+
+      if (isTestNoteActive) {
+        // Invia Note On (C3 = 60, Vel 100)
+        for (let out of midiOutputs) {
+          try { out.send([0x90 | ch, 60, 100]); } catch(e){}
+        }
+        btnTestSound.innerText = "⏹️ Ferma Nota Test";
+        btnTestSound.style.background = "#dc2626";
+        btnTestSound.style.borderColor = "#f87171";
+      } else {
+        // Invia Note Off
+        for (let out of midiOutputs) {
+          try { out.send([0x80 | ch, 60, 0]); } catch(e){}
+        }
+        btnTestSound.innerText = "🔊 Suona Nota (Test NTS-1)";
+        btnTestSound.style.background = "#0284c7";
+        btnTestSound.style.borderColor = "#38bdf8";
+      }
+      flashLed(midiOutLed);
+    });
+
     document.getElementById('btnMidiPanic').addEventListener('click', () => {
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      const packets = [[0xB0 | ch, 123, 0], [0xB0 | ch, 120, 0], [0xB0 | ch, 121, 0]];
       for (let out of midiOutputs) {
-        for (let p of packets) {
-          try { out.send(p); } catch(e){}
-        }
+        try {
+          out.send([0xB0 | ch, 123, 0]); // All Notes Off
+          out.send([0xB0 | ch, 120, 0]); // All Sound Off
+          out.send([0x80 | ch, 60, 0]);
+        } catch(e){}
       }
+      isTestNoteActive = false;
+      btnTestSound.innerText = "🔊 Suona Nota (Test NTS-1)";
+      btnTestSound.style.background = "#0284c7";
       flashLed(midiOutLed, '#ef4444');
     });
+
+    // Mappatura Rapida NTS-1
+    function applyNTS1Mapping() {
+      document.getElementById('selCC_LX').value = "43"; // Cutoff
+      document.getElementById('selCC_LY').value = "44"; // Resonance
+      document.getElementById('selCC_RX').value = "54"; // Shape
+      document.getElementById('selCC_RY').value = "29"; // Mod Depth
+      document.getElementById('selCC_P3X').value = "31"; // Delay Depth
+      document.getElementById('selCC_P3Y').value = "35"; // Reverb Depth
+      document.getElementById('midiOutChannel').value = "0"; // Canale 1
+
+      const ntsDefaults = [43, 44, 53, 54, 29, 31, 35, 42];
+      faderConfigs.forEach((f, idx) => {
+        if (idx < ntsDefaults.length) setFaderCC(idx, ntsDefaults[idx]);
+      });
+      document.getElementById('currentMappingLabel').innerText = "✓ Mappa Korg NTS-1 Attiva (Cutoff CC#43)";
+    }
+    document.getElementById('btnForceNTS1').addEventListener('click', applyNTS1Mapping);
 
     function applyCurve(x, type) {
       x = Math.max(0, Math.min(1, x));
@@ -823,9 +728,7 @@
     async function toggleWebcam() {
       if (isCamActive) {
         if (currentStream) {
-          try {
-            currentStream.getTracks().forEach(t => t.stop());
-          } catch(e) {}
+          try { currentStream.getTracks().forEach(t => t.stop()); } catch(e){}
           currentStream = null;
         }
         video.srcObject = null;
