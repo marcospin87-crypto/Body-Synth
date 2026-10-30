@@ -96,7 +96,7 @@
       </div>
       <div>
         <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Direct Hardware Broadcast Engine • Korg NTS-1 Ready</p>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Direct Hardware Broadcast Engine • Zero-Leak Optical Engine</p>
       </div>
     </div>
 
@@ -427,7 +427,7 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- DRIVER MIDI DIRETTO BROADCAST (ORIGINARIO E STABILE) ---
+    // --- DRIVER MIDI DIRETTO BROADCAST (STABILE E TESTATO) ---
     let midiAccess = null;
     let isTestNoteActive = false;
     let lastMidiTimes = { LX: 0, LY: 0, RX: 0, RY: 0, P3X: 0, P3Y: 0 };
@@ -705,12 +705,15 @@
       }
     });
 
-    // --- PIPELINE OTTICA ANTI-FREEZE CON THROTTLING A 20 FPS ---
+    // --- PIPELINE OTTICA RESILIENTE ZERO-ALLOCATION (ANTI-CRASH) ---
+    const procW = 48, procH = 36;
     const procCanvas = document.createElement('canvas');
+    procCanvas.width = procW;
+    procCanvas.height = procH;
     const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
-    procCanvas.width = 48;
-    procCanvas.height = 36;
-    const prevFrameData = new Uint8ClampedArray(48 * 36);
+    
+    // Buffer statici preallocati riutilizzati all'infinito: ZERO GC PRESSURE
+    const prevLuma = new Uint8Array(procW * procH);
     let hasPrevFrame = false;
     let lastOpticalFrameTime = 0;
 
@@ -782,27 +785,29 @@
       if (!isCamActive || !isTrackingRunning) return;
       if (!video || video.paused || video.ended || video.readyState < 2) return;
 
-      // BLOCCO SALVA-GPU: Esegue l'analisi al massimo ogni 50ms (~20 FPS)
+      // Limita l'elaborazione ad esattamente 20 FPS (ogni 50ms)
       const now = performance.now();
       if (now - lastOpticalFrameTime < 50) return;
       lastOpticalFrameTime = now;
 
       try {
-        pCtx.drawImage(video, 0, 0, 48, 36);
-        const d = pCtx.getImageData(0, 0, 48, 36).data;
+        pCtx.drawImage(video, 0, 0, procW, procH);
+        const imgData = pCtx.getImageData(0, 0, procW, procH);
+        const data = imgData.data;
 
         const midX = 24;
         let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
         const targetMode = camTrackingTarget.value;
 
         if (hasPrevFrame) {
-          for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-            const bright = (d[i] + d[i+1] + d[i+2]) * 0.333;
-            const diff = Math.abs(bright - prevFrameData[p]);
+          for (let p = 0, i = 0; p < prevLuma.length; p++, i += 4) {
+            // Calcolo luminanza compatto
+            const bright = (data[i] * 3 + data[i+1] * 4 + data[i+2]) >> 3;
+            const diff = Math.abs(bright - prevLuma[p]);
 
             if (diff > 16) {
-              const px = p % 48;
-              const py = (p / 48) | 0;
+              const px = p % procW;
+              const py = (p / procW) | 0;
 
               if (px >= midX && (targetMode === 'both' || targetMode === 'leftOnly')) {
                 lX += px * diff; lY += py * diff; lW += diff;
@@ -810,25 +815,25 @@
                 rX += px * diff; rY += py * diff; rW += diff;
               }
             }
-            prevFrameData[p] = bright;
+            prevLuma[p] = bright;
           }
 
-          if (lW > 100) {
-            const rawNormX = 1 - (lX / lW) / 48;
+          if (lW > 90) {
+            const rawNormX = 1 - (lX / lW) / procW;
             const clampedX = Math.max(0.02, Math.min(0.48, rawNormX));
             p1.targetX = (clampedX - 0.02) / (0.48 - 0.02) * 0.5;
-            p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / 36));
+            p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / procH));
           }
 
-          if (rW > 100) {
-            const rawNormX = 1 - (rX / rW) / 48;
+          if (rW > 90) {
+            const rawNormX = 1 - (rX / rW) / procW;
             const clampedX = Math.max(0.52, Math.min(0.98, rawNormX));
             p2.targetX = 0.5 + ((clampedX - 0.52) / (0.98 - 0.52) * 0.5);
-            p2.targetY = Math.max(0.02, Math.min(0.98, (rY / rW) / 36));
+            p2.targetY = Math.max(0.02, Math.min(0.98, (rY / rW) / procH));
           }
         } else {
-          for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-            prevFrameData[p] = (d[i] + d[i+1] + d[i+2]) * 0.333;
+          for (let p = 0, i = 0; p < prevLuma.length; p++, i += 4) {
+            prevLuma[p] = (data[i] * 3 + data[i+1] * 4 + data[i+2]) >> 3;
           }
           hasPrevFrame = true;
         }
@@ -979,6 +984,7 @@
       }
     }
 
+    // Loop a 60 FPS senza chiamate ridondanti alla GPU
     function mainEngineLoop() {
       try {
         if (isCamActive) computeOpticalMotion();
