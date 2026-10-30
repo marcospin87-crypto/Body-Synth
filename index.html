@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CyberPose MIDI - Roland UM-1 / Korg NTS-1</title>
+  <title>CyberPose MIDI - Korg NTS-1 Stable Touch</title>
   <meta name="theme-color" content="#060913" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -92,7 +92,7 @@
       </div>
       <div>
         <h1 style="font-size: 15px; font-weight: 900; color: #22d3ee; letter-spacing: 1px; text-transform: uppercase;">CYBERPOSE MIDI CONTROLLER</h1>
-        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Roland UM-1 Hardware Bridge • Safe Execution Engine</p>
+        <p style="font-size: 9px; color: #67e8f9; font-family: monospace;">Roland UM-1 / NTS-1 • Stable Multi-Touch Engine</p>
       </div>
     </div>
 
@@ -107,15 +107,11 @@
 
     <div class="flex items-center gap-2">
       <button id="btnForcePing" style="padding: 6px 14px; border-radius: 8px; border: 2px solid #38bdf8; background: #0284c7; color: #fff; font-weight: 900; font-size: 11px; box-shadow: 0 0 12px rgba(56,189,248,0.5);">
-        ⚡ FORCE PING NTS-1
+        ⚡ TEST NOTA NTS-1
       </button>
 
       <button id="btnConnectMidi" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #10b981; background: #064e3b; color: #6ee7b7; font-weight: bold; font-size: 11px;">
-        🔌 Ricollega MIDI
-      </button>
-
-      <button id="btnCamToggle" style="padding: 6px 12px; border-radius: 8px; background: linear-gradient(90deg, #06b6d4, #2563eb); color: #000; font-weight: 900; font-size: 11px; border: none;">
-        <span id="camIcon">📷</span> <span id="camToggleText">Accendi Cam</span>
+        🔌 Riconnetti MIDI
       </button>
 
       <div class="flex items-center gap-2" style="background: #020617; border: 1px solid #1e293b; padding: 4px 10px; border-radius: 8px; font-family: monospace; font-size: 10px;">
@@ -137,7 +133,7 @@
       <div class="flex items-center gap-1">
         <span style="font-weight: bold; color: #c084fc; font-size: 11px;">🔌 PORTE OUT:</span>
         <select id="midiOutSelect" style="min-width: 180px;">
-          <option value="broadcast">📢 Tutte le uscite (Broadcast)</option>
+          <option value="direct">Auto Roland UM-1 / Direct</option>
         </select>
         <select id="midiOutChannel">
           <option value="0" selected>Ch 1 (NTS-1 Def)</option>
@@ -148,13 +144,13 @@
       <div class="flex items-center gap-1">
         <span style="font-weight: bold; color: #facc15; font-size: 11px;">STATO:</span>
         <span id="midiStatusBadge" style="background: #020617; border: 1px solid #10b981; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 10px; color: #34d399; font-weight: bold;">
-          Ricerca MIDI in corso...
+          Ricerca interfaccia...
         </span>
       </div>
 
       <div class="flex items-center gap-1">
         <button id="btnForceNTS1" style="padding: 6px 14px; border-radius: 8px; background: linear-gradient(90deg, #f59e0b, #ea580c); color: #000; font-weight: 900; font-size: 11px; border: none;">
-          ⚡ Ripristina Mappa NTS-1
+          ⚡ Reset Mappa NTS-1
         </button>
       </div>
 
@@ -171,41 +167,24 @@
           <button class="touch-target-btn" data-target="left" style="background: #831843; border: 1px solid #db2777; color: #f472b6; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">1° SX</button>
           <button class="touch-target-btn" data-target="right" style="background: #020617; border: 1px solid #334155; color: #94a3b8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">2° DX</button>
           <button class="touch-target-btn" data-target="point3" style="background: #020617; border: 1px solid #334155; color: #94a3b8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">3° FX</button>
-          <button class="touch-target-btn" data-target="triple" style="background: #020617; border: 1px solid #334155; color: #94a3b8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">3 Dita</button>
-        </div>
-
-        <div id="camModeControls" class="hidden items-center gap-1">
-          <span style="color: #facc15; font-weight: bold; font-size: 10px;">MANI:</span>
-          <select id="camTrackingTarget" style="color: #22d3ee; font-weight: bold;">
-            <option value="both" selected>SX + DX</option>
-            <option value="leftOnly">Solo SX</option>
-            <option value="rightOnly">Solo DX</option>
-          </select>
+          <button class="touch-target-btn" data-target="triple" style="background: #064e3b; border: 1px solid #059669; color: #6ee7b7; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">3 Dita</button>
         </div>
 
         <div class="flex items-center gap-1" style="margin-left: auto;">
-          <button id="btnTrackingTrigger" class="hidden" style="background: #451a03; border: 2px solid #f59e0b; color: #fde68a; font-weight: 900; font-size: 10px; padding: 4px 10px; border-radius: 6px;">
-            ▶️ Avvia Tracking
-          </button>
-          <select id="cameraFacing"><option value="user">Front</option><option value="environment">Rear</option></select>
           <button id="btnCenterPad" style="background: #020617; border: 1px solid #334155; color: #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 10px;">Centra</button>
         </div>
       </div>
 
-      <!-- Area Pad & Video -->
-      <div id="camPadContainer" style="position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 14px; overflow: hidden; background: #020617; border: 2px solid rgba(6,182,212,0.4); display: flex; align-items: center; justify-content: center; cursor: crosshair; touch-action: none;">
-        <video id="videoElement" playsinline muted autoplay class="mirror-view hidden" style="position: absolute; inset: 0; width: 100%; height: 100%;"></video>
-
+      <!-- Area Pad -->
+      <div id="camPadContainer" style="position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 14px; overflow: hidden; background: #020617; border: 2px solid rgba(6,182,212,0.4); cursor: crosshair; touch-action: none;">
         <div id="touchPadBg" class="pad-grid pad-subgrid flex flex-col justify-between" style="position: absolute; inset: 0; padding: 12px; pointer-events: none;">
           <div class="flex justify-between items-center" style="font-family: monospace; font-size: 10px; font-weight: bold;">
             <span id="padStatusBadge" style="background: rgba(8,47,73,0.8); border: 1px solid rgba(6,182,212,0.4); color: #22d3ee; padding: 2px 6px; border-radius: 4px;">PAD ATTIVO</span>
-            <span id="padTrackingStatusText" style="color: #94a3b8;">Basso: 0 (Chiuso) ➔ Alto: 127 (Aperto)</span>
+            <span style="color: #94a3b8;">Basso: 0 ➔ Alto: 127</span>
           </div>
 
-          <div id="camSplitIndicator" class="hidden" style="position: absolute; top:0; bottom:0; left:50%; width:1px; border-right: 1px dashed rgba(6,182,212,0.6);"></div>
-
           <div style="text-align: center; pointer-events: none;">
-            <div id="padModeTitle" style="font-size: 22px; font-weight: 900; color: rgba(6,182,212,0.2); letter-spacing: 2px;">TOUCH SURFACE</div>
+            <div style="font-size: 22px; font-weight: 900; color: rgba(6,182,212,0.2); letter-spacing: 2px;">TOUCH SURFACE</div>
           </div>
           <div class="flex justify-between items-center" style="font-family: monospace; font-size: 10px; color: #64748b;">
             <span>[SX: 0 ➔ 127]</span>
@@ -235,7 +214,7 @@
     <!-- Matrice Assi -->
     <div style="background: rgba(15,23,42,0.8); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
       <div class="flex justify-between items-center pb-1" style="border-bottom: 1px solid #1e293b;">
-        <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura NTS-1 / MIDI CC (Range 0 - 127)</h2>
+        <h2 style="font-size: 12px; font-weight: bold; color: #22d3ee; text-transform: uppercase;">🎚️ Mappatura NTS-1 / MIDI CC (0 - 127)</h2>
         <span id="currentMappingLabel" style="font-size: 10px; color: #facc15; font-family: monospace;">Cutoff: CC#43 | Reson: CC#44</span>
       </div>
 
@@ -363,21 +342,10 @@
   </main>
 
   <script>
-    // Pulizia Service Worker per prevenire blocchi da cache corrotta
+    // Pulizia Service Worker per impedire cache bloccate
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        for (let r of regs) r.unregister();
-      }).catch(() => {});
+      navigator.serviceWorker.getRegistrations().then(r => r.forEach(x => x.unregister())).catch(()=>{});
     }
-
-    // WakeLock per tenere sveglio il tablet
-    let wakeLockSentinel = null;
-    async function requestWakeLock() {
-      try {
-        if ('wakeLock' in navigator) wakeLockSentinel = await navigator.wakeLock.request('screen');
-      } catch (e) {}
-    }
-    document.addEventListener('pointerdown', () => { if (!wakeLockSentinel) requestWakeLock(); }, { once: true });
 
     const ALL_MIDI_CCS = [
       { cc: 43, name: "CC#43: Cutoff (Korg NTS-1)" },
@@ -413,7 +381,6 @@
       });
     });
 
-    // Navigazione schede
     const tabBtnPad = document.getElementById('tabBtnPad');
     const tabBtnFaders = document.getElementById('tabBtnFaders');
     const viewPad = document.getElementById('viewPad');
@@ -434,10 +401,11 @@
       tabBtnPad.style.background = 'transparent'; tabBtnPad.style.color = '#94a3b8';
     });
 
-    // --- MOTORE MIDI HARDWARE STABILE ---
+    // --- HARDWARE MIDI DRIVER (DIRETTO A PACCHETTO FISSO) ---
     let midiAccess = null;
     let isTestNoteActive = false;
     let holdStates = { LX: false, LY: false, RX: false, RY: false, P3X: false, P3Y: false };
+    
     const midiSentMap = new Int16Array(128).fill(-1);
     const midiPendingMap = new Int16Array(128).fill(-1);
 
@@ -464,8 +432,8 @@
           midiAccess = await navigator.requestMIDIAccess();
           midiAccess.onstatechange = checkPorts;
           checkPorts();
-        } catch (e2) {
-          midiStatusBadge.innerText = "Errore MIDI: " + e2.message;
+        } catch(e) {
+          midiStatusBadge.innerText = "Errore MIDI: " + e.message;
         }
       }
     }
@@ -474,7 +442,7 @@
       if (!midiAccess) return;
       const outputs = Array.from(midiAccess.outputs.values());
       const select = document.getElementById('midiOutSelect');
-      select.innerHTML = '<option value="broadcast">📢 Tutte le uscite (Broadcast)</option>';
+      select.innerHTML = '<option value="direct">Auto Roland UM-1 / Direct</option>';
 
       outputs.forEach(out => {
         const opt = document.createElement('option');
@@ -484,40 +452,36 @@
       });
 
       if (outputs.length > 0) {
-        midiStatusBadge.innerText = `✓ Connesso (${outputs.length} Dispositivi OUT)`;
+        midiStatusBadge.innerText = `✓ Connesso (${outputs.length} OUT Hardware)`;
         midiStatusBadge.style.color = "#34d399";
-        document.getElementById('btnConnectMidi').innerText = "✓ MIDI Connesso";
+        document.getElementById('btnConnectMidi').innerText = "✓ MIDI Attivo";
       } else {
         midiStatusBadge.innerText = "In attesa cavo OTG / Roland UM-1...";
         midiStatusBadge.style.color = "#facc15";
-        document.getElementById('btnConnectMidi').innerText = "🔌 Ricollega MIDI";
+        document.getElementById('btnConnectMidi').innerText = "🔌 Riconnetti MIDI";
       }
     }
 
     document.getElementById('btnConnectMidi').addEventListener('click', initMidi);
     initMidi();
 
-    let isPacerRunning = false;
-
+    let pacerActive = false;
     function queueMidiCC(ccNum, val7bit) {
-      ccNum = parseInt(ccNum);
-      val7bit = Math.max(0, Math.min(127, parseInt(val7bit)));
+      ccNum = ccNum | 0;
+      val7bit = Math.max(0, Math.min(127, val7bit | 0));
       if (ccNum < 0 || ccNum > 127) return;
 
       if (val7bit === midiSentMap[ccNum] && midiPendingMap[ccNum] === -1) return;
       midiPendingMap[ccNum] = val7bit;
 
-      if (!isPacerRunning) {
-        isPacerRunning = true;
-        processMidiQueue();
+      if (!pacerActive) {
+        pacerActive = true;
+        processQueue();
       }
     }
 
-    function processMidiQueue() {
-      if (!midiAccess) {
-        isPacerRunning = false;
-        return;
-      }
+    function processQueue() {
+      if (!midiAccess) { pacerActive = false; return; }
 
       let targetCC = -1;
       for (let i = 0; i < 128; i++) {
@@ -528,57 +492,53 @@
       }
 
       if (targetCC === -1) {
-        isPacerRunning = false;
+        pacerActive = false;
         return;
       }
 
-      const valToSend = midiPendingMap[targetCC];
+      const val = midiPendingMap[targetCC];
       midiPendingMap[targetCC] = -1;
-      midiSentMap[targetCC] = valToSend;
+      midiSentMap[targetCC] = val;
 
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      const packet = [0xB0 | ch, targetCC, valToSend];
-      const targetMode = document.getElementById('midiOutSelect')?.value || 'broadcast';
+      const msg = [0xB0 | ch, targetCC, val];
+      const targetMode = document.getElementById('midiOutSelect')?.value || 'direct';
 
-      const outputs = Array.from(midiAccess.outputs.values());
-      for (let out of outputs) {
-        if (targetMode === 'broadcast' || out.id === targetMode) {
-          try { out.send(packet); } catch(e){}
+      const outs = Array.from(midiAccess.outputs.values());
+      for (let out of outs) {
+        if (targetMode === 'direct' || out.id === targetMode) {
+          try { out.send(msg); } catch(e){}
         }
       }
       flashLed(midiOutLed);
 
-      setTimeout(processMidiQueue, 8);
+      setTimeout(processQueue, 6);
     }
 
     const btnForcePing = document.getElementById('btnForcePing');
     btnForcePing.addEventListener('click', () => {
-      requestWakeLock();
-      if (!midiAccess) {
-        initMidi();
-        return;
-      }
-      const outputs = Array.from(midiAccess.outputs.values());
-      if (outputs.length === 0) {
-        alert("Roland UM-1 non rilevato da Android. Assicurati che lo switch sia su TAB.");
+      if (!midiAccess) { initMidi(); return; }
+      const outs = Array.from(midiAccess.outputs.values());
+      if (outs.length === 0) {
+        alert("Roland UM-1 non rilevato da Android. Verifica il collegamento OTG.");
         return;
       }
 
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
       isTestNoteActive = !isTestNoteActive;
 
-      for (let out of outputs) {
+      for (let out of outs) {
         try {
           if (isTestNoteActive) {
             out.send([0xB0 | ch, 121, 0]);
             out.send([0xB0 | ch, 43, 127]);
             out.send([0xB0 | ch, 44, 40]);
             out.send([0x90 | ch, 60, 100]);
-            btnForcePing.innerText = "⏹️ STOP AUDIO NTS-1";
+            btnForcePing.innerText = "⏹️ STOP TEST NOTA";
             btnForcePing.style.background = "#dc2626";
           } else {
             out.send([0x80 | ch, 60, 0]);
-            btnForcePing.innerText = "⚡ FORCE PING NTS-1";
+            btnForcePing.innerText = "⚡ TEST NOTA NTS-1";
             btnForcePing.style.background = "#0284c7";
           }
         } catch(e){}
@@ -588,9 +548,9 @@
 
     document.getElementById('btnMidiPanic').addEventListener('click', () => {
       if (!midiAccess) return;
-      const outputs = Array.from(midiAccess.outputs.values());
+      const outs = Array.from(midiAccess.outputs.values());
       const ch = parseInt(document.getElementById('midiOutChannel')?.value || 0);
-      for (let out of outputs) {
+      for (let out of outs) {
         try {
           out.send([0xB0 | ch, 123, 0]);
           out.send([0xB0 | ch, 120, 0]);
@@ -599,7 +559,7 @@
       }
       isTestNoteActive = false;
       midiPendingMap.fill(-1);
-      btnForcePing.innerText = "⚡ FORCE PING NTS-1";
+      btnForcePing.innerText = "⚡ TEST NOTA NTS-1";
       btnForcePing.style.background = "#0284c7";
       flashLed(midiOutLed, '#ef4444');
     });
@@ -686,362 +646,133 @@
       });
     });
 
-    let p1 = { x: 0.25, y: 0.5, targetX: 0.25, targetY: 0.5 };
-    let p2 = { x: 0.75, y: 0.5, targetX: 0.75, targetY: 0.5 };
-    let p3 = { x: 0.5, y: 0.5, targetX: 0.5, targetY: 0.5 };
+    let p1 = { x: 0.25, y: 0.5 };
+    let p2 = { x: 0.75, y: 0.5 };
+    let p3 = { x: 0.5, y: 0.5 };
 
     const padContainer = document.getElementById('camPadContainer');
-    const touchPadBg = document.getElementById('touchPadBg');
-    const video = document.getElementById('videoElement');
     const canvas = document.getElementById('overlayCanvas');
     const ctx = canvas.getContext('2d');
-    const btnCamToggle = document.getElementById('btnCamToggle');
-    const camToggleText = document.getElementById('camToggleText');
-    const padModeTitle = document.getElementById('padModeTitle');
-    const padStatusBadge = document.getElementById('padStatusBadge');
-    const padTrackingStatusText = document.getElementById('padTrackingStatusText');
-    const camSplitIndicator = document.getElementById('camSplitIndicator');
-    const touchTargetControls = document.getElementById('touchTargetControls');
-    const camModeControls = document.getElementById('camModeControls');
-    const btnTrackingTrigger = document.getElementById('btnTrackingTrigger');
-    const camTrackingTarget = document.getElementById('camTrackingTarget');
     const boxMonP1 = document.getElementById('boxMonP1');
     const boxMonP2 = document.getElementById('boxMonP2');
     const boxMonP3 = document.getElementById('boxMonP3');
-
-    let isCamActive = false;
-    let isTrackingRunning = false;
-    let currentStream = null;
 
     function resizeCanvas() {
       if (padContainer && canvas) {
         canvas.width = padContainer.clientWidth || 640;
         canvas.height = padContainer.clientHeight || 400;
+        renderFeedbackCanvas();
       }
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    function updateCursorVisibility() {
-      if (!isCamActive) {
-        boxMonP1.classList.remove('hidden'); boxMonP2.classList.remove('hidden'); boxMonP3.classList.remove('hidden');
-        return;
-      }
-      boxMonP3.classList.add('hidden');
-      const target = camTrackingTarget.value;
-      if (target === 'leftOnly') {
-        boxMonP1.classList.remove('hidden'); boxMonP2.classList.add('hidden');
-      } else if (target === 'rightOnly') {
-        boxMonP1.classList.add('hidden'); boxMonP2.classList.remove('hidden');
-      } else {
-        boxMonP1.classList.remove('hidden'); boxMonP2.classList.remove('hidden');
+    // --- GESTIONE TOUCH STABILE (ANTI-LOCK DEL BROWSER) ---
+    // Mappa con rilascio garantito a livello di finestra per impedire puntatori fantasma
+    const activeTouches = new Map();
+
+    function updatePointCoordinates(clientX, clientY, pt, axisPrefix) {
+      const rect = padContainer.getBoundingClientRect();
+      const normX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const normY = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+      pt.x = normX;
+      pt.y = normY;
+
+      // Invia immediatamente solo l'asse mosso
+      sendMidiExpression(`${axisPrefix}X`, normX);
+      sendMidiExpression(`${axisPrefix}Y`, 1 - normY);
+
+      if (axisPrefix === 'L') {
+        document.getElementById('monP1').innerText = `X: ${Math.round(normX*127)} | Y: ${Math.round((1-normY)*127)}`;
+      } else if (axisPrefix === 'R') {
+        document.getElementById('monP2').innerText = `X: ${Math.round(normX*127)} | Y: ${Math.round((1-normY)*127)}`;
+      } else if (axisPrefix === 'P3') {
+        document.getElementById('monP3').innerText = `X: ${Math.round(normX*127)} | Y: ${Math.round((1-normY)*127)}`;
       }
     }
-    camTrackingTarget.addEventListener('change', updateCursorVisibility);
 
-    btnTrackingTrigger.addEventListener('click', () => {
-      requestWakeLock();
-      isTrackingRunning = !isTrackingRunning;
-      if (isTrackingRunning) {
-        btnTrackingTrigger.innerText = "⏸️ Freeza Tracking";
-        btnTrackingTrigger.style.background = "#450a0a";
-        btnTrackingTrigger.style.borderColor = "#ef4444";
-        btnTrackingTrigger.style.color = "#fecaca";
-        padTrackingStatusText.innerText = "Tracking ATTIVO";
-      } else {
-        btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
-        btnTrackingTrigger.style.background = "#451a03";
-        btnTrackingTrigger.style.borderColor = "#f59e0b";
-        btnTrackingTrigger.style.color = "#fde68a";
-        padTrackingStatusText.innerText = "Parametri CONGELATI";
+    padContainer.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      
+      if (currentTouchTarget === 'left') {
+        activeTouches.set(e.pointerId, 'L');
+        updatePointCoordinates(e.clientX, e.clientY, p1, 'L');
+      } else if (currentTouchTarget === 'right') {
+        activeTouches.set(e.pointerId, 'R');
+        updatePointCoordinates(e.clientX, e.clientY, p2, 'R');
+      } else if (currentTouchTarget === 'point3') {
+        activeTouches.set(e.pointerId, 'P3');
+        updatePointCoordinates(e.clientX, e.clientY, p3, 'P3');
+      } else if (currentTouchTarget === 'triple') {
+        const assigned = Array.from(activeTouches.values());
+        if (!assigned.includes('L')) {
+          activeTouches.set(e.pointerId, 'L');
+          updatePointCoordinates(e.clientX, e.clientY, p1, 'L');
+        } else if (!assigned.includes('R')) {
+          activeTouches.set(e.pointerId, 'R');
+          updatePointCoordinates(e.clientX, e.clientY, p2, 'R');
+        } else if (!assigned.includes('P3')) {
+          activeTouches.set(e.pointerId, 'P3');
+          updatePointCoordinates(e.clientX, e.clientY, p3, 'P3');
+        }
       }
+      renderFeedbackCanvas();
     });
 
-    // --- PIPELINE OTTICA PROTETTA ANTI-CRASH ---
-    const procW = 48, procH = 36;
-    const procCanvas = document.createElement('canvas');
-    procCanvas.width = procW; procCanvas.height = procH;
-    const pCtx = procCanvas.getContext('2d', { willReadFrequently: true });
-    const prevLuma = new Uint8Array(procW * procH);
-    let hasPrevFrame = false;
-    let lastOpticalFrameTime = 0;
+    window.addEventListener('pointermove', (e) => {
+      if (!activeTouches.has(e.pointerId)) return;
+      const target = activeTouches.get(e.pointerId);
+      if (target === 'L') updatePointCoordinates(e.clientX, e.clientY, p1, 'L');
+      else if (target === 'R') updatePointCoordinates(e.clientX, e.clientY, p2, 'R');
+      else if (target === 'P3') updatePointCoordinates(e.clientX, e.clientY, p3, 'P3');
+      renderFeedbackCanvas();
+    });
 
-    async function toggleWebcam() {
-      requestWakeLock();
-      if (isCamActive) {
-        if (currentStream) {
-          try { currentStream.getTracks().forEach(t => t.stop()); } catch(e){}
-          currentStream = null;
-        }
-        video.srcObject = null;
-        video.classList.add('hidden');
-        touchPadBg.style.opacity = '1';
-        camSplitIndicator.classList.add('hidden');
-        touchTargetControls.classList.remove('hidden');
-        camModeControls.classList.add('hidden');
-        btnTrackingTrigger.classList.add('hidden');
-
-        isCamActive = false;
-        isTrackingRunning = false;
-        hasPrevFrame = false;
-
-        camToggleText.innerText = "Accendi Cam";
-        padStatusBadge.innerText = "PAD ATTIVO";
-        padModeTitle.innerText = "TOUCH SURFACE";
-        padTrackingStatusText.innerText = "Basso: 0 ➔ Alto: 127";
-        updateCursorVisibility();
-      } else {
-        const facing = document.getElementById('cameraFacing')?.value || 'user';
-        try {
-          currentStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 } },
-            audio: false
-          });
-          video.srcObject = currentStream;
-          await video.play();
-
-          video.classList.remove('hidden');
-          touchPadBg.style.opacity = '0.2';
-          camSplitIndicator.classList.remove('hidden');
-          touchTargetControls.classList.add('hidden');
-          camModeControls.classList.remove('hidden');
-          btnTrackingTrigger.classList.remove('hidden');
-
-          isCamActive = true;
-          isTrackingRunning = false;
-          hasPrevFrame = false;
-          lastOpticalFrameTime = 0;
-
-          btnTrackingTrigger.innerText = "▶️ Avvia Tracking";
-          btnTrackingTrigger.style.background = "#451a03";
-          btnTrackingTrigger.style.borderColor = "#f59e0b";
-          btnTrackingTrigger.style.color = "#fde68a";
-
-          camToggleText.innerText = "Spegni Cam";
-          padStatusBadge.innerText = "CAM CONGELATA";
-          padModeTitle.innerText = "WEBCAM TRACKING";
-          padTrackingStatusText.innerText = "Parametri CONGELATI (Premi Avvia)";
-
-          updateCursorVisibility();
-          resizeCanvas();
-        } catch(err) {
-          alert("Errore fotocamera: " + err.message);
-        }
+    function cleanTouch(e) {
+      if (activeTouches.has(e.pointerId)) {
+        activeTouches.delete(e.pointerId);
       }
     }
-    btnCamToggle.addEventListener('click', toggleWebcam);
-
-    function computeOpticalMotion() {
-      if (!isCamActive || !isTrackingRunning) return;
-      if (!video || video.paused || video.ended || video.readyState < 2) return;
-
-      const now = performance.now();
-      if (now - lastOpticalFrameTime < 40) return;
-      lastOpticalFrameTime = now;
-
-      try {
-        pCtx.drawImage(video, 0, 0, procW, procH);
-        const imgData = pCtx.getImageData(0, 0, procW, procH);
-        const data = imgData.data;
-
-        const midX = 24;
-        let lX = 0, lY = 0, lW = 0, rX = 0, rY = 0, rW = 0;
-        const targetMode = camTrackingTarget.value;
-
-        if (hasPrevFrame) {
-          for (let p = 0, i = 0; p < prevLuma.length; p++, i += 4) {
-            const bright = (data[i] * 3 + data[i+1] * 4 + data[i+2]) >> 3;
-            const diff = Math.abs(bright - prevLuma[p]);
-
-            if (diff > 16) {
-              const px = p % procW;
-              const py = (p / procW) | 0;
-
-              if (px >= midX && (targetMode === 'both' || targetMode === 'leftOnly')) {
-                lX += px * diff; lY += py * diff; lW += diff;
-              } else if (px < midX && (targetMode === 'both' || targetMode === 'rightOnly')) {
-                rX += px * diff; rY += py * diff; rW += diff;
-              }
-            }
-            prevLuma[p] = bright;
-          }
-
-          if (lW > 80) {
-            const rawNormX = 1 - (lX / lW) / procW;
-            const clampedX = Math.max(0.02, Math.min(0.48, rawNormX));
-            p1.targetX = (clampedX - 0.02) / (0.48 - 0.02) * 0.5;
-            p1.targetY = Math.max(0.02, Math.min(0.98, (lY / lW) / procH));
-          }
-
-          if (rW > 80) {
-            const rawNormX = 1 - (rX / rW) / procW;
-            const clampedX = Math.max(0.52, Math.min(0.98, rawNormX));
-            p2.targetX = 0.5 + ((clampedX - 0.52) / (0.98 - 0.52) * 0.5);
-            p2.targetY = Math.max(0.02, Math.min(0.98, (rY / rW) / procH));
-          }
-        } else {
-          for (let p = 0, i = 0; p < prevLuma.length; p++, i += 4) {
-            prevLuma[p] = (data[i] * 3 + data[i+1] * 4 + data[i+2]) >> 3;
-          }
-          hasPrevFrame = true;
-        }
-      } catch (err) {
-        hasPrevFrame = false;
-      }
-    }
-
-    let pointerSlotMap = new Map();
-
-    function updatePointFromTouch(e, pt) {
-      const rect = padContainer.getBoundingClientRect();
-      pt.targetX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      pt.targetY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-    }
-
-    if (padContainer) {
-      padContainer.addEventListener('pointerdown', (e) => {
-        requestWakeLock();
-        if (isCamActive) return;
-        e.preventDefault();
-        padContainer.setPointerCapture(e.pointerId);
-
-        if (currentTouchTarget === 'left') {
-          updatePointFromTouch(e, p1);
-        } else if (currentTouchTarget === 'right') {
-          updatePointFromTouch(e, p2);
-        } else if (currentTouchTarget === 'point3') {
-          updatePointFromTouch(e, p3);
-        } else if (currentTouchTarget === 'triple') {
-          if (!pointerSlotMap.has(e.pointerId)) {
-            if (!Array.from(pointerSlotMap.values()).includes(1)) {
-              pointerSlotMap.set(e.pointerId, 1); updatePointFromTouch(e, p1);
-            } else if (!Array.from(pointerSlotMap.values()).includes(2)) {
-              pointerSlotMap.set(e.pointerId, 2); updatePointFromTouch(e, p2);
-            } else if (!Array.from(pointerSlotMap.values()).includes(3)) {
-              pointerSlotMap.set(e.pointerId, 3); updatePointFromTouch(e, p3);
-            }
-          }
-        }
-      });
-
-      padContainer.addEventListener('pointermove', (e) => {
-        if (isCamActive) return;
-        e.preventDefault();
-        if (currentTouchTarget === 'left') {
-          updatePointFromTouch(e, p1);
-        } else if (currentTouchTarget === 'right') {
-          updatePointFromTouch(e, p2);
-        } else if (currentTouchTarget === 'point3') {
-          updatePointFromTouch(e, p3);
-        } else if (currentTouchTarget === 'triple') {
-          const slot = pointerSlotMap.get(e.pointerId);
-          if (slot === 1) updatePointFromTouch(e, p1);
-          else if (slot === 2) updatePointFromTouch(e, p2);
-          else if (slot === 3) updatePointFromTouch(e, p3);
-        }
-      });
-
-      function handlePointerRelease(e) { pointerSlotMap.delete(e.pointerId); }
-      padContainer.addEventListener('pointerup', handlePointerRelease);
-      padContainer.addEventListener('pointercancel', handlePointerRelease);
-    }
+    // Rilascio globale a livello di finestra: azzera ogni rischio di tocco bloccato
+    window.addEventListener('pointerup', cleanTouch);
+    window.addEventListener('pointercancel', cleanTouch);
 
     document.getElementById('btnCenterPad').addEventListener('click', () => {
-      p1.targetX = 0.25; p1.targetY = 0.5;
-      p2.targetX = 0.75; p2.targetY = 0.5;
-      p3.targetX = 0.5; p3.targetY = 0.5;
+      p1.x = 0.25; p1.y = 0.5;
+      p2.x = 0.75; p2.y = 0.5;
+      p3.x = 0.5;  p3.y = 0.5;
+      sendMidiExpression('LX', 0.25); sendMidiExpression('LY', 0.5);
+      sendMidiExpression('RX', 0.75); sendMidiExpression('RY', 0.5);
+      sendMidiExpression('P3X', 0.5); sendMidiExpression('P3Y', 0.5);
+      renderFeedbackCanvas();
     });
-
-    function processParameters() {
-      if (!isCamActive || isTrackingRunning) {
-        const smoothing = isCamActive ? 0.35 : 0.8;
-        p1.x += (p1.targetX - p1.x) * smoothing;
-        p1.y += (p1.targetY - p1.y) * smoothing;
-        p2.x += (p2.targetX - p2.x) * smoothing;
-        p2.y += (p2.targetY - p2.y) * smoothing;
-        p3.x += (p3.targetX - p3.x) * smoothing;
-        p3.y += (p3.targetY - p3.y) * smoothing;
-      }
-
-      let nP1X, nP2X;
-      if (isCamActive) {
-        nP1X = Math.max(0, Math.min(1, p1.x / 0.5));
-        nP2X = Math.max(0, Math.min(1, (p2.x - 0.5) / 0.5));
-      } else {
-        nP1X = Math.max(0, Math.min(1, p1.x));
-        nP2X = Math.max(0, Math.min(1, p2.x));
-      }
-
-      const nP1Y = Math.max(0, Math.min(1, 1 - p1.y));
-      const nP2Y = Math.max(0, Math.min(1, 1 - p2.y));
-      const nP3X = Math.max(0, Math.min(1, p3.x));
-      const nP3Y = Math.max(0, Math.min(1, 1 - p3.y));
-
-      const camTarget = camTrackingTarget.value;
-
-      if (!isCamActive || isTrackingRunning) {
-        if (!isCamActive || camTarget === 'both' || camTarget === 'leftOnly') {
-          sendMidiExpression('LX', nP1X);
-          sendMidiExpression('LY', nP1Y);
-        }
-        if (!isCamActive || camTarget === 'both' || camTarget === 'rightOnly') {
-          sendMidiExpression('RX', nP2X);
-          sendMidiExpression('RY', nP2Y);
-        }
-        if (!isCamActive) {
-          sendMidiExpression('P3X', nP3X);
-          sendMidiExpression('P3Y', nP3Y);
-        }
-      }
-
-      document.getElementById('monP1').innerText = `X: ${Math.round(nP1X*127)} | Y: ${Math.round(nP1Y*127)}`;
-      document.getElementById('monP2').innerText = `X: ${Math.round(nP2X*127)} | Y: ${Math.round(nP2Y*127)}`;
-      document.getElementById('monP3').innerText = `X: ${Math.round(nP3X*127)} | Y: ${Math.round(nP3Y*127)}`;
-    }
 
     function renderFeedbackCanvas() {
       if (!ctx || viewPad.classList.contains('hidden')) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const camTarget = camTrackingTarget.value;
+      // P1 (SX)
+      const x1 = p1.x * canvas.width, y1 = p1.y * canvas.height;
+      ctx.beginPath(); ctx.arc(x1, y1, 24, 0, Math.PI * 2);
+      ctx.strokeStyle = "#ec4899"; ctx.lineWidth = 3.5;
+      ctx.fillStyle = "rgba(236, 72, 153, 0.35)"; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px monospace"; ctx.fillText("SX", x1 - 6, y1 + 3);
 
-      if (!isCamActive || camTarget === 'both' || camTarget === 'leftOnly') {
-        const x1 = p1.x * canvas.width;
-        const y1 = p1.y * canvas.height;
-        ctx.beginPath(); ctx.arc(x1, y1, 24, 0, Math.PI * 2);
-        ctx.strokeStyle = "#ec4899"; ctx.lineWidth = 3.5;
-        ctx.fillStyle = "rgba(236, 72, 153, 0.35)"; ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px monospace"; ctx.fillText("SX", x1 - 6, y1 + 3);
-      }
+      // P2 (DX)
+      const x2 = p2.x * canvas.width, y2 = p2.y * canvas.height;
+      ctx.beginPath(); ctx.arc(x2, y2, 24, 0, Math.PI * 2);
+      ctx.strokeStyle = "#00f3ff"; ctx.lineWidth = 3.5;
+      ctx.fillStyle = "rgba(0, 243, 255, 0.35)"; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px monospace"; ctx.fillText("DX", x2 - 6, y2 + 3);
 
-      if (!isCamActive || camTarget === 'both' || camTarget === 'rightOnly') {
-        const x2 = p2.x * canvas.width;
-        const y2 = p2.y * canvas.height;
-        ctx.beginPath(); ctx.arc(x2, y2, 24, 0, Math.PI * 2);
-        ctx.strokeStyle = "#00f3ff"; ctx.lineWidth = 3.5;
-        ctx.fillStyle = "rgba(0, 243, 255, 0.35)"; ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px monospace"; ctx.fillText("DX", x2 - 6, y2 + 3);
-      }
-
-      if (!isCamActive) {
-        const x3 = p3.x * canvas.width;
-        const y3 = p3.y * canvas.height;
-        ctx.beginPath(); ctx.arc(x3, y3, 24, 0, Math.PI * 2);
-        ctx.strokeStyle = "#facc15"; ctx.lineWidth = 3.5;
-        ctx.fillStyle = "rgba(250, 204, 21, 0.35)"; ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#000000"; ctx.font = "bold 10px monospace"; ctx.fillText("3", x3 - 3, y3 + 3);
-      }
+      // P3 (FX)
+      const x3 = p3.x * canvas.width, y3 = p3.y * canvas.height;
+      ctx.beginPath(); ctx.arc(x3, y3, 24, 0, Math.PI * 2);
+      ctx.strokeStyle = "#facc15"; ctx.lineWidth = 3.5;
+      ctx.fillStyle = "rgba(250, 204, 21, 0.35)"; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#000000"; ctx.font = "bold 10px monospace"; ctx.fillText("3", x3 - 3, y3 + 3);
     }
-
-    function mainEngineLoop() {
-      try {
-        if (isCamActive) computeOpticalMotion();
-        processParameters();
-        renderFeedbackCanvas();
-      } catch (e) {}
-      requestAnimationFrame(mainEngineLoop);
-    }
-    requestAnimationFrame(mainEngineLoop);
+    renderFeedbackCanvas();
 
     // FADER DESK
     const fadersContainer = document.getElementById('fadersContainer');
